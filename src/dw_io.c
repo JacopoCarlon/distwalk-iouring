@@ -108,18 +108,14 @@ ssize_t dw_sendto(dw_poll_t *p_poll, int sock, int part, uint64_t aux,
     #ifdef IOURING_ENABLED
     if (is_uring(p_poll)) {
         if (part == 0) {
-            struct io_uring_sqe *sqe = io_uring_get_sqe(&p_poll->u.iouring_fds.ring);
-            if (!sqe) {
-                io_uring_submit(&p_poll->u.iouring_fds.ring);
-                sqe = io_uring_get_sqe(&p_poll->u.iouring_fds.ring);
-                if (!sqe) {
-                    errno = EAGAIN;
-                    return -1;
-                }
-            }
+            struct io_uring_sqe *sqe = dw_poll_current_cqe(p_poll);
             // MSG_WAITALL guarantees the entire passed buffer is written before returning a CQE
             io_uring_prep_sendto(sqe, sock, buf, len, flags | MSG_WAITALL, dest, dest_len);
-            io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_SEND, aux));
+            ((struct uring_aux_data*) aux)->op = DW_URING_OP_SEND;
+            io_uring_sqe_set_data64(sqe, aux);
+
+            ((struct uring_aux_data*) aux)->out_in_flight = true;
+
             errno = EAGAIN;
             return -1;
         }
@@ -133,6 +129,7 @@ ssize_t dw_sendto(dw_poll_t *p_poll, int sock, int part, uint64_t aux,
             }
             int res = cqe->res;
             dw_poll_cqe_seen(p_poll, cqe);
+            ((struct uring_aux_data*) aux)->out_in_flight = false;
             if (res < 0) {
                 errno = -res;
                 return -1;
@@ -269,6 +266,8 @@ ssize_t dw_sendfile(dw_poll_t *p_poll, int sock, int part, uint64_t aux,
             struct io_uring_cqe *cqe = dw_poll_current_cqe(p_poll);
             int res = cqe->res;
             dw_poll_cqe_seen(p_poll, cqe);
+            p_poll->u.iouring_fds.aux[aux].out_in_flight = false;
+
             if (res < 0) {
                 errno = -res;
                 return -1;
@@ -308,20 +307,24 @@ ssize_t dw_sendfile(dw_poll_t *p_poll, int sock, int part, uint64_t aux,
             assert(sqe);
             io_uring_prep_send(sqe, sock, hdr, hdr_len, MSG_NOSIGNAL | MSG_MORE | MSG_WAITALL);
             sqe->flags |= IOSQE_IO_LINK | IOSQE_CQE_SKIP_SUCCESS;
-            io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_SENDFILE_FAILED, aux));
+            ((struct uring_aux_data*) aux)->op = DW_URING_OP_SENDFILE_FAILED;
+            io_uring_sqe_set_data64(sqe, aux);
         }
 
         struct io_uring_sqe *s_read = io_uring_get_sqe(r);
         assert(s_read);
         io_uring_prep_read_fixed(s_read, fd_in, e->sendfile_buf, to_read, off_in, e->sendfile_buf_index);
         s_read->flags |= IOSQE_IO_LINK | IOSQE_CQE_SKIP_SUCCESS;
-        io_uring_sqe_set_data64(s_read, DW_URING_PACK(DW_URING_OP_SENDFILE_FAILED, aux));
+        ((struct uring_aux_data*) aux)->op = DW_URING_OP_SENDFILE_FAILED;
+        io_uring_sqe_set_data64(s_read, aux);
 
         struct io_uring_sqe *s_send = io_uring_get_sqe(r);
         assert(s_send);
         io_uring_prep_send_zc(s_send, sock, e->sendfile_buf, to_read, MSG_NOSIGNAL | MSG_WAITALL, 0);
-        io_uring_sqe_set_data64(s_send, DW_URING_PACK(DW_URING_OP_SENDFILE, aux));
+        ((struct uring_aux_data*) aux)->op = DW_URING_OP_SENDFILE;
+        io_uring_sqe_set_data64(s_send, aux);
 
+        ((struct uring_aux_data*) aux)->out_in_flight = true;
         dw_log("--- SENDFILE_URING: prepped %d SQE\n", sqes_needed);
 
         return to_read;

@@ -1056,24 +1056,8 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         // we need the send_messages() below to still be tried afterwards
     }
 
-    if (p_poll->poll_type == DW_IOURING && (pflags & DW_POLLOUT_CQE && !conn->uring_send_in_flight)) {
-        dw_log("SEND_URING: DW_POLLOUT_CQE is set but not in flight, erroring out\n");
-
-        struct io_uring_cqe *cqe = dw_poll_current_cqe(p_poll);
-        uint64_t ud = io_uring_cqe_get_data64(cqe);
-        dw_uring_op_t op = DW_URING_UNPACK_OP(ud);
-        dw_log("op=%d\n", op);
-        exit(1);
-        goto err;
-    }
-
-    if (pflags & DW_POLLOUT && (p_poll->poll_type == DW_IOURING && (!(pflags & DW_POLLOUT_CQE) && !conn->uring_send_in_flight))
-        && conn->curr_send_size > 0) {
-        conn_flush(conn, p_poll, 0);
-    }
-
-    if (pflags & DW_POLLOUT && (p_poll->poll_type != DW_IOURING || (pflags & DW_POLLOUT_CQE && conn->uring_send_in_flight))) {
-        int r = conn_flush(conn, p_poll, 1);
+    if (pflags & DW_POLLOUT) {
+        int r = conn_flush(conn, p_poll, pflags & DW_POLLOUT_CQE);
 
         if (r < 0)
             goto err;

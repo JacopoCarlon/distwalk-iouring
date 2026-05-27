@@ -429,29 +429,6 @@ message_t *conn_prepare_recv_message(conn_info_t *conn) {
 int conn_start_sendfile(conn_info_t *conn, struct sockaddr_in target, int fd_sendfile,
                         off_t sendfile_offset, size_t sendfile_size,
                         dw_poll_t *p_poll) {
-    if (p_poll != NULL && p_poll->poll_type == DW_IOURING) {
-        dw_log("SENDFILE_URING: uring_send_in_flight=%d\n", conn->uring_send_in_flight);
-
-        if (conn->uring_send_in_flight) {
-            if (conn->pending_sf_count >= MAX_PENDING_SENDFILES) {
-                dw_log("SENDFILE_URING: pending queue full, dropping conn_id=%d\n",
-                       conn_get_id_by_ptr(conn));
-                errno = ENOBUFS;
-                return -1;
-            }
-            int slot = (conn->pending_sf_head + conn->pending_sf_count) % MAX_PENDING_SENDFILES;
-            conn->pending_sf[slot].fd = fd_sendfile;
-            conn->pending_sf[slot].offset = sendfile_offset;
-            conn->pending_sf[slot].size = sendfile_size;
-            conn->pending_sf[slot].target = target;
-            conn->pending_sf_count++;
-            dw_log("SENDFILE_URING: enqueued (queue depth=%d), conn_id=%d\n",
-                   conn->pending_sf_count, conn_get_id_by_ptr(conn));
-            conn_set_status(conn, SENDING);
-            return 0;
-        }
-    }
-
     // prepare the Header (message_t)
     message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
     conn->target = target;
@@ -498,15 +475,6 @@ int conn_start_send(conn_info_t *conn, struct sockaddr_in target, dw_poll_t *p_p
 
     if (conn->status == CONNECTING || conn->status == SSL_HANDSHAKE || conn->status == NOT_INIT)
         return 0;
-
-    if (p_poll != NULL && p_poll->poll_type == DW_IOURING) {
-        dw_log("SEND_URING: uring_send_in_flight=%d\n", conn->uring_send_in_flight);
-
-        if (conn->uring_send_in_flight) {
-            errno = -EAGAIN;
-            return -1;
-        }
-    }
 
     // io_uring: always part zero is fine as the outer loop will handle the CQEs
     return conn_send(conn, p_poll, 0);
@@ -592,7 +560,6 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll, int part) {
            conn_get_id_by_ptr(conn), conn->status, conn_status_str(conn->status),
            conn->curr_send_size, sock, conn->uring_send_in_flight, part);
 
-
     #ifdef SSL_ENABLED
     if (conn->use_ssl)
         return conn_ssl_send(conn);
@@ -607,12 +574,6 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll, int part) {
                              i2l(SOCKET, conn_get_id_by_ptr(conn)),
                              conn->curr_send_buf, conn->curr_send_size, MSG_NOSIGNAL,
                              (const struct sockaddr *) &conn->target, sizeof(conn->target));
-    if (p_poll != NULL && p_poll->poll_type == DW_IOURING) {
-        if (part == 0)
-            conn->uring_send_in_flight = true;
-        if (part == 1)
-            conn->uring_send_in_flight = false;
-    }
 
     if (sent == 0) {
         // TODO: should not even be possible, ignoring
@@ -646,14 +607,6 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll, int part) {
         return (int) sent;
     }
 
-    // If curr_send_size != 0 then other messages were appended to the send buffer in the meantime.
-    // Submit a fresh send for [curr_send_buf, curr_send_buf+curr_send_size).
-    if (p_poll != NULL && p_poll->poll_type == DW_IOURING && part == 1) {
-        dw_log("SEND_URING: %lu bytes queued after submit, re-arming SEND\n",
-               conn->curr_send_size);
-        conn_send(conn, p_poll, 0);
-    }
-
     return (int) sent;
 }
 
@@ -669,8 +622,6 @@ int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll, int part) {
         uint64_t aux = i2l(SOCKET, conn_get_id_by_ptr(conn));
 
         if (part == 0) {
-            assert(conn->curr_send_size != 0);
-            assert(conn->uring_send_in_flight == false);
             const ssize_t sent = dw_sendfile(p_poll, sock, 0, aux,
                                          conn->curr_send_buf, conn->curr_send_size,
                                          conn->file_fd, conn->file_offset,
@@ -688,7 +639,6 @@ int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll, int part) {
                 return -1;
             }
 
-            conn->uring_send_in_flight = true;
             conn->file_remaining -= sent;
             conn->file_offset += sent;
 
@@ -699,8 +649,6 @@ int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll, int part) {
         }
 
         if (part == 1) {
-            assert(conn->uring_send_in_flight == true);
-            conn->uring_send_in_flight = false;
             ssize_t sent = dw_sendfile(p_poll, sock, 1, aux, NULL, 0, conn->file_fd, conn->file_offset, conn->file_remaining);
 
             if (sent == -1) {
@@ -740,7 +688,6 @@ int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll, int part) {
                 return 1;
             }
 
-            conn->uring_send_in_flight = true;
             conn->file_remaining -= sent;
             conn->file_offset += sent;
 

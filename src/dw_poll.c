@@ -540,8 +540,8 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                     continue;
                 }
 
-                uint64_t ud = io_uring_cqe_get_data64(cqe);
-                dw_uring_op_t op = DW_URING_UNPACK_OP(ud);
+                struct uring_aux_data*data = (void*)io_uring_cqe_get_data64(cqe);
+                dw_uring_op_t         op   = data->op;
 
                 // filter/handle CQE for cancellation operation
                 if (op == DW_URING_OP_CANCEL) {
@@ -551,22 +551,22 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                 }
 
                 // re-extract aux data
-                uint64_t cqe_aux = DW_URING_UNPACK_AUX(ud);
                 uint32_t ev_type = 0, ev_id = 0;
-                l2i(cqe_aux, &ev_type, &ev_id);
+                l2i(data->aux, &ev_type, &ev_id);
 
                 // parse CQE status flags
                 int32_t res = cqe->res;
 
                 // connection closing filter: handles CQE submitted after a conn_free
-                if (res == -ECANCELED || (ev_type == SOCKET && conn_uring_cqe_for_closing((int) ev_id, op))) {
+                if (res == -ECANCELED || data->out_in_flight) {
                     io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
                     p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter] = NULL;
+                    // TODO: actually free
                     continue;
                 }
 
-                *aux = cqe_aux;
-                *flags = DW_POLLOUT; // TODO: ~~always "writable" as we can always submit an SQE~~ wrong if in flight we half can and half cannot
+                *aux = data->aux;
+                *flags = data->out_requested && !data->out_in_flight ? DW_POLLOUT : 0;
 
                 // handle status errors
                 if (res < 0) {
@@ -586,7 +586,7 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                     case DW_URING_OP_SEND:
                     case DW_URING_OP_SENDFILE:
                     case DW_URING_OP_SENDFILE_FAILED:
-                        *flags |= DW_POLLOUT_CQE;
+                        *flags |= DW_POLLOUT | DW_POLLOUT_CQE;
                         break;
                     case DW_URING_OP_CANCEL:
                         __builtin_unreachable();
