@@ -3,11 +3,22 @@ SHELL=/bin/bash
 MAKEFILE_DIR := $(dir $(firstword $(MAKEFILE_LIST)))
 TOPDIR       := $(abspath $(MAKEFILE_DIR)/..)
 
-CFLAGS=-Wall -O3
-CFLAGS_DEBUG=-g -DDW_DEBUG -Wall -fprofile-arcs -ftest-coverage -fprofile-update=atomic
-CFLAGS_TSAN=-g -Wall -O2 -fsanitize=thread
+CFLAGS=-Wall -O3 -std=gnu17 -DSSL_ENABLED
+CFLAGS_DEBUG=-g -DDW_DEBUG -Wall -fprofile-arcs -ftest-coverage -fprofile-update=atomic -fsanitize=address -fsanitize=undefined -DSSL_ENABLED
+CFLAGS_TSAN=-g -Wall -O2 -fsanitize=thread -DSSL_ENABLED
 LDLIBS=-pthread -lm -lssl -lcrypto
 LDLIBS_DEBUG=-pthread -lm -lssl -lcrypto -lgcov
+
+#USE_IOURING ?= 1 # $(shell pkg-config --exists liburing && echo 1 || echo 0)
+#ifeq ($(USE_IOURING),1)
+IOURING_CFLAGS := $(shell pkg-config --cflags liburing) -DIOURING_ENABLED
+IOURING_LDFLAGS := $(shell pkg-config --libs liburing)
+CFLAGS += $(IOURING_CFLAGS)
+CFLAGS_DEBUG += $(IOURING_CFLAGS)
+CFLAGS_TSAN += $(IOURING_CFLAGS)
+LDLIBS += $(IOURING_LDFLAGS)
+LDLIBS_DEBUG += $(IOURING_LDFLAGS)
+#endif
 
 # Optional DPDK support, adding DPDK flags when enabled as per documentation
 USE_DPDK ?= 0
@@ -27,8 +38,8 @@ TSAN_PROGRAMS=dw_client_tsan dw_node_tsan
 DEBUG_PROGRAMS=dw_client_debug dw_node_debug
 MAIN_PROGRAMS=dw_client dw_node
 
-DW_CLIENT_SOURCES=dw_client.c ccmd.c distrib.c thread_affinity.c connection.c request.c message.c queue.c address_utils.c
-DW_NODE_SOURCES=dw_node.c thread_affinity.c priority_queue.c request.c connection.c message.c address_utils.c dw_poll.c
+DW_CLIENT_SOURCES=dw_client.c ccmd.c distrib.c thread_affinity.c connection.c request.c message.c queue.c address_utils.c dw_io.c dw_poll.c
+DW_NODE_SOURCES=dw_node.c thread_affinity.c priority_queue.c request.c connection.c message.c address_utils.c dw_poll.c dw_io.c
 DW_PROXY_SOURCES=dw_proxy.c address_utils.c
 
 # Add DPDK source file when enabled
@@ -62,7 +73,7 @@ doc:
 clean:
 	rm -rf $(HOME)/.local/share/man/man1/
 	mandb
-	rm -f *.o *.gcno *.gcda *.gcov *~ *.bak log_tests.txt *.log $(MAIN_PROGRAMS) $(DEBUG_PROGRAMS) $(TSAN_PROGRAMS) $(TEST_PROGRAMS)
+	rm -f *.o *.d *.gcno *.gcda *.gcov *~ *.bak log_tests.txt *.log $(MAIN_PROGRAMS) $(DEBUG_PROGRAMS) $(TSAN_PROGRAMS) $(TEST_PROGRAMS)
 	rm -rf html latex gcov $(ifneq $(BUILD_DIR),.,$(BUILD_DIR))
 
 dw_client: $(patsubst %.c,$(BUILD_DIR)/%.o,$(DW_CLIENT_SOURCES))

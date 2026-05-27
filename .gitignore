@@ -11,6 +11,7 @@ test_ccmd
 test_struct_tsan
 
 *.o
+*.d
 *.data
 
 .vscode
