@@ -19,6 +19,7 @@ src/*
 # Ignore files with extensions `.d`, `.o`, `.data`, `.gcno`, `.gcda`, `.gcov`
 *.d
 *.o
+*.d
 *.data
 
 *.gcno 

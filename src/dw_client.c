@@ -285,7 +285,7 @@ void *thread_sender(void *data) {
             msg_log(m, "Sending msg: ");
         #endif
 
-        if (!conn_start_send(conn, conn->target)) {
+        if (!conn_start_send(conn, conn->target, NULL)) {
             fprintf(stderr,
                     "Forcing premature termination of sender thread while "
                     "attempting to send pkt %d\n",
@@ -496,7 +496,7 @@ void *thread_receiver(void *data) {
         conn_info_t *conn = conn_get_by_id(thr_data.conn_id);
 
         do {
-            recv = conn_recv(conn);
+            recv = conn_recv(conn, NULL);
             if (recv == 0) {
                 printf("Error: cannot read received message\n");
                 unsigned long skip_pkts =
@@ -517,6 +517,9 @@ void *thread_receiver(void *data) {
                     if (!p_next)
                         goto skip;
                     size_t diff = conn->curr_recv_buf - (unsigned char*)p_next;
+                    #ifdef DW_DEBUG
+                    dw_log("req_size=%d, diff=%lu\n", m->req_size, diff);
+                    #endif
                     m->req_size -= diff;
                     conn->curr_recv_buf -= diff;
                     conn->curr_recv_size += diff;
