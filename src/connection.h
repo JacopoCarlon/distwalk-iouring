@@ -8,6 +8,7 @@
 #include <openssl/ssl.h>
 #include <unistd.h>
 #include <fcntl.h>
+
 #include "message.h"
 #include "request.h"
 #include "dw_poll.h"
@@ -24,9 +25,16 @@ typedef enum {
     SENDING,
     CONNECTING,    // used with TCP only
     SSL_HANDSHAKE, // used with SSL only
+    CLOSING,       // used by uring to defer closing
     CLOSE,
     STATUS_NUMBER  // keep this as last
 } conn_status_t;
+
+typedef enum {
+    SS_READY,
+    SS_IN_FLIGHT,
+    SS_COMPLETED
+} uring_send_state_t;
 
 typedef struct {
     proto_t proto;                // transport protocol to use (TCP or UDP)
@@ -65,25 +73,13 @@ typedef struct {
     uint16_t tx_count;
 #endif
 
-    bool uring_send_in_flight;
+    // Uring fields
+    struct sockaddr_in accept;    // accepted fd address scratch
+    uint64_t uring_aux;           // outer loop aux
+    void* uring_sendfile_scratch;
+    uring_send_state_t uring_send_state;
 
-    #define MAX_PENDING_SENDFILES 128
-    struct {
-        int fd;
-        off_t offset;
-        size_t size;
-        struct sockaddr_in target;
-    } pending_sf[MAX_PENDING_SENDFILES];
-    int pending_sf_head;
-    int pending_sf_count;
-
-    /* io_uring:
-     * closing flag used to protect trailing SEND SQE from polluting
-     * if conn_id is reused, and from use-after-free of buffer passed to kernel.
-     * conn_info_t and send_buff must not be modified, freed or recycled untile after.
-     * path: conn_free -> conn_next (last SQE) -> conn_uring_cqe_for_closing -> conn_free -> end
-     */
-    bool closing;
+    size_t defer_defrag;
 
     // TODO: wrap with SSL_TLS_ENABLED
     // SSL/TLS support
@@ -103,23 +99,16 @@ void conn_init();
 int conn_alloc(int sock, struct sockaddr_in target, proto_t proto);
 void conn_free(int conn_id);
 
-/**
- * Checks for spurious CQE after a deferred conn_free.
- * The real conn_free is executed once nothing is left in flight. TODO: also handle spurious recv CQEs
- * Returns true so the CQE is never surfaced to the main loop.
- */
-bool conn_uring_cqe_for_closing(int conn_id, dw_uring_op_t op);
-
 conn_status_t conn_get_status(conn_info_t* conn);
 conn_status_t conn_get_status_by_id(int conn_id);
 conn_status_t conn_set_status(conn_info_t* conn, conn_status_t status);
 conn_status_t conn_set_status_by_id(int conn_id, conn_status_t status);
 
 conn_info_t* conn_get_by_id(int conn_id);
-int conn_get_id_by_ptr(conn_info_t * conn);
+int conn_get_id_by_ptr(const conn_info_t * conn);
 
 req_info_t* conn_req_add(conn_info_t *conn);
-req_info_t* conn_req_remove(conn_info_t *conn, req_info_t *req, dw_poll_t *p_poll);
+req_info_t* conn_req_remove(conn_info_t *conn, req_info_t *req);
 
 unsigned char *get_send_buf(conn_info_t *pc, size_t size);
 
@@ -136,10 +125,10 @@ int conn_del_sock(int sock);
 
 int conn_start_send(conn_info_t *conn, struct sockaddr_in target, dw_poll_t *p_poll);
 int conn_start_sendfile(conn_info_t *conn, struct sockaddr_in target, int fd_sendfile, off_t sendfile_offset, size_t sendfile_size, dw_poll_t *p_poll);
-int conn_send(conn_info_t *conn, dw_poll_t *p_poll, int part);
-int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll, int part);
+int conn_send(conn_info_t *conn, dw_poll_t *p_poll);
+int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll);
 int conn_recv(conn_info_t *conn, dw_poll_t *p_poll);
-int conn_flush(conn_info_t *conn, dw_poll_t *p_poll, int part);
+int conn_flush(conn_info_t *conn, dw_poll_t *p_poll);
 
 
 int conn_enable_ssl(int conn_id, SSL_CTX *ctx, int is_server);
