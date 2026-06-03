@@ -1,19 +1,27 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/sendfile.h>
+
+#ifdef SSL_ENABLED
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#endif
 
 #include "connection.h"
 #include "dw_debug.h"
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/sendfile.h>
+#include "dw_poll.h"
+#include "dw_io.h"
+#include "dw_event.h"
 
 
 
 conn_info_t conns[MAX_CONNS];
+
+#ifdef SSL_ENABLED
 
 // helper function to run SSL handshake in a non-blocking way
 // returns 1 if handshake is complete, 0 if handshake is in progress, -1 if an error occured
@@ -28,7 +36,7 @@ int conn_do_ssl_handshake(int conn_id) {
         int err = SSL_get_error(conn->ssl, ret);
         if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
             dw_log("SSL handshake in progress on conn_id=%d (WANT_READ/WRITE)\n", conn_id);
-            return 0;  // handshake still in progress
+            return 0; // handshake still in progress
         }
         dw_log("SSL handshake error on conn_id=%d: %d\n", conn_id, err);
         ERR_print_errors_fp(stderr);
@@ -39,6 +47,8 @@ int conn_do_ssl_handshake(int conn_id) {
     conn->status = READY;
     return 1;
 }
+
+#endif
 
 const char *conn_status_str(conn_status_t s) {
     static const char *status_str[STATUS_NUMBER] = {
@@ -58,6 +68,10 @@ void conn_init() {
         conns[i].send_buf = NULL;
         conns[i].sock = -1;
         conns[i].busy = 0;
+        conns[i].uring_send_in_flight = false;
+        conns[i].pending_sf_head = 0;
+        conns[i].pending_sf_count = 0;
+        conns[i].closing = false;
         conns[i].use_ssl = 0;
         conns[i].ssl = NULL;
         conns[i].ssl_handshake_done = 0;
@@ -67,8 +81,7 @@ void conn_init() {
 }
 
 
-
-conn_status_t conn_set_status(conn_info_t* conn, conn_status_t status) {
+conn_status_t conn_set_status(conn_info_t *conn, conn_status_t status) {
     conn_status_t prev = conn->status;
     conn->status = status;
 
@@ -79,7 +92,7 @@ conn_status_t conn_set_status_by_id(int conn_id, conn_status_t status) {
     return conn_set_status(conn_get_by_id(conn_id), status);
 }
 
-conn_status_t conn_get_status(conn_info_t* conn) {
+conn_status_t conn_get_status(conn_info_t *conn) {
     return conn->status;
 }
 
@@ -87,15 +100,15 @@ conn_status_t conn_get_status_by_id(int conn_id) {
     return conn_get_status(conn_get_by_id(conn_id));
 }
 
-conn_info_t* conn_get_by_id(int conn_id) {
+conn_info_t *conn_get_by_id(int conn_id) {
     return &conns[conn_id];
 }
 
-int conn_get_id_by_ptr(conn_info_t * conn) {
+int conn_get_id_by_ptr(conn_info_t *conn) {
     return conn - &conns[0];
 }
 
-req_info_t* conn_req_add(conn_info_t *conn) {
+req_info_t *conn_req_add(conn_info_t *conn) {
     req_info_t *req = req_alloc();
     if (req == NULL)
         return NULL;
@@ -112,49 +125,57 @@ req_info_t* conn_req_add(conn_info_t *conn) {
 }
 
 static void conn_reset(conn_info_t *conn) {
+    conn->pending_sf_head = 0;
+    conn->pending_sf_count = 0;
     for (int i = 0; i < MAX_CONNS; i++)
         for (req_info_t *temp = conns[i].req_list; temp != NULL; temp = temp->next) {
             dw_log("conn_reset(%d): conn: %d, req_id: %d, .conn_id: %d -> ",
                    conn_get_id_by_ptr(conn), i, temp->req_id, temp->conn_id);
             if (temp->message_ptr) {
-#ifdef DW_DEBUG
+                #ifdef DW_DEBUG
                 msg_log(req_get_message(temp), "");
-#endif
+                #endif
             } else
-                dw_log("\n");
+            dw_log("\n");
         }
     for (req_info_t *temp = conn->req_list; temp != NULL; temp = req_unlink(temp)) {
         dw_log("conn_reset(): freeing req_id: %d, conn_id: %d, .conn_id: %d -> ",
                temp->req_id, conn_get_id_by_ptr(conn), temp->conn_id);
         if (temp->message_ptr) {
-#ifdef DW_DEBUG
+            #ifdef DW_DEBUG
             msg_log(req_get_message(temp), "");
-#endif
+            #endif
         } else
-            dw_log("\n");
+        dw_log("\n");
     }
 }
 
-req_info_t* conn_req_remove(conn_info_t *conn, req_info_t *req) {
+req_info_t *conn_req_remove(conn_info_t *conn, req_info_t *req, dw_poll_t *p_poll) {
     // skip defrag if message_ptr is outside recv_buf (DPDK zero-copy from mbuf)
     if (conn->enable_defrag && req->message_ptr >= conn->recv_buf && req->message_ptr < conn->recv_buf + BUF_SIZE) {
         unsigned long req_size = req_get_message(req)->req_size;
         unsigned long leftover = conn->curr_recv_buf - (req->message_ptr + req_size);
-    
+
         memmove(req->message_ptr, req->message_ptr + req_size, leftover);
-        dw_log("DEFRAGMENT remove req_id:%d, conn_id:%d [%p, %p[\n", req->req_id, req->conn_id, 
-                                                                 req->message_ptr, req->message_ptr + req_size);
+        dw_log("DEFRAGMENT remove req_id:%d, conn_id:%d [%p, %p[\n", req->req_id, req->conn_id,
+               req->message_ptr, req->message_ptr + req_size);
 
         conn->curr_recv_buf -= req_size;
         conn->curr_proc_buf -= req_size;
         conn->curr_recv_size += req_size;
+        // keep dw_poll's write_off in lockstep with curr_recv_buf
+        if (p_poll) {
+            // TODO: decide how to handle a dw_poll_set_buffer_offset: return -1
+            dw_poll_set_buffer_offset(p_poll, conn->sock,
+                                      (size_t) (conn->curr_recv_buf - conn->recv_buf));
+        }
         for (req_info_t *temp = req->prev; temp != NULL; temp = temp->prev) {
-            dw_log("DEFRAGMENT update ptr, req_id:%d message [%p, %p[ -> [%p, %p[\n", 
-               temp->req_id,
-               temp->message_ptr,
-               temp->message_ptr + req_get_message(temp)->req_size,
-               temp->message_ptr - req_size,
-               temp->message_ptr - req_size + req_get_message(temp)->req_size);
+            dw_log("DEFRAGMENT update ptr, req_id:%d message [%p, %p[ -> [%p, %p[\n",
+                   temp->req_id,
+                   temp->message_ptr,
+                   temp->message_ptr + req_get_message(temp)->req_size,
+                   temp->message_ptr - req_size,
+                   temp->message_ptr - req_size + req_get_message(temp)->req_size);
             temp->message_ptr -= req_size;
         }
     }
@@ -181,7 +202,10 @@ int conn_find_existing(struct sockaddr_in target, proto_t proto) {
         if (proto == UDP && conns[i].parent_thread == curr_thread) {
             rv = i;
             break;
-        } else if (proto == TCP && conns[i].target.sin_port == target.sin_port && conns[i].target.sin_addr.s_addr == target.sin_addr.s_addr && conns[i].proto == proto) {
+        } else if ( proto == TCP &&
+                    conns[i].target.sin_port == target.sin_port &&
+                    conns[i].target.sin_addr.s_addr == target.sin_addr.s_addr &&
+                    conns[i].proto == proto) {
             rv = i;
             break;
         }
@@ -241,20 +265,32 @@ int conn_del_sock(int sock) {
 void conn_free(int conn_id) {
     if (conn_id < 0)
         return;
+
+
+    // A SQE submitted from this connection's send_buf might still be pending in kernel.
+    // See conn_uring_cqe_for_closing() for the actual freeing
+    if (conns[conn_id].uring_send_in_flight) {
+        dw_log("conn %d free DEFERRED: send still in flight\n", conn_id);
+        conns[conn_id].closing = true;
+        return;
+    }
+
     dw_log("Freeing conn %d\n", conn_id);
 
     conn_reset(&conns[conn_id]);
-    free(conns[conn_id].recv_buf);   
+    free(conns[conn_id].recv_buf);
     conns[conn_id].recv_buf = NULL;
-    free(conns[conn_id].send_buf);   
+    free(conns[conn_id].send_buf);
     conns[conn_id].send_buf = NULL;
 
+    #ifdef SSL_ENABLED
     // clean up SSL if used
     if (conns[conn_id].use_ssl) {
         SSL_shutdown(conns[conn_id].ssl);
         SSL_free(conns[conn_id].ssl);
         conns[conn_id].ssl = NULL;
     }
+    #endif
 
     conns[conn_id].status = CLOSE;
     conns[conn_id].sock = -1;
@@ -263,6 +299,30 @@ void conn_free(int conn_id) {
     // reset handshake state for this connection
     conns[conn_id].ssl_handshake_done = 0;
     conns[conn_id].ssl_is_server = 0;
+}
+
+bool conn_uring_cqe_for_closing(int conn_id, dw_uring_op_t op) {
+    if (conn_id < 0 || conn_id >= MAX_CONNS) {
+        // this should never happen
+        return false;
+    }
+
+    if (!conns[conn_id].closing) {
+        return false;
+    }
+
+    // TODO: Any other completion (e.g. a cancelled recv) is simply drained.
+    //       Aha cancelled recv also create CQE which I am not sure we are filtering out.
+    //        Also a race exists so a cancelled recv may still have a valid status flags in the CQE...
+    //       Need to track this just like the send.
+    if (op == DW_URING_OP_SEND || op == DW_URING_OP_SENDFILE) {
+        dw_log("conn %d SEND CQE drained, completing deferred free\n", conn_id);
+        conns[conn_id].uring_send_in_flight = false;
+        conns[conn_id].closing = false;
+        // having cleared both io_uring flags, now conn_free will go through properly
+        conn_free(conn_id);
+    }
+    return true;
 }
 
 int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
@@ -290,11 +350,15 @@ int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
     conns[conn_id].status = (proto == TCP ? NOT_INIT : READY);
     conns[conn_id].recv_buf = new_recv_buf;
     conns[conn_id].send_buf = new_send_buf;
-    conns[conn_id].parent_thread = pthread_self(); 
+    conns[conn_id].parent_thread = pthread_self();
     conns[conn_id].use_ssl = 0;
     conns[conn_id].ssl = NULL;
     conns[conn_id].ssl_handshake_done = 0;
     conns[conn_id].ssl_is_server = 0;
+    conns[conn_id].uring_send_in_flight = false;
+    conns[conn_id].pending_sf_head = 0;
+    conns[conn_id].pending_sf_count = 0;
+    conns[conn_id].closing = false;
 
     dw_log("CONN allocated, conn_id: %d\n", conn_id);
     conns[conn_id].curr_recv_buf = conns[conn_id].recv_buf;
@@ -303,13 +367,13 @@ int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
     conns[conn_id].curr_send_buf = conns[conn_id].send_buf;
     conns[conn_id].curr_send_size = 0;
     conns[conn_id].serialize_request = 0;
-    
-    ((message_t*) conns[conn_id].send_buf)->cmds[0].cmd = EOM;
-    ((message_t*) conns[conn_id].recv_buf)->cmds[0].cmd = EOM;
+
+    ((message_t *) conns[conn_id].send_buf)->cmds[0].cmd = EOM;
+    ((message_t *) conns[conn_id].recv_buf)->cmds[0].cmd = EOM;
 
     return conn_id;
 
- continue_free:
+continue_free:
 
     if (new_recv_buf)
         free(new_recv_buf);
@@ -324,16 +388,19 @@ unsigned char *get_send_buf(conn_info_t *pc, size_t size) {
     return pc->curr_send_buf + pc->curr_send_size;
 }
 
-message_t* conn_prepare_send_message(conn_info_t *conn) {
-    message_t* m = (message_t*) (conn->send_buf + conn->curr_send_size);
+message_t *conn_prepare_send_message(conn_info_t *conn) {
+    // When a send has drained part of the buffer but unsent data remains (e.g. an io_uring send still in flight),
+    // send_buf + curr_send_size lands inside the pending region and the new message would dirty data the kernel is still reading.
+    // TODO: add that this is more of an issue for io_uring
+    message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
     m->req_size = BUF_SIZE - (conn->curr_send_buf - conn->send_buf + conn->curr_send_size);
     return m;
 }
 
-message_t* conn_prepare_recv_message(conn_info_t *conn) {
+message_t *conn_prepare_recv_message(conn_info_t *conn) {
     dw_log("Check whether we have new or leftover messages to process...\n");
     unsigned long msg_size = conn->curr_recv_buf - conn->curr_proc_buf;
-    message_t *m = (message_t *)conn->curr_proc_buf;
+    message_t *m = (message_t *) conn->curr_proc_buf;
 
     if (msg_size < sizeof(message_t)) {
         dw_log("Got incomplete header [recv size:%lu, header size:%lu], need to recv() more...\n", msg_size, sizeof(message_t));
@@ -344,56 +411,86 @@ message_t* conn_prepare_recv_message(conn_info_t *conn) {
         dw_log("Got header but incomplete message [recv size:%lu, expected size:%d], need to recv() more...\n", msg_size, m->req_size);
         return NULL;
     }
+
+    dw_log("msg_size=%lu, req_size=%d\n", msg_size, m->req_size);
     assert(m->req_size >= sizeof(message_t) && m->req_size <= BUF_SIZE);
 
     dw_log("Got complete message of recv size:%lu (expected %d), ready to process\n", msg_size, m->req_size);
-#ifdef DW_DEBUG
+    #ifdef DW_DEBUG
     msg_log(m, "");
-#endif
+    #endif
 
     conn->curr_proc_buf += m->req_size;
     return m;
 }
 
 // start sending a message using sendfile, assume the head of the curr_send_buffer is a message_t type
-// returns the number of bytes sent, -1 if an error occured
-int conn_start_sendfile(conn_info_t *conn, struct sockaddr_in target, int fd_sendfile, off_t sendfile_offset, size_t sendfile_size) {
-    // prepare the Header (message_t)
-    message_t *m = (message_t*) conn->send_buf;
-    conn->target = target;
-    
-    m->req_size = sendfile_size;
+// returns the number of bytes sent, -1 if an error occurred
+int conn_start_sendfile(conn_info_t *conn, struct sockaddr_in target, int fd_sendfile,
+                        off_t sendfile_offset, size_t sendfile_size,
+                        dw_poll_t *p_poll) {
+    if (p_poll != NULL && p_poll->poll_type == DW_IOURING) {
+        dw_log("SENDFILE_URING: uring_send_in_flight=%d\n", conn->uring_send_in_flight);
 
+        if (conn->uring_send_in_flight) {
+            if (conn->pending_sf_count >= MAX_PENDING_SENDFILES) {
+                dw_log("SENDFILE_URING: pending queue full, dropping conn_id=%d\n",
+                       conn_get_id_by_ptr(conn));
+                errno = ENOBUFS;
+                return -1;
+            }
+            int slot = (conn->pending_sf_head + conn->pending_sf_count) % MAX_PENDING_SENDFILES;
+            conn->pending_sf[slot].fd = fd_sendfile;
+            conn->pending_sf[slot].offset = sendfile_offset;
+            conn->pending_sf[slot].size = sendfile_size;
+            conn->pending_sf[slot].target = target;
+            conn->pending_sf_count++;
+            dw_log("SENDFILE_URING: enqueued (queue depth=%d), conn_id=%d\n",
+                   conn->pending_sf_count, conn_get_id_by_ptr(conn));
+            conn_set_status(conn, SENDING);
+            return 0;
+        }
+    }
+
+    // prepare the Header (message_t)
+    message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
+    conn->target = target;
+    dw_log("SENDFILE starting, conn_id: %d, status: %s, msg_size: %d\n",
+            conn_get_id_by_ptr(conn), conn_status_str(conn->status), m->req_size);
+
+    m->req_size = sendfile_size;
 
     if (conn->curr_send_size == 0)
         conn->curr_send_buf = conn->send_buf;
-    
+
     // The amount of "buffer" data to send is just the size of the message_t header
     conn->curr_send_size = sizeof(message_t);
 
     // init the metadata
-    // we use the copied fd from the storage_worker_info (not using the PIPE fd for sendfile since it does not allow 'piped' file pointers)
+    // we use the copied fd from the storage_worker_info
+    // (not using the PIPE fd for sendfile since it does not allow 'piped' file pointers)
     conn->file_fd = fd_sendfile;
     conn->file_offset = sendfile_offset;
-    conn->file_remaining = sendfile_size - sizeof(message_t); // we consider the header as part of the file data to be sent, so we subtract its size from the remaining bytes to send
-    
+    conn->file_remaining = sendfile_size - sizeof(message_t);
+    // we consider the header as part of the file data to be sent,
+    // so we subtract its size from the remaining bytes to send
 
-    dw_log("SENDFILE starting, conn_id: %d, offset: %ld, size: %zu\n", 
-           conn_get_id_by_ptr(conn), sendfile_offset, sendfile_size);
-
-    // 3. Jump into the sending logic
+    // Jump into the sending logic
     if (conn->status == CONNECTING || conn->status == SSL_HANDSHAKE || conn->status == NOT_INIT)
         return 0;
-    
-    return conn_send_v2(conn);
+
+    return conn_send_v2(conn, p_poll, 0);
 }
 
 // start sending a message, assume the head of the curr_send_buffer is a message_t type
-// returns the number of bytes sent, -1 if an error occured
-int conn_start_send(conn_info_t *conn, struct sockaddr_in target) {
-    message_t *m = (message_t*) (conn->send_buf + conn->curr_send_size);
+// returns the number of bytes sent, -1 if an error occurred
+int conn_start_send(conn_info_t *conn, struct sockaddr_in target, dw_poll_t *p_poll) {
+    // see conn_prepare_send_message():
+    // the just-built message sits at the append point: curr_send_buf + curr_send_size.
+    message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
     conn->target = target;
-    dw_log("SEND starting, conn_id: %d, status: %s, msg_size: %d\n", conn_get_id_by_ptr(conn), conn_status_str(conn->status), m->req_size);
+    dw_log("SEND starting, conn_id: %d, status: %s, msg_size: %d\n",
+            conn_get_id_by_ptr(conn), conn_status_str(conn->status), m->req_size);
     if (conn->curr_send_size == 0)
         conn->curr_send_buf = conn->send_buf;
     // move end of send operation forward by size bytes
@@ -401,9 +498,21 @@ int conn_start_send(conn_info_t *conn, struct sockaddr_in target) {
 
     if (conn->status == CONNECTING || conn->status == SSL_HANDSHAKE || conn->status == NOT_INIT)
         return 0;
-    else
-        return conn_send(conn);
+
+    if (p_poll != NULL && p_poll->poll_type == DW_IOURING) {
+        dw_log("SEND_URING: uring_send_in_flight=%d\n", conn->uring_send_in_flight);
+
+        if (conn->uring_send_in_flight) {
+            errno = -EAGAIN;
+            return -1;
+        }
+    }
+
+    // io_uring: always part zero is fine as the outer loop will handle the CQEs
+    return conn_send(conn, p_poll, 0);
 }
+
+#ifdef SSL_ENABLED
 
 // wrapper for SSL write that first attempts the handshake in a non-blocking way
 static int conn_ssl_send(conn_info_t *conn) {
@@ -437,7 +546,7 @@ static int conn_ssl_send(conn_info_t *conn) {
         conn->curr_send_buf = conn->send_buf;
 
     pthread_mutex_unlock(&conn->ssl_mtx);
-    return (int)sent;
+    return (int) sent;
 }
 
 // wrapper for SSL read that first attempts the handshake in a non-blocking way
@@ -474,25 +583,50 @@ static int conn_ssl_recv(conn_info_t *conn) {
     return 1;
 }
 
-int conn_send(conn_info_t *conn) {
-    int sock = conn->sock;
-    dw_log("SEND conn_id=%d, status=%d (%s), curr_send_size=%lu, sock=%d\n", conn_get_id_by_ptr(conn), conn->status, conn_status_str(conn->status), conn->curr_send_size, sock);
+#endif
 
+int conn_send(conn_info_t *conn, dw_poll_t *p_poll, int part) {
+    int sock = conn->sock;
+
+    dw_log("SEND conn_id=%d, status=%d (%s), curr_send_size=%lu, sock=%d, in_flight=%d, part=%d\n",
+           conn_get_id_by_ptr(conn), conn->status, conn_status_str(conn->status),
+           conn->curr_send_size, sock, conn->uring_send_in_flight, part);
+
+
+    #ifdef SSL_ENABLED
     if (conn->use_ssl)
         return conn_ssl_send(conn);
+    #endif
 
-    ssize_t sent = sendto(sock, conn->curr_send_buf, conn->curr_send_size, MSG_NOSIGNAL, (const struct sockaddr*)&conn->target, sizeof(conn->target));
+    if (conn->curr_send_size == 0) {
+        dw_log("SEND with no data\n");
+        return 0;
+    }
+
+    const ssize_t sent = dw_sendto(p_poll, sock, part,
+                             i2l(SOCKET, conn_get_id_by_ptr(conn)),
+                             conn->curr_send_buf, conn->curr_send_size, MSG_NOSIGNAL,
+                             (const struct sockaddr *) &conn->target, sizeof(conn->target));
+    if (p_poll != NULL && p_poll->poll_type == DW_IOURING) {
+        if (part == 0)
+            conn->uring_send_in_flight = true;
+        if (part == 1)
+            conn->uring_send_in_flight = false;
+    }
+
     if (sent == 0) {
         // TODO: should not even be possible, ignoring
-        dw_log("SEND returned 0\n");
+        dw_log("SEND returned 0 (unreachable hopefully) --- --- --- \n");
         return 0;
     }
 
     if (sent == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             dw_log("SEND Got EAGAIN or EWOULDBLOCK, ignoring...\n");
+            // TODO: ensure this makes sense also in non-io_uring paths
+            conn_set_status(conn, SENDING);
             return 0;
-        } 
+        }
 
         if (errno == EPIPE || errno == ECONNRESET) {
             dw_log("SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
@@ -507,26 +641,134 @@ int conn_send(conn_info_t *conn) {
 
     conn->curr_send_buf += sent;
     conn->curr_send_size -= sent;
-    if (conn->curr_send_size == 0)
+    if (conn->curr_send_size == 0) {
         conn->curr_send_buf = conn->send_buf;
+        return (int) sent;
+    }
 
-    return (int)sent;
+    // If curr_send_size != 0 then other messages were appended to the send buffer in the meantime.
+    // Submit a fresh send for [curr_send_buf, curr_send_buf+curr_send_size).
+    if (p_poll != NULL && p_poll->poll_type == DW_IOURING && part == 1) {
+        dw_log("SEND_URING: %lu bytes queued after submit, re-arming SEND\n",
+               conn->curr_send_size);
+        conn_send(conn, p_poll, 0);
+    }
+
+    return (int) sent;
 }
 
 // this is the main sending loop for sendfile-based sending, called from conn_start_sendfile and also from DW_POLLOUT events when there is remaining data to send
-int conn_send_v2(conn_info_t *conn) {
+int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll, int part) {
+    dw_log("SENDv2 starting\n");
     int sock = conn->sock;
     ssize_t released = 0;
+
+    #ifdef IOURING_ENABLED
+    int is_uring = (p_poll && p_poll->poll_type == DW_IOURING);
+    if (is_uring) {
+        uint64_t aux = i2l(SOCKET, conn_get_id_by_ptr(conn));
+
+        if (part == 0) {
+            assert(conn->curr_send_size != 0);
+            assert(conn->uring_send_in_flight == false);
+            const ssize_t sent = dw_sendfile(p_poll, sock, 0, aux,
+                                         conn->curr_send_buf, conn->curr_send_size,
+                                         conn->file_fd, conn->file_offset,
+                                         conn->file_remaining);
+            if (sent == -1) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    conn_set_status(conn, SENDING);
+                    return 0;
+                }
+                if (errno == EPIPE || errno == ECONNRESET) {
+                    conn_set_status(conn, CLOSE);
+                    return -1;
+                }
+                dw_log("SENDFILE error: %s\n", strerror(errno));
+                return -1;
+            }
+
+            conn->uring_send_in_flight = true;
+            conn->file_remaining -= sent;
+            conn->file_offset += sent;
+
+            conn_set_status(conn, SENDING);
+            conn->curr_send_buf = conn->send_buf;
+            conn->curr_send_size = 0;
+            return 0;
+        }
+
+        if (part == 1) {
+            assert(conn->uring_send_in_flight == true);
+            conn->uring_send_in_flight = false;
+            ssize_t sent = dw_sendfile(p_poll, sock, 1, aux, NULL, 0, conn->file_fd, conn->file_offset, conn->file_remaining);
+
+            if (sent == -1) {
+                if (errno == EPIPE || errno == ECONNRESET) {
+                    conn->status = CLOSE;
+                    return -1;
+                }
+                dw_log("SENDFILE error: %s\n", strerror(errno));
+                return -1;
+            }
+
+            if (sent == 0) {
+                dw_log("SENDFILE complete for conn_id=%d\n", conn_get_id_by_ptr(conn));
+                conn->file_fd = -1;
+                conn->file_offset = 0;
+                conn->curr_send_buf = conn->send_buf;
+                conn_set_status(conn, READY);
+
+                // drain one pending sendfile if any was queued during in-flight send
+                if (conn->pending_sf_count > 0) {
+                    int h = conn->pending_sf_head;
+                    int pf_fd = conn->pending_sf[h].fd;
+                    off_t pf_off = conn->pending_sf[h].offset;
+                    size_t pf_size = conn->pending_sf[h].size;
+                    struct sockaddr_in pf_target = conn->pending_sf[h].target;
+                    conn->pending_sf_head = (h + 1) % MAX_PENDING_SENDFILES;
+                    conn->pending_sf_count--;
+                    dw_log("SENDFILE_URING: draining pending (remaining=%d), conn_id=%d\n",
+                           conn->pending_sf_count, conn_get_id_by_ptr(conn));
+                    int rv = conn_start_sendfile(conn, pf_target, pf_fd, pf_off, pf_size, p_poll);
+                    if (rv < 0)
+                        return -1;
+                    // new send is in flight; its own CQE will re-enter conn_flush(part=1).
+                    // return 1 so the caller treats prior op as cleanly finished
+                    // (dw_node's POLLIN re-arm is a no-op on io_uring anyway).
+                }
+                return 1;
+            }
+
+            conn->uring_send_in_flight = true;
+            conn->file_remaining -= sent;
+            conn->file_offset += sent;
+
+            conn_set_status(conn, SENDING);
+            conn->curr_send_buf = conn->send_buf;
+            conn->curr_send_size = 0;
+            return 0;
+        }
+
+        errno = EINVAL;
+        return -1;
+    }
+    #endif
+    (void) part; // on epoll/poll/select, part==0 and part==1 share the syscall path
 
     // PHASE 1: Send the header (blocking until header is fully sent, then move on to sendfile)
     while (conn->curr_send_size > 0) {
         // Use MSG_MORE to tell the kernel: "Don't flush the packet yet, file data is coming!"
-        ssize_t sent = send(sock, conn->curr_send_buf, conn->curr_send_size, 
+        ssize_t sent = send(sock, conn->curr_send_buf, conn->curr_send_size,
                             MSG_NOSIGNAL | MSG_MORE);
-        
+
         if (sent <= 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) continue; // try again until we can send the header
-            if (errno == EPIPE || errno == ECONNRESET) { conn->status = CLOSE; return -1; }
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                continue; // try again until we can send the header
+            if (errno == EPIPE || errno == ECONNRESET) {
+                conn->status = CLOSE;
+                return -1;
+            }
         }
 
         conn->curr_send_buf += sent;
@@ -542,11 +784,13 @@ int conn_send_v2(conn_info_t *conn) {
         if (released == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 dw_log("sendfile Got EAGAIN or EWOULDBLOCK, ignoring...\n");
-                conn_set_status(conn, SENDING); // indicates that we are in the middle of sending and need to wait for next DW_POLLOUT
-                return 0; 
+                conn_set_status(conn, SENDING);
+                // indicates that we are in the middle of sending and need to wait for next DW_POLLOUT
+                return 0;
             }
             if (errno == EPIPE || errno == ECONNRESET) {
-                dw_log("sendfile failed, connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
+                dw_log("sendfile failed, connection closed by remote end conn_id=%d\n",
+                        conn_get_id_by_ptr(conn));
                 conn->status = CLOSE;
                 return -1;
             }
@@ -557,14 +801,16 @@ int conn_send_v2(conn_info_t *conn) {
 
 
             if (conn->file_remaining > 0) {
-            
                 conn_set_status(conn, SENDING);
-                dw_log("\tsendfile sent %zd bytes, new offset: %ld, REMAINING: %zu, status: %s\n", released, conn->file_offset, conn->file_remaining, conn_status_str(conn_get_status(conn)));
+                dw_log("\tsendfile sent %zd bytes, new offset: %ld, REMAINING: %zu, status: %s\n",
+                        released, conn->file_offset, conn->file_remaining,
+                        conn_status_str(conn_get_status(conn)));
 
-                return 0; // return 0 to wait for next DW_POLLOUT if there is still remaining data to send
+                // return 0 to wait for next DW_POLLOUT if there is still remaining data to send
+                return 0;
             }
-            dw_log("sendfile sent %zd bytes, new offset: %ld, REMAINING: %zu, status: %s\n", released, conn->file_offset, conn->file_remaining, conn_status_str(conn_get_status(conn)));
-
+            dw_log("sendfile sent %zd bytes, new offset: %ld, REMAINING: %zu, status: %s\n", released, conn->file_offset, conn->file_remaining,
+                   conn_status_str(conn_get_status(conn)));
         }
     }
 
@@ -584,15 +830,28 @@ int conn_send_v2(conn_info_t *conn) {
 }
 
 // return 1 if received succesfully, -1 on EAGAIN or EWOULDBLOCK, and 0 on other errors
-int conn_recv(conn_info_t *conn) {
+int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
     int sock = conn->sock;
     socklen_t recvsize = sizeof(conn->target);
 
+    #ifdef SSL_ENABLED
     if (conn->use_ssl)
         return conn_ssl_recv(conn);
+    #endif
 
-    ssize_t received = recvfrom(sock, conn->curr_recv_buf, conn->curr_recv_size, 0,
-                               (struct sockaddr*)&conn->target, (socklen_t*)&recvsize);
+    ssize_t received;
+    // TODO: remove this IF (?only? client passes NULL to poll)
+    if (p_poll == NULL) {
+        // dw_client and other contexts without a poll backend bypass the
+        // registered-buffer machinery and recv directly into curr_recv_buf.
+        received = recvfrom(sock, conn->curr_recv_buf, conn->curr_recv_size, 0,
+                            (struct sockaddr *) &conn->target, &recvsize);
+    } else {
+        void *chunk = NULL;
+        received = dw_recvfrom(p_poll, sock, &chunk, 0,
+                               (struct sockaddr *) &conn->target, &recvsize);
+        assert(received <= 0 || chunk == conn->curr_recv_buf);
+    }
     dw_log("RECV returned: %d\n", (int)received);
     if (received == 0) {
         dw_log("RECV connection closed by remote end\n");
@@ -611,14 +870,14 @@ int conn_recv(conn_info_t *conn) {
 }
 
 
-int conn_flush(conn_info_t *conn)
-{
+int conn_flush(conn_info_t *conn, dw_poll_t *p_poll, int part) {
     if (conn->reply_mode == REPLY_MODE_NORMAL)
-        return conn_send(conn);
+        return conn_send(conn, p_poll, part);
 
     if (conn->reply_mode == REPLY_MODE_SENDFILE)
-        return conn_send_v2(conn);
+        return conn_send_v2(conn, p_poll, part);
 
+    dw_log("conn_flush(): reply_mode was neither NORMAL nor SENDFILE ..?\n");
     return -1;
 }
 
