@@ -10,6 +10,9 @@ TODO
 
 - [ ] review all uses of queue.h to account for data_prt freeing
 - [ ] test_client_opts: `date %s` ha rounding che può farlo fallire a caso 
+- [ ] conns are not freeing nor anything (busy stays at 1)
+
+- [ ] check consumed_since_submit
 
 ## Flavour
 

@@ -29,41 +29,9 @@ typedef enum {
 #define MAX_POLLFD 8192
 #define MAX_POLL_EVENTS 16
 
-/*
- * Per-fd buffers.
- * io_uring needs to know which buffer the kernel should write into before the call to dw_sendto/dw_recvfrom.
- * Other poll modes are adapted to use the same interface.
- *
- * If a fd is registered with a NULL buffer then it is interpreted by io_uring as POLL type.
- * See dw_poll_arm_pollin for more.
- *
- * write_off is the current write head into buffer[0..buffer_len).
- * It advances on each successful dw_recvfrom() and is rewound by callers via dw_poll_set_buffer_offset().
- */
-typedef struct {
-    int fd;
-
-    // recv scratch
-    char *buffer;
-    size_t buffer_len;
-    size_t write_off;
-    size_t last_off;
-
-    // accept scratch
-    struct sockaddr_storage accept_addr;
-    socklen_t accept_addrlen;
-
-    // sendfile scratch
-    void *sendfile_buf;
-    size_t sendfile_buf_len;
-    unsigned int sendfile_buf_index;
-} dw_poll_fd_buf_t;
-
 typedef struct {
     dw_poll_type_t poll_type;
     int use_spinning; // 1 = busy-poll, 0 blocking wait
-    dw_poll_fd_buf_t fd_bufs[MAX_POLLFD];
-    int n_fd_bufs;
 
     union {
         struct {
@@ -127,18 +95,8 @@ typedef enum {
 int dw_poll_init(dw_poll_t *p_poll, dw_poll_type_t type, int use_spinning);
 
 // add fd to the list of monitored fds, with associated custom data aux.
-// buffer/buffer_len register where reads for this fd should land (see dw_poll_fd_buf_t).
-// Pass NULL/0 for fds without a recv buffer(listen, timer, signal, eventfd).
-int dw_poll_add(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux,
-                char *buffer, size_t buffer_len);
-
-// look up the per-fd buffer registration (NULL if fd not registered).
-dw_poll_fd_buf_t *dw_poll_get_fd_buf(dw_poll_t *p_poll, int fd);
-
-// rewind / advance the registered write head for fd. Used after defrag
-// memmoves consumed bytes out of the buffer. Returns 0 on success, -1 if
-// fd is not registered.
-int dw_poll_set_buffer_offset(dw_poll_t *p_poll, int fd, size_t new_off);
+// TODO: desc
+int dw_poll_add(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux, int conn_id);
 
 #ifdef IOURING_ENABLED
 // Last CQE emitted by dw_poll_next() (NOT yet marked seen). Used by dw_io

@@ -29,7 +29,7 @@ client -C 1000 -F localhost:7895 -C 2000 &> $TMP_C0 &
 sleep 1
 
 kill_all SIGINT
-cat $TMP_N0 | grep -q "Connection to remote peer refused, conn_id=1"
+cat $TMP_N0 | grep -q "Connection to remote peer refused, conn_id=2"
 
 #
 TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
