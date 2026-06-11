@@ -35,7 +35,6 @@
 #include "request.h"
 #include "connection.h"
 #include "address_utils.h"
-#include "dw_dpdk.h"
 #include "dw_io.h"
 #include "dw_poll.h"
 #include "dw_event.h"
