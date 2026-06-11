@@ -28,7 +28,8 @@ int dw_poll_init(dw_poll_t *p_poll, dw_poll_type_t type, int use_spinning) {
             break;
         case DW_IOURING:
             #ifdef IOURING_ENABLED
-            int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SQPOLL);
+            // int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SQPOLL);
+            int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SINGLE_ISSUER | IORING_SETUP_DEFER_TASKRUN | IORING_SETUP_COOP_TASKRUN);
             if (rv < 0) {
                 errno = -rv;
                 sys_check(rv);
