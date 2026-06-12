@@ -133,6 +133,50 @@ with no interrupt or file-descriptor the thread could block on.
 .BR --nano
 Output response times in nanoseconds instead of the default microseconds.
 
+
+.TP
+.BR -o , \ \--output \fR= \fIoutput-spec\fR
+.TQ
+.BR \--output-file = \fIoutput-spec\fR
+Write per-message response time results to an output file instead of printing them on standard output.
+
+The
+.I output-spec
+argument is a comma-separated list containing one output file name and optional output parameters. The file name and parameters may be specified in any order.
+
+The output format is selected from the file extension. Supported extensions are
+.BR .csv
+and
+.BR .txt.
+
+The optional
+.BR sep=
+parameter sets the field separator. The separator must be a single character. The default separator is a comma.
+
+The optional
+.B header=
+parameter enables or disables a header line. Accepted values are
+.BR true ,
+.BR false ,
+.BR 1
+and
+.BR 0.
+This parameter is only valid for CSV output.
+
+For CSV output, each result line contains the following fields, in order:
+.BR t ,
+.BR elapsed ,
+.BR req_id ,
+.BR thr_id ,
+and
+.BR sess_id.
+
+For TXT output, the same fields are written in a labelled text format.
+
+Time values are expressed in microseconds by default, or in nanoseconds when
+.B --nano
+is used.
+
 .TP
 .BR -C,\ \--comp-time = \fIusec_spec\fR
 Add to the sequence of operations submitted per-request to the server a
