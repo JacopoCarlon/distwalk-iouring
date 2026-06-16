@@ -513,6 +513,7 @@ void *thread_receiver(void *data) {
                 command_t *p_cmd = message_first_cmd(m);
                 if (p_cmd->cmd == EOM && m->req_size > msg_size) {
                     /* long REPLY case */
+                    //TODO: should this use cmd_bounded_next ?
                     command_t *p_next = cmd_next(p_cmd);
                     size_t diff = conn->curr_recv_buf - (unsigned char*)p_next;
                     m->req_size -= diff;
