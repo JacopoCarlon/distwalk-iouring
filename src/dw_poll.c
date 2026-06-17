@@ -491,7 +491,7 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                     continue;
                 }
 
-                if (conn) dw_log("conn->uring_aux=%d\n", conn->uring_aux);
+                if (conn) dw_log("conn->uring_aux=%ld\n", conn->uring_aux);
                 *aux = conn ? conn->uring_aux : cqe_aux;
                 *flags = 0;
 

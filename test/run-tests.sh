@@ -33,6 +33,8 @@ run_test() {
     fi
 }
 
+SKIP_URING_RE='test_poll_mode\.sh$|test_ssl\.sh$'
+
 for test in "${TESTS[@]}"; do
     if [[ "$test" == *dpdk* ]]; then
         for mode in veth vf; do
@@ -40,6 +42,9 @@ for test in "${TESTS[@]}"; do
         done
     else
         run_test "$test" "$test"
+        if ! [[ "$test" =~ $SKIP_URING_RE ]]; then
+            POLL_MODE=uring run_test "$test" "$test (poll-mode=uring)"
+        fi
     fi
 done
 

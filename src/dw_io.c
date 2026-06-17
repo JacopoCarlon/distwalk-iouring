@@ -156,7 +156,7 @@ ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struc
 
         if (conn->defer_defrag > 0) {
             if (res > 0) {
-                dw_log("DEFER_DEFRAG: moved new data backwards by %d", conn->defer_defrag);
+                dw_log("DEFER_DEFRAG: moved new data backwards by %lu", conn->defer_defrag);
                 memmove(conn->curr_recv_buf, conn->curr_recv_buf + conn->defer_defrag, res);
             }
             conn->defer_defrag = 0;
