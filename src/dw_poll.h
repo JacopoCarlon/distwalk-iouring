@@ -84,6 +84,7 @@ typedef enum {
     DW_URING_OP_CANCEL = 4, // internal: fd-removal cancel; never a dispatcher event
     DW_URING_OP_SENDFILE = 5,
     DW_URING_OP_SENDFILE_FAILED = 6,
+    DW_URING_OP_POLL_CONNECTING = 7,
 } dw_uring_op_t;
 
 #define DW_URING_AUX_MASK   ((1ULL << 60) - 1)

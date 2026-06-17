@@ -52,16 +52,7 @@ int dw_poll_init(dw_poll_t *p_poll, dw_poll_type_t type, int use_spinning) {
 static int dw_uring_arm_pollin(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux, conn_info_t *conn) {
     assert(flags & DW_POLLIN);
 
-    struct io_uring_sqe *sqe = io_uring_get_sqe(&p_poll->u.iouring_fds.ring);
-    if (!sqe) {
-        // if the SQ full, enter and retry
-        io_uring_submit(&p_poll->u.iouring_fds.ring);
-        sqe = io_uring_get_sqe(&p_poll->u.iouring_fds.ring);
-        if (!sqe) {
-            errno = EAGAIN;
-            return -1;
-        }
-    }
+    struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
 
     // prepare an accept
     if (flags & DW_ACCEPT) {
@@ -73,6 +64,13 @@ static int dw_uring_arm_pollin(dw_poll_t *p_poll, int fd, dw_poll_flags flags, u
     }
 
     if (conn) {
+        if (conn->status == NOT_INIT || conn->status == CONNECTING) {
+            // oneshot recv into the registered buffer at the current write head
+            io_uring_prep_poll_add(sqe, fd, POLLOUT);
+            io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_POLL_CONNECTING, conn_get_id_by_ptr(conn)));
+            return 0;
+        }
+
         // oneshot recv into the registered buffer at the current write head
         io_uring_prep_recv(sqe, fd, conn->curr_recv_buf, conn->curr_recv_size, 0);
         io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_RECV, conn_get_id_by_ptr(conn)));
@@ -265,7 +263,12 @@ int dw_poll_mod(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux) {
                 }
             }
 
-            // POLLIN/POLLOUT mods are no-ops, see dw_poll_add
+            const int index = conn_find_sock(fd);
+            if (index != -1) {
+                conns[index].uring_aux = aux;
+                if (flags & DW_POLLIN)
+                    dw_uring_arm_pollin(p_poll, fd, DW_POLLIN, aux, &conns[index]);
+            }
             #else
             check(0, "DW_IOURING used without IOURING_ENABLED");
             #endif
@@ -489,6 +492,24 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                     }
 
                     continue;
+                }
+
+                if (cqe_op == DW_URING_OP_POLL) {
+                    int stored_fd;
+                    event_t _;
+                    l2i(cqe_aux, &_, (uint32_t *) &stored_fd);
+                    dw_uring_arm_pollin(p_poll, stored_fd, DW_POLLIN, cqe_aux, NULL);
+                    io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
+                }
+
+                if (cqe_op == DW_URING_OP_POLL_CONNECTING) {
+                    assert(conn);
+                    *aux = conn->uring_aux;
+                    *flags = DW_POLLOUT;
+                    if (cqe->res < 0) *flags |= DW_POLLERR;
+                    io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
+                    p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter] = NULL;
+                    return 1;
                 }
 
                 if (conn) dw_log("conn->uring_aux=%ld\n", conn->uring_aux);
