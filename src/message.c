@@ -176,7 +176,7 @@ command_t* message_copy_tail(message_t *m, message_t *m_dst, command_t *cmd) {
         itr = cmd_bounded_skip(itr, 1, msg_end);
     //assert(itr->cmd != EOM);
 
-    if (!cmd_in_bounds(itr, msg_end))
+    if (!itr || !cmd_in_bounds(itr, msg_end))
         return NULL;
 
     int cmds_len = ((unsigned char*)itr + cmd_type_size(itr->cmd)) - (unsigned char*)cmd;
