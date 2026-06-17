@@ -497,7 +497,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
 
     if (conn_start_send(fwd_conn, addr) < 0)
         return NULL;
-    
+
     if (req->fwd_timeout) {
         insert_timeout(infos, req->req_id, p_poll, req->fwd_timeout);
     }
@@ -865,7 +865,6 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
         case STORE:
         case LOAD: {
             storage_req_t w = { .worker_id = infos->worker_id, .req_id = req->req_id };
-            // int cmds_len = ((unsigned char*)cmd_next(cmd) - (unsigned char*)cmd);
             int cmds_len = cmd_type_size(cmd->cmd);
             memcpy(&w.cmd, cmd, cmds_len);
 
@@ -887,7 +886,7 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
             if (cmd->cmd == STORE && !cmd_get_opts(store_opts_t, cmd)->wait_sync)
                 break;
 
-            req->curr_cmd = cmd_next(cmd);
+            req->curr_cmd = cmd_bounded_next(cmd, msg_end);
             return 0;
         }
         default:
@@ -1132,7 +1131,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
                     while (itr && itr->cmd != EOM && itr->cmd != REPLY)
                         itr = cmd_bounded_skip(itr, 1, msg_end);
 
-                    if (!cmd_in_bounds(itr, msg_end) || itr->cmd == EOM) { // brutal
+                    if (!itr || !cmd_in_bounds(itr, msg_end) || itr->cmd == EOM) { // brutal
                         close_and_forget(p_poll, pending_conn->sock);
                     } else { // graceful
                         tmp->curr_cmd = itr;

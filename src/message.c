@@ -179,7 +179,7 @@ command_t* message_copy_tail(message_t *m, message_t *m_dst, command_t *cmd) {
     if (!cmd_in_bounds(itr, msg_end))
         return NULL;
 
-    int cmds_len = ((unsigned char*)cmd_next(itr) - (unsigned char*)cmd);
+    int cmds_len = ((unsigned char*)itr + cmd_type_size(itr->cmd)) - (unsigned char*)cmd;
 
     command_t * dst_itr = message_first_cmd(m_dst);
     if (m_dst->req_size < cmds_len + cmd_type_size(EOM)) // Check if enough space for EOM delimiter
@@ -189,7 +189,7 @@ command_t* message_copy_tail(message_t *m, message_t *m_dst, command_t *cmd) {
     command_t* end_command = (command_t*)((unsigned char*)dst_itr + cmds_len);
     end_command->cmd = EOM;
     
-    m_dst->req_size = (unsigned char*)cmd_next(end_command) - (unsigned char*)m_dst;
+    m_dst->req_size = ((unsigned char*)end_command + cmd_type_size(end_command->cmd)) - (unsigned char*)m_dst;
     //int skipped_len = ((unsigned char*)cmd - (unsigned char*)message_first_cmd(m));
     //m_dst->req_size = min(m_dst->req_size, m->req_size - skipped_len);
     return itr;

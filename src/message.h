@@ -106,7 +106,7 @@ static inline bool cmd_in_bounds(command_t *cmd, void *msg_end) {
     const char *end = msg_end;
 
     // the header must be in bounds before we can read cmd->cmd
-    if (start + sizeof(command_t) >= end)
+    if (start + sizeof(command_t) > end)
         return false;
 
     // then the opts need to be in bounds
