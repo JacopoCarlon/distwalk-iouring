@@ -1341,7 +1341,6 @@ void *conn_worker(void *args) {
             if (s < 0)
                 continue;
             const int conn_id = conn_find_sock(s);
-            assert(conn_id == 0);
             conn_info_t *conn = conn_get_by_id(conn_id);
             assert(conn);
 
@@ -1351,7 +1350,7 @@ void *conn_worker(void *args) {
             else // UDP
                 aux = i2l(SOCKET, conn_id);
 
-            check(dw_poll_add(&infos->dw_poll, s, DW_POLLIN | DW_ACCEPT, aux, 0) == 0);
+            check(dw_poll_add(&infos->dw_poll, s, DW_POLLIN | DW_ACCEPT, aux, conn_id) == 0);
         }
     }
 
@@ -1459,7 +1458,8 @@ void *conn_worker(void *args) {
                 int conn_sock;
                 struct sockaddr_in addr;
                 socklen_t addrlen = sizeof(addr);
-                sys_check(conn_sock = dw_accept(&infos->dw_poll, 0, &addr, &addrlen));
+                int listen_conn_id = conn_find_sock(event_data);
+                sys_check(conn_sock = dw_accept(&infos->dw_poll, listen_conn_id, &addr, &addrlen));
 
                 dw_log("Accepted connection from: %s:%d\n",
                        inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
