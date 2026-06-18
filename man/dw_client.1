@@ -19,7 +19,7 @@ server. It supports multiple connection modes, protocol types, request compositi
 .BR --to "=[" \fIproto\fR: "[" // "]][" \fIhost\fR "][" :\fIport\fR "]  |  dpdk://" \fIMAC\fR
 Set the target node host (hostname or IP), port and protocol (one of \fBtcp\fR, \fBudp\fR, \fBssl\fR or \fBdpdk\fR). All elements can be specified or not: \fIproto\fR defaults to \fBtcp\fR, \fIhost\fR defaults to \fBlocalhost\fR, and \fIport\fR defaults to \fB7891\fR.
 Note: if the specified protocol is
-.B ssl,
+.BR ssl ,
 then the
 .B --non-block
 option is forced.
@@ -34,11 +34,11 @@ with the target, bypassing the kernel network stack; the DPDK port used for TX/R
 .B --bind-addr\fR.
 
 .TP
-.BR -b,\ --bind-addr "=" \fIhost\fR "[" :\fIport\fR "]"
+.BR -b , \ --bind-addr "=" \fIhost\fR "[" :\fIport\fR "]"
 .TQ
-.BR -b,\ --bind-addr "=" :\fIport\fR
+.BR -b , \ --bind-addr "=" :\fIport\fR
 .TQ
-.BR -b,\ --bind-addr "=dpdk://[" \fIiface\fR | \fIpci\fR "]"
+.BR -b , \ --bind-addr "=dpdk://[" \fIiface\fR | \fIpci\fR "]"
 Set explicitly the bind address or name, and the bind port, for the client.
 
 When the
@@ -51,13 +51,13 @@ PMD, no hugepages needed) or a PCI address (e.g., \fB0000:04:00.0\fR) to be boun
 .B --to=dpdk://\fIMAC\fR\fR.
 
 .TP
-.BR -n,\ \--num-pkts = \fIn\fR|\fIauto\fR
+.BR -n , \ \--num-pkts = \fIn\fR|\fIauto\fR
 Set the number of requests sent by each thread (across all sessions). The special string \fBauto\fR can be used when the number of packets are implicitly defined, i.e., when generating inter-arrival times from a sequence, or reading them from a file.
 
 .TP
-.BR --ns,\ \--num-sessions = \fIn\fR
+.BR --ns , \ \--num-sessions = \fIn\fR
 Set the number of sessions each client thread establishes with the (initial) distwalk node. The overall number of requests to be submitted, specified with
-.B -n,
+.BR -n ,
 is evenly split across the various sessions. If this option is not used, each thread submits its overall number of requests within a single session.
 
 This option is implicitly forced to 1 when the client is bound to a
@@ -67,33 +67,33 @@ address: DPDK does not open a socket per session — it attaches once to the NIC
 requests are submitted within the single DPDK attachment.
 
 .TP
-.BR --pso,\ \--per-session-output
+.BR --pso , \ \--per-session-output
 Let the client output the response times obtained for each session, at the end of the session, rather than at the end of the program. This implies some extra delay between sessions, but it requires the client to save on the needed memory.
 
 .TP
-.BR -i,\ \--interactive-pso
-Flush client output to stdout at the end of each session for interactive monitoring; Available only with \fB--pso, --per-session-output\fR. This implies some extra delay between sessions, since it triggers a \fBwrite\fR syscall in-between.
+.BR -i , \ \--interactive-pso
+Flush client output to stdout at the end of each session for interactive monitoring; Available only with \fB--pso\fR, \fB--per-session-output\fR. This implies some extra delay between sessions, since it triggers a \fBwrite\fR syscall in-between.
 
 .TP
 .BR --ps = \fInbytes_spec\fR
 Set the payload size of the sent requests, or their probability distribution (see below for details on how to specify distributions).
 
 .TP
-.BR --nt,\ \--num-threads = \fIn\fR
+.BR --nt , \ \--num-threads = \fIn\fR
 Set the number of client threads, corresponding to parallel sessions that are opened with the (initial) distwalk node, each submitting the overall number of requests as specified with
-.B -n.
+.BR -n .
 If this option is not used, only one thread will be submitting requests.
 
 .TP
-.BR -p,\ \--period = \fIusec_spec\fR
+.BR -p , \ \--period = \fIusec_spec\fR
 Set the inter-spacing period to be used by each sender thread, between submitting two consecutive requests.
 
 .TP
-.BR --rss,\ \--rate-step-secs = \fIsec\fR
+.BR --rss , \ \--rate-step-secs = \fIsec\fR
 Set the duration of each rate-step, in seconds.
 
 .TP
-.BR -r,\ \--rate = \fInpkt\fR
+.BR -r , \ \--rate = \fInpkt\fR
 Set the packet sending rate (in pkts per sec).
 
 .TP
@@ -107,7 +107,7 @@ Add also the
 times to the final report output by the client.
 
 .TP
-.BR --nd\ \--no-delay = 0 | 1
+.BR --nd , \ \--no-delay = 0 | 1
 Enable or disable the
 .B TCP_NODELAY
 socket option (default is enabled).
@@ -120,7 +120,7 @@ This is done by setting the socket in
 mode.
 
 .TP
-.BR --ws,\ \--wait-spin
+.BR --ws , \ \--wait-spin
 Tell each client thread to perform a busy-wait loop instead of blocking, while waiting till the point in time in which the next request is to be sent.
 
 This option is implicitly forced on when the client is bound to a
@@ -147,7 +147,7 @@ argument is a comma-separated list containing one output file name and optional 
 The output format is selected from the file extension. Supported extensions are
 .BR .csv
 and
-.BR .txt.
+.BR .txt .
 
 The optional
 .BR sep=
@@ -160,7 +160,7 @@ parameter enables or disables a header line. Accepted values are
 .BR false ,
 .BR 1
 and
-.BR 0.
+.BR 0 .
 This parameter is only valid for CSV output.
 
 For CSV output, each result line contains the following fields, in order:
@@ -169,7 +169,7 @@ For CSV output, each result line contains the following fields, in order:
 .BR req_id ,
 .BR thr_id ,
 and
-.BR sess_id.
+.BR sess_id .
 
 For TXT output, the same fields are written in a labelled text format.
 
@@ -178,7 +178,7 @@ Time values are expressed in microseconds by default, or in nanoseconds when
 is used.
 
 .TP
-.BR -C,\ \--comp-time = \fIusec_spec\fR
+.BR -C , \ \--comp-time = \fIusec_spec\fR
 Add to the sequence of operations submitted per-request to the server a
 .B COMPUTE
 operation, with the specified processing time or processing time distribution (see specifying distributions below). The way this is implemented on the node side may or may not be affected by CPU frequency switches; see the
@@ -188,9 +188,9 @@ option of
 for details.
 
 .TP
-.BR -L,\ \--load-data "=\fInbytes_spec\fR"
+.BR -L , \ \--load-data "=\fInbytes_spec\fR"
 .TQ
-.BR -L,\ \--load-data "=[\fBoffset=[\fR\fInbytes_spec\fR\fB]\fR,]\fBsize=[\fR\fInbytes_spec\fR\fB]\fR"
+.BR -L , \ \--load-data "=[\fBoffset=[\fR\fInbytes_spec\fR\fB]\fR,]\fBsize=[\fR\fInbytes_spec\fR\fB]\fR"
 Add a
 .B LOAD
 operation to the submitted per-request operations list, with the given data payload size specification, in bytes, and optionally the given offset specification (see below for details on how to specify distributions). If the offset is not given, then the latest default set with the
@@ -204,9 +204,9 @@ Set the offset to be used, or the distribution it has to be drawn from, for the 
 operations.
 
 .TP
-.BR -S,\ \--store-data = \fInbytes_spec\fR
+.BR -S , \ \--store-data = \fInbytes_spec\fR
 .TQ
-.BR -S,\ \--store-data "=[[no]sync,]\fBsize=[\fR\fInbytes_spec\fR\fB]\fR"
+.BR -S , \ \--store-data "=[[no]sync,]\fBsize=[\fR\fInbytes_spec\fR\fB]\fR"
 Add to the per-request operations list to be submitted a
 .B STORE
 operation, with the given payload size specification, in bytes, and optionally the given offset specification (see below for details on how to specify distributions). If the offset is not given, then the latest default set with the
@@ -220,13 +220,13 @@ Set the offset value, or its distribution, for the subsequent
 operations.
 
 .TP
-.BR -F,\ \--forward "=[" \fIproto\fR ://"]" \fIdest\fR "[," \fIdest2\fR ",...][,timeout=\fIusec\fR][,retry=\fIn\fR][,branch][,nack=\fIn\fR]"
+.BR -F , \ \--forward "=[" \fIproto\fR ://"]" \fIdest\fR "[," \fIdest2\fR ",...][,timeout=\fIusec\fR][,retry=\fIn\fR][,branch][,nack=\fIn\fR]"
 Add a
 .B FORWARD
 operation to the submitted per-request operations list, specifying the destination(s) to forward to, the timeout to wait for, and the number of retries in case of failure to receive the
 .B REPLY
 to the
-.B FORWARD.
+.BR FORWARD .
 Each destination is an
 .I ip:port
 pair for TCP/UDP forwards, or a
@@ -234,7 +234,7 @@ pair for TCP/UDP forwards, or a
 address (colon-separated, 6 bytes) when
 .I proto
 is
-.B dpdk.
+.BR dpdk .
 The host and port specification have defaults similarly to the \fB--to\fR option.
 Note: DPDK forwards are only supported when the forwarding
 .B dw_node
@@ -252,7 +252,7 @@ option allows for customizing the number of acknowledgements to wait for, before
 responses, to move on. This is useful to emulate the typical behavior of distributed quorum-based protocols.
 
 Normally, when multiple ip:port are specified, the FORWARD messages are sent identical to all the peers, and are extracted starting from the operation following the FORWARD, to the matching
-.B REPLY.
+.BR REPLY .
 However, if the
 .B branch
 option is used, then different messages can be forwarded to the different peers, and they have to be specified each as a FORWARD operation matching its own REPLY. For example:
@@ -260,7 +260,7 @@ option is used, then different messages can be forwarded to the different peers,
 .B dw_client -F ip1:p1,branch -C 10ms -R -F ip2:p2,branch -C 20ms -R
 
 .TP
-.BR -R,\ \--rs [ = \fI[sendfile,]nbytes_spec]\fR
+.BR -R , \ \--rs [ = \fI[sendfile,]nbytes_spec]\fR
 Add to the list of per-request operations to be submitted a
 .B REPLY
 command, optionally specifying the payload size, in bytes (see below for details on how to specify distributions), or enabling the use of sendfile to perform a joined LOAD+REPLY operation. The
@@ -293,20 +293,20 @@ and a binary built with
 Set the number of connection retries by the client to the (initial) node in case of failure. If unused, defaults to 0. When the maximum number of retries is reached with still
 .B connect()
 failure, the whole session is considered aborted, but the next session will start to connect() if there is more than 1 session configured (see
-.B --ns).
+.BR --ns ).
 
 .TP
 .BR --retry-period = \fImsec\fR
 Set the interval between subsequent connection retries, in milliseconds.
 
 .TP
-.BR -s,\ \--skip = \fIn\fR [,prob=\fIval\fR][,every=\fIm\fR]
+.BR -s , \ \--skip = \fIn\fR [,prob=\fIval\fR][,every=\fIm\fR]
 Skip the next
 .I n
 commands with probability val (defaults to 1.0 if unspecified), every m requests (defaults to 1 if unspecified).
 
 .TP
-.BR -f,\ \--script-filename = \fIfile\fR
+.BR -f , \ \--script-filename = \fIfile\fR
 Read the sequence of commands to be submitted per-request operations list, as well as other
 .B dw_client
 options, from the specified script file, as though its contents were added to the command-line in the point where this option is used. This can be intermixed with other regular command-line options.
@@ -327,9 +327,9 @@ Just use a number, optionally with
 or
 .B m
 suffixes to shorten thousands and millions, respectively. For time quantities, the default unit is microseconds. Suffixes
-.B ns,
-.B us,
-.B ms
+.BR ns ,
+.BR us ,
+.BR ms
 or
 .B s
 allow for more readable time formats.
@@ -363,7 +363,7 @@ Supported formats include:
 Samples are drawn from a uniform distribution between
 .B a
 and
-.B b.
+.BR b .
 .PP
 Example:
 .nf
@@ -396,7 +396,7 @@ truncate the distribution.
 Samples are drawn from a LogNormal distribution. You may specify parameters of the supporting Gaussian distribution using
 .B xval
 and
-.B xstd.
+.BR xstd .
 Truncation with
 .B min=
 and
@@ -429,7 +429,7 @@ Samples are picked from an arithmetic progression starting at
 and increasing by 1 or the specified step
 .B s-val
 until reaching
-.B b.
+.BR b .
 Negative steps allow ramp-down patterns.
 .PP
 Example:
@@ -445,7 +445,7 @@ Samples are picked from a geometric progression starting at
 and multiplying by the specified step
 .B s-val
 each time (defaults to 2), up to
-.B b.
+.BR b .
 The step may be less than 1 for decreasing sequences.
 .RE
 
