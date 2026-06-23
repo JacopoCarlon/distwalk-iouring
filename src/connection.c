@@ -122,6 +122,7 @@ req_info_t *conn_req_add(conn_info_t *conn) {
 }
 
 static void conn_reset(conn_info_t *conn) {
+    dw_log("conn_reset: just entered\n");
     for (int i = 0; i < MAX_CONNS; i++)
         for (req_info_t *temp = conns[i].req_list; temp != NULL; temp = temp->next) {
             dw_log("conn_reset(%d): conn: %d, req_id: %d, .conn_id: %d -> ",
@@ -146,6 +147,7 @@ static void conn_reset(conn_info_t *conn) {
 }
 
 req_info_t *conn_req_remove(conn_info_t *conn, req_info_t *req) {
+    dw_log("conn_req_remove: just entered\n");
     // skip defrag if message_ptr is outside recv_buf (DPDK zero-copy from mbuf)
     if (conn->enable_defrag && req->message_ptr >= conn->recv_buf && req->message_ptr < conn->recv_buf + BUF_SIZE) {
         unsigned long req_size = req_get_message(req)->req_size;
@@ -172,6 +174,7 @@ req_info_t *conn_req_remove(conn_info_t *conn, req_info_t *req) {
 
     if (conn->req_list == req)
         conn->req_list = conn->req_list->next;
+    dw_log("conn_req_remove: calling req_unlink() and returning\n");
     return req_unlink(req);
 }
 
@@ -355,24 +358,24 @@ message_t *conn_prepare_send_message(conn_info_t *conn) {
 }
 
 message_t *conn_prepare_recv_message(conn_info_t *conn) {
-    dw_log("Check whether we have new or leftover messages to process...\n");
+    dw_log("conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...\n");
     unsigned long msg_size = conn->curr_recv_buf - conn->curr_proc_buf;
     message_t *m = (message_t *) conn->curr_proc_buf;
 
     if (msg_size < sizeof(message_t)) {
-        dw_log("Got incomplete header [recv size:%lu, header size:%lu], need to recv() more...\n", msg_size, sizeof(message_t));
+        dw_log("conn_prepare_recv_message: Got incomplete header [recv size:%lu, header size:%lu], need to recv() more...\n", msg_size, sizeof(message_t));
         return NULL;
     }
 
     if (msg_size < m->req_size) {
-        dw_log("Got header but incomplete message [recv size:%lu, expected size:%d], need to recv() more...\n", msg_size, m->req_size);
+        dw_log("conn_prepare_recv_message: Got header but incomplete message [recv size:%lu, expected size:%d], need to recv() more...\n", msg_size, m->req_size);
         return NULL;
     }
 
-    dw_log("msg_size=%lu, req_size=%d\n", msg_size, m->req_size);
-    assert(m->req_size >= sizeof(message_t) && m->req_size <= BUF_SIZE);
+    dw_log("--- --- --- conn_prepare_recv_message: Got complete message of recv size:%lu (expected %d), ready to process\n", msg_size, m->req_size);
+    assert(m->req_size >= sizeof(message_t));
+    assert(m->req_size <= BUF_SIZE);
 
-    dw_log("Got complete message of recv size:%lu (expected %d), ready to process\n", msg_size, m->req_size);
     #ifdef DW_DEBUG
     msg_log(m, "");
     #endif
@@ -551,11 +554,12 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
 
     if (sent == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            dw_log("SEND Got EAGAIN or EWOULDBLOCK, ignoring...\n");
+            dw_log("SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()\n");
             // TODO: ensure this makes sense also in non-io_uring paths
             conn_set_status(conn, SENDING);
             return 0;
         }
+        dw_log("conn-send: done, if needed, conn_set_status()\n");
 
         if (errno == EPIPE || errno == ECONNRESET) {
             dw_log("SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
@@ -575,12 +579,13 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
         return (int) sent;
     }
 
+    dw_log("conn_send: returning sent:%d\n", sent);
     return (int) sent;
 }
 
 // this is the main sending loop for sendfile-based sending, called from conn_start_sendfile and also from DW_POLLOUT events when there is remaining data to send
 int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll) {
-    dw_log("SENDv2 starting\n");
+    dw_log("conn_send_v2: just entered -> SENDv2 starting\n");
 
     if (conn->file_remaining > 0) {
         const ssize_t sent = dw_sendfile(p_poll, conn_get_id_by_ptr(conn));
@@ -618,6 +623,7 @@ int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll) {
 
 // return 1 if received succesfully, -1 on EAGAIN or EWOULDBLOCK, and 0 on other errors
 int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
+    dw_log("conn_recv: just entered\n");
     int sock = conn->sock;
     socklen_t recvsize = sizeof(conn->target);
 

@@ -167,6 +167,7 @@ inline command_t* message_first_cmd(message_t *m) {
 // TODO: check this code.
 command_t* message_copy_tail(message_t *m, message_t *m_dst, command_t *cmd) {
     // copy message header
+    dw_log("message_copy_tail: just entered\n");
     m_dst->req_id = m->req_id;
 
     // find matching reply
@@ -180,6 +181,7 @@ command_t* message_copy_tail(message_t *m, message_t *m_dst, command_t *cmd) {
         return NULL;
 
     int cmds_len = ((unsigned char*)itr + cmd_type_size(itr->cmd)) - (unsigned char*)cmd;
+    dw_log("message_copy_tail: cmds_len is %d\n", cmds_len);
 
     command_t * dst_itr = message_first_cmd(m_dst);
     if (m_dst->req_size < cmds_len + cmd_type_size(EOM)) // Check if enough space for EOM delimiter
@@ -190,6 +192,7 @@ command_t* message_copy_tail(message_t *m, message_t *m_dst, command_t *cmd) {
     end_command->cmd = EOM;
     
     m_dst->req_size = ((unsigned char*)end_command + cmd_type_size(end_command->cmd)) - (unsigned char*)m_dst;
+    dw_log("cmds_len: assigned m_dst->req_size : %d\n", m_dst->req_size);
     //int skipped_len = ((unsigned char*)cmd - (unsigned char*)message_first_cmd(m));
     //m_dst->req_size = min(m_dst->req_size, m->req_size - skipped_len);
     return itr;

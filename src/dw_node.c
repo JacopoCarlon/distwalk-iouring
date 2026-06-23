@@ -468,6 +468,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
 
     m_dst->req_id = req->req_id;
     m_dst->req_size = fwd.pkt_size;
+    dw_log("single_start_forward: set m_dst->req_size : %d\n", m_dst->req_size);
 
     dw_log("Forwarding req %u to %s:%d\n", m_dst->req_id,
            inet_ntoa((struct in_addr) { fwd.fwd_host }),
@@ -594,6 +595,7 @@ int handle_forward_reply(int req_id, dw_poll_t *p_poll, conn_worker_info_t *info
 
 // returns 1 if reply sent correctly, 0 otherwise
 int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t *infos, dw_poll_t *p_poll) {
+    dw_log("reply: just entered !!! --- !!! --- !!!\n");
     conn_info_t *conn = conn_get_by_id(req->conn_id);
     reply_opts_t *opts = cmd_get_opts(reply_opts_t, cmd);
 
@@ -617,20 +619,25 @@ int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t *inf
 
         conn->tx_mbufs[conn->tx_count++] = tx_mbuf;
 
+        dw_log("reply-DPDK: calling conn_req_remove()\n");
         conn_req_remove(conn, req);
         infos->active_reqs--;
         return 1;
     }
     #endif
 
+    dw_log("reply: calling conn_prepare_send_message()\n");
     message_t *m_dst = conn_prepare_send_message(conn);
     assert(m_dst->req_size >= opts->resp_size);
+    dw_log("reply: done the conn_prepare_send_message()\n");
 
 
     m_dst->req_id = m->req_id;
     m_dst->req_size = opts->resp_size;
     m_dst->cmds[0].cmd = EOM;
     m_dst->status = m->status;
+
+    dw_log("reply : set m_dst->req_size : %d\n",m_dst->req_size );
 
     dw_log("Replying to req %u (conn_id=%d)\n", m->req_id, req->conn_id);
     #ifdef DW_DEBUG
@@ -655,8 +662,17 @@ int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t *inf
             rv = conn_start_send(&conns[req->conn_id], req->target, p_poll);
             break;
     }
+    dw_log("reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---\n");
+
+    if (rv == 0 && p_poll->poll_type == DW_IOURING){
+        dw_log("reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection\n");
+        // then we have done the submit but not completed it yet, 
+        // we shall not remove the connection!!!
+        return rv;
+    }
 
     // cannot access req after conn_req_remove()
+    dw_log("reply: calling conn_req_remove()\n");
     conn_req_remove(conn, req);
     infos->active_reqs--;
     return rv;
@@ -810,6 +826,7 @@ void close_and_forget(dw_poll_t *p_poll, int sock) {
 
 // returns 1 if the message has been completely executed, 0 if the message need more time, -1 if some error occured
 int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *infos) {
+    dw_log("process_single_message: just entered\n");
     message_t *m = req_get_message(req);
     int conn_id = req->conn_id;
     void *msg_end = message_end(m);
@@ -831,9 +848,9 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
                 }
                 return 0;
             case REPLY:
-                dw_log("Handling REPLY: req_id=%d\n", m->req_id);
+                dw_log("process_single_message: Handling REPLY: req_id=%d --- ---\n", m->req_id);
                 if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply(req, m, cmd, infos, p_poll)) {
-                    dw_log("reply() returned, conn_id: %d\n", conn_id);
+                    dw_log("process_single_message: reply() returned, conn_id: %d --- ---\n", conn_id);
 
                     if (conn_get_status_by_id(req->conn_id) == SENDING) {
                         dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
@@ -888,6 +905,7 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
 }
 
 int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *infos) {
+    dw_log("process_messages: just started, it will call process_single_message and, maybe, obtain_messages\n");
     // process_single_message() may call reply() -> conn_req_remove() -> req_unlink() + defrag -> req and m invalid
     int conn_id = req->conn_id;
     int executed = process_single_message(req, p_poll, infos);
@@ -898,6 +916,7 @@ int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *inf
 
 int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t *infos) {
     conn_info_t *conn = conn_get_by_id(conn_id);
+    dw_log("obtain_messages: just entered\n");
 
     // batch processing of multiple messages, if received more than 1
     if (conn->serialize_request && conn->req_list != NULL)
@@ -1017,6 +1036,7 @@ void handle_timeout(dw_poll_t *p_poll, conn_worker_info_t *infos) {
         dw_log("TIMEOUT expired, req_id: %d, failed\n", req->req_id);
 
         m->status = TIMEOUT;
+        dw_log("handle_timeout: calling conn_req_remove()\n");
         conn_req_remove(conn, req);
         infos->active_reqs--;
     }
@@ -1052,9 +1072,10 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     }
 
     if (pflags & DW_POLLIN) {
-        dw_log("calling recv_mesg()\n");
+        dw_log("calling conn_recv()\n");
         if (conn_recv(conn, p_poll) == 0)
             goto err;
+        dw_log("returned != 0 from conn_recv()\n");
     }
 
     if ((pflags & DW_POLLOUT) && (type == CONNECT)) {
@@ -1097,14 +1118,15 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     }
 
     // check whether we have new or leftover messages to process
-    dw_log("calling obtain_messages() from conn_id=%d's recv buffer\n", conn_id);
+    dw_log("exec_request: calling obtain_messages() from conn_id=%d's recv buffer\n", conn_id);
     if (!obtain_messages(conn_id, p_poll, infos))
         goto err;
-
+    dw_log("exec_request: obtain_messages returned != 0\n");
 
     return;
 
 err:
+    dw_log("exec_request: started goto err\n");
     if (conns->proto == TCP && conn_get_status(conn) == READY) {
         infos->active_conns--;
     }

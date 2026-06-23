@@ -81,13 +81,17 @@ int dw_accept(dw_poll_t *p_poll, const int conn_id, struct sockaddr_in *addr, so
 }
 
 ssize_t dw_sendto(dw_poll_t *p_poll, const int conn_id, const int flags) {
+    dw_log("dw_sendto: just entered\n");
     conn_info_t *conn = conn_get_by_id(conn_id);
     assert(conn);
 
     if (is_uring(p_poll)) {
         #ifdef IOURING_ENABLED
+        dw_log("dw_sendto: IOURING_ENABLED: conn->uring_send_state:%d; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2\n", conn->uring_send_state);
         switch (conn->uring_send_state) {
             case SS_READY: {
+                // means previous completion (if any) has been computed, we ready for a new prep and submit.
+                //  after submission it will be IN_FLIGHT
                 struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
                 // MSG_WAITALL guarantees the entire passed buffer is written before returning a CQE
                 io_uring_prep_sendto(sqe, conn->sock, conn->curr_send_buf, conn->curr_send_size,
@@ -131,6 +135,7 @@ ssize_t dw_sendto(dw_poll_t *p_poll, const int conn_id, const int flags) {
         #endif
     }
 
+    dw_log("dw_sendto: standard path-> calling sendto\n");
     return sendto(conn->sock, conn->curr_send_buf, conn->curr_send_size, flags,
                   (struct sockaddr *) &conn->target, sizeof(conn->target));
 }
@@ -138,6 +143,7 @@ ssize_t dw_sendto(dw_poll_t *p_poll, const int conn_id, const int flags) {
 ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struct sockaddr_in *from, socklen_t *from_len) {
     conn_info_t *conn = conn_get_by_id(conn_id);
     assert(conn);
+    dw_log("dw_recvfrom: just entered\n");
 
 
     if (is_uring(p_poll)) {
@@ -156,7 +162,7 @@ ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struc
 
         if (conn->defer_defrag > 0) {
             if (res > 0) {
-                dw_log("DEFER_DEFRAG: moved new data backwards by %lu", conn->defer_defrag);
+                dw_log("DEFER_DEFRAG (IOURING_ENABLED): moved new data backwards by %lu\n", conn->defer_defrag);
                 memmove(conn->curr_recv_buf, conn->curr_recv_buf + conn->defer_defrag, res);
             }
             conn->defer_defrag = 0;
