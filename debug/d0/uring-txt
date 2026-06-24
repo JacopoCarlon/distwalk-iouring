@@ -245,6 +245,8 @@ REPLY message (req_id: 2, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
 [85847.179975707][dwn_conn_0][dw_node.c:822] removing sock=14 from conns[]
 [85847.179979524][dwn_conn_0][connection.c:237] marking conns[1] invalid
 [85847.179983162][dwn_conn_0][connection.c:270] Freeing conn 1
+
+
 [85847.179986925][dwn_conn_0][connection.c:125] conn_reset: just entered
 [85847.179991046][dwn_conn_0][connection.c:128] conn_reset(1): conn: 1, req_id: 2, .conn_id: 1 -> message (req_id: 2, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
 [85847.180019329][dwn_conn_0][connection.c:128] conn_reset(1): conn: 1, req_id: 1, .conn_id: 1 -> message (req_id: 1, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
