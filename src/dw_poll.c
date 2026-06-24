@@ -488,6 +488,7 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
 
                     if (conn) {
                         conn->uring_send_state = SS_COMPLETED;
+                        dw_log("dw_poll_next: URING calling conn_free!\n");
                         conn_free(conn_get_id_by_ptr(conn));
                     }
 

@@ -417,6 +417,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
                 if (conn_enable_ssl(fwd_conn_id, server_ssl_ctx, 0) < 0) {
                     fprintf(stderr, "SSL_connect() failed on forward connection\n");
                     close(clientSocket);
+                    dw_log("single_start_forward: calling conn_free from TLS\n");
                     conn_free(fwd_conn_id);
                     return NULL;
                 }
@@ -816,10 +817,10 @@ void load(storage_worker_info_t *infos, unsigned char *buf, load_opts_t *load_op
 
 // this invalidates the conn_info_t in conns[] referring sock, if any
 void close_and_forget(dw_poll_t *p_poll, int sock) {
-    dw_log("removing sock=%d from dw_poll\n", sock);
+    dw_log("close_and_forget: removing sock=%d from dw_poll\n", sock);
     if (dw_poll_del(p_poll, sock) != 0)
         perror("dw_poll_del() failed while deleting socket");
-    dw_log("removing sock=%d from conns[]\n", sock);
+    dw_log("close_and_forget: removing sock=%d from conns[] by calling conn_del_sock\n", sock);
     conn_del_sock(sock);
     close(sock);
 }
@@ -849,7 +850,9 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
                 return 0;
             case REPLY:
                 dw_log("process_single_message: Handling REPLY: req_id=%d --- ---\n", m->req_id);
-                if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply(req, m, cmd, infos, p_poll)) {
+                int reply_result = reply(req, m, cmd, infos, p_poll);
+                dw_log("process_single_message: Handling REPLY: req_id=%d, we got reply_result:%d .--- ---\n", m->req_id, reply_result);
+                if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply_result) {
                     dw_log("process_single_message: reply() returned, conn_id: %d --- ---\n", conn_id);
 
                     if (conn_get_status_by_id(req->conn_id) == SENDING) {
@@ -867,6 +870,7 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
                     sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
                 }
                 // any further cmds[] for replied-to hop, not me
+                printf("process_single_message case REPLY completed, with reply result: %d, will now return 1\n", reply_result);
                 return 1;
             case STORE:
             case LOAD: {
@@ -915,12 +919,19 @@ int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *inf
 }
 
 int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t *infos) {
-    conn_info_t *conn = conn_get_by_id(conn_id);
     dw_log("obtain_messages: just entered\n");
+    conn_info_t *conn = conn_get_by_id(conn_id);
+
+    if (conn->req_list){
+        printf("obtain_messages just entered: --- currently, conn.req_list is not null\n");
+    }else{
+        printf("obtain_messages just entered: --- currently, conn.req_list is NULL\n");
+    }
 
     // batch processing of multiple messages, if received more than 1
-    if (conn->serialize_request && conn->req_list != NULL)
+    if (conn->serialize_request && conn->req_list != NULL){
         return 1;
+    }
 
     for (message_t *m = conn_prepare_recv_message(conn); m != NULL; m = conn_prepare_recv_message(conn)) {
         // FORWARD finished
@@ -1044,9 +1055,9 @@ void handle_timeout(dw_poll_t *p_poll, conn_worker_info_t *infos) {
 
 void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t type, conn_worker_info_t *infos) {
     conn_info_t *conn = conn_get_by_id(conn_id);
-    dw_log("event_type=%s, conn_id=%d\n", get_event_str(type), conn_id);
+    dw_log("exec_request: event_type=%s, conn_id=%d\n", get_event_str(type), conn_id);
 
-
+    
     if (conn->status == SSL_HANDSHAKE) {
         int hs = conn_do_ssl_handshake(conn_id);
         if (hs < 0)
@@ -1062,7 +1073,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         handle_timeout(p_poll, infos);
         return;
     }
-
+    
     if ((type == SOCKET || type == CONNECT) && (conn->sock == -1 || conn->recv_buf == NULL))
         return;
 
@@ -1070,12 +1081,24 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id);
         goto err;
     }
-
+    
     if (pflags & DW_POLLIN) {
+        if (conn->req_list){
+            printf("exec_request before conn_recv: --- currently, conn.req_list is not null\n");
+        }else{
+            printf("exec_request before conn_recv: --- currently, conn.req_list is NULL\n");
+        }
+
         dw_log("calling conn_recv()\n");
         if (conn_recv(conn, p_poll) == 0)
             goto err;
         dw_log("returned != 0 from conn_recv()\n");
+        
+        if (conn->req_list){
+            printf("exec_request after conn_recv: --- currently, conn.req_list is not null\n");
+        }else{
+            printf("exec_request after conn_recv: --- currently, conn.req_list is NULL\n");
+        }
     }
 
     if ((pflags & DW_POLLOUT) && (type == CONNECT)) {
@@ -1119,8 +1142,9 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
 
     // check whether we have new or leftover messages to process
     dw_log("exec_request: calling obtain_messages() from conn_id=%d's recv buffer\n", conn_id);
-    if (!obtain_messages(conn_id, p_poll, infos))
+    if (!obtain_messages(conn_id, p_poll, infos)){
         goto err;
+    }
     dw_log("exec_request: obtain_messages returned != 0\n");
 
     return;
@@ -1135,8 +1159,9 @@ err:
     // Close associated connections
     for (int i = 0; i < MAX_CONNS; i++) {
         conn_info_t *pending_conn = conn_get_by_id(i);
-        if (pending_conn->sock == -1)
+        if (pending_conn->sock == -1){
             continue;
+        }
 
         req_info_t *req_list_head = pending_conn->req_list;
         req_info_t *tmp = req_list_head;
@@ -1144,18 +1169,21 @@ err:
             message_t *m = req_get_message(tmp);
             if (tmp->curr_cmd->cmd == FORWARD_BEGIN) {
                 fwd_opts_t fwd = *cmd_get_opts(fwd_opts_t, tmp->curr_cmd);
-                if (fwd.fwd_host == conn->target.sin_addr.s_addr &&
-                    fwd.fwd_port == conn->target.sin_port) {
-                    if (fwd.retries > 0)
+                if (fwd.fwd_host == conn->target.sin_addr.s_addr 
+                                && fwd.fwd_port == conn->target.sin_port) {
+                    if (fwd.retries > 0){
                         break;
-                    else
+                    }
+                    else{
                         remove_timeout(infos, m->req_id, p_poll);
+                    }
 
                     // Go to last REPLY
                     command_t *itr = tmp->curr_cmd;
                     void *msg_end = message_end(m);
-                    while (itr && itr->cmd != EOM && itr->cmd != REPLY)
+                    while (itr && itr->cmd != EOM && itr->cmd != REPLY){
                         itr = cmd_bounded_skip(itr, 1, msg_end);
+                    }
 
                     if (!itr || !cmd_in_bounds(itr, msg_end) || itr->cmd == EOM) {
                         // brutal

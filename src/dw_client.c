@@ -495,6 +495,12 @@ void *thread_receiver(void *data) {
         // TODO: support receive of variable reply-size requests
         conn_info_t *conn = conn_get_by_id(thr_data.conn_id);
 
+        if (conn->req_list){
+            printf("client__ thread_receiver: --- currently, conn.req_list is not null\n");
+        }else{
+            printf("client__ thread_receiver: --- currently, conn.req_list is NULL\n");
+        }
+
         do {
             recv = conn_recv(conn, NULL);
             if (recv == 0) {

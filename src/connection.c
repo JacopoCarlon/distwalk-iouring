@@ -123,10 +123,14 @@ req_info_t *conn_req_add(conn_info_t *conn) {
 
 static void conn_reset(conn_info_t *conn) {
     dw_log("conn_reset: just entered\n");
-    for (int i = 0; i < MAX_CONNS; i++)
+    for (int i = 0; i < MAX_CONNS; i++){
+        // dw_log("conn_reset: iterating on i:%d until MAX_CONNS:%d entered\n", i, MAX_CONNS);
+        if (conns[i].req_list){
+            printf("conn_reset: conns[i].req_list is not null, with i:%d;\n", i);
+        }
         for (req_info_t *temp = conns[i].req_list; temp != NULL; temp = temp->next) {
             dw_log("conn_reset(%d): conn: %d, req_id: %d, .conn_id: %d -> ",
-                   conn_get_id_by_ptr(conn), i, temp->req_id, temp->conn_id);
+                        conn_get_id_by_ptr(conn), i, temp->req_id, temp->conn_id);
             if (temp->message_ptr) {
                 #ifdef DW_DEBUG
                 msg_log(req_get_message(temp), "");
@@ -134,6 +138,8 @@ static void conn_reset(conn_info_t *conn) {
             } else
             dw_log("\n");
         }
+    }
+    printf("conn_reset: done first for block, starting second\n");
     for (req_info_t *temp = conn->req_list; temp != NULL; temp = req_unlink(temp)) {
         dw_log("conn_reset(): freeing req_id: %d, conn_id: %d, .conn_id: %d -> ",
                temp->req_id, conn_get_id_by_ptr(conn), temp->conn_id);
@@ -144,6 +150,7 @@ static void conn_reset(conn_info_t *conn) {
         } else
         dw_log("\n");
     }
+    printf("conn_reset: returning\n");
 }
 
 req_info_t *conn_req_remove(conn_info_t *conn, req_info_t *req) {
@@ -174,6 +181,12 @@ req_info_t *conn_req_remove(conn_info_t *conn, req_info_t *req) {
 
     if (conn->req_list == req)
         conn->req_list = conn->req_list->next;
+    dw_log("conn_req_remove: conn->req_list has been set to its next\n");
+    if (conn->req_list == NULL){
+        dw_log("conn_req_remove: conn->req_list is now NULL\n");
+    }else{
+        dw_log("conn_req_remove: conn->req_list is currently not null\n");
+    }
     dw_log("conn_req_remove: calling req_unlink() and returning\n");
     return req_unlink(req);
 }
@@ -234,7 +247,7 @@ void conn_del_id(int id) {
 
     //if (nthread > 1) sys_check(pthread_mutex_lock(&socks_mtx));
 
-    dw_log("marking conns[%d] invalid\n", id);
+    dw_log("conn_del_id: marking conns[%d] invalid\n", id);
     conn_free(id);
     conns[id].sock = -1;
 
@@ -244,8 +257,9 @@ void conn_del_id(int id) {
 // make entry in conns[] associated to sock invalid, return entry ID if found or -1
 int conn_del_sock(int sock) {
     //if (nthread > 1) sys_check(pthread_mutex_lock(&socks_mtx));
-
+    
     int id = conn_find_sock(sock);
+    dw_log("conn_del_sock: just entered, found id from sock: %d; if !=-1 will call conn_del_id on it\n", id);
 
     if (id != -1)
         conn_del_id(id);
@@ -256,8 +270,10 @@ int conn_del_sock(int sock) {
 }
 
 void conn_free(int conn_id) {
-    if (conn_id < 0)
+    printf("conn_free: just entered");
+    if (conn_id < 0){
         return;
+    }
 
     // A SQE submitted from this connection's send_buf might still be pending in kernel.
     // See conn_uring_cqe_for_closing() for the actual freeing
@@ -632,9 +648,16 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
         return conn_ssl_recv(conn);
     #endif
 
+    if (conn->req_list){
+        printf("conn_recv just entered: --- currently, conn.req_list is not null\n");
+    }else{
+        printf("conn_recv just entered: --- currently, conn.req_list is NULL\n");
+    }
+
     ssize_t received;
     // TODO: remove this IF (?only? client passes NULL to poll)
     if (p_poll == NULL) {
+        dw_log("conn_recv: coing to recvfrom\n");
         // dw_client and other contexts without a poll backend bypass the
         // registered-buffer machinery and recv directly into curr_recv_buf.
         received = recvfrom(sock, conn->curr_recv_buf, conn->curr_recv_size, 0,
@@ -643,7 +666,14 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
         conn->curr_recv_buf += received;
         conn->curr_recv_size -= received;
     } else {
+        dw_log("conn_recv: coing to dw_recvfrom\n");
         received = dw_recvfrom(p_poll, conn_get_id_by_ptr(conn), 0, &conn->target, &recvsize);
+    }
+
+    if (conn->req_list){
+        printf("conn_recv after recvfrom: --- currently, conn.req_list is not null\n");
+    }else{
+        printf("conn_recv after recvfrom: --- currently, conn.req_list is NULL\n");
     }
 
     dw_log("RECV returned: %d\n", (int)received);
