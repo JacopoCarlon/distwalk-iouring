@@ -1,294 +1,376 @@
 jacopo@jacopocarlonMuletto:~/Desktop/distwalk-iouring/src$ ./dw_node_debug --accept-mode=child -p uring
-[15111.096623056][dw_node_debug][dw_node.c:2128] nproc=12 (system capacity)
-[15111.111061244][dw_node_debug][dw_node.c:2261] blk_size = 4096
-[15111.111167508][dw_node_debug][dw_node.c:2325] Using loops_per_usec: -1
-[15111.114355991][dw_node_debug][address_utils.c:27] port_str: :7891
-[15111.114369077][dw_node_debug][address_utils.c:40] hostport_str: 127.0.0.1
-[15111.114374017][dw_node_debug][address_utils.c:43] Resolving 127.0.0.1...
-[15111.115183092][dw_node_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
-[15111.115272290][dw_node_debug][connection.c:344] CONN allocated, conn_id: 0, proto=1
-[15111.115297940][dw_node_debug][dw_node.c:1992] Node bound to 127.0.0.1:7891 (with protocol: TCP)
-[15111.115309132][dw_node_debug][dw_node.c:1998] Accepting new connections (max backlog: 5)...
-[15111.115494868][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=12, p_poll=0x583460cc9470, flags=20000001, aux=12, conn_id=0
-[15111.115514025][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=3, p_poll=0x583460cc9470, flags=00000001, aux=30064771075, conn_id=-1
-[15111.115523537][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=10, p_poll=0x583460cc9470, flags=00000001, aux=8589934602, conn_id=-1
-[15111.115533714][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=11, p_poll=0x583460cc9470, flags=00000001, aux=25769803787, conn_id=-1
-[15111.115541477][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=7, p_poll=0x583460cc9470, flags=00000001, aux=4294967303, conn_id=-1
-[15111.118809350][dwn_stor_0][dw_poll.c:135] dw_poll_add(): fd=5, p_poll=0x76694bbb89b0, flags=00000001, aux=4294967301, conn_id=-1
-[15111.118843082][dwn_stor_0][dw_poll.c:135] dw_poll_add(): fd=3, p_poll=0x76694bbb89b0, flags=00000001, aux=30064771075, conn_id=-1
-[15112.603871626][dwn_conn_0][dw_poll.c:516] conn->uring_aux=12
-[15112.603896850][dwn_conn_0][dw_node.c:1503] event_type=LISTEN, event_data=12 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.603913269][dwn_conn_0][dw_io.c:53] accepting from conn_id=0, fd=12
-[15112.603924649][dwn_conn_0][dw_node.c:1514] Accepted connection from: 127.0.0.1:42577
-[15112.604036667][dwn_conn_0][connection.c:344] CONN allocated, conn_id: 1, proto=1
-[15112.604050125][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=14, p_poll=0x583460cc9470, flags=00000001, aux=17179869185, conn_id=1
-[15112.604061028][dwn_conn_0][dw_node.c:1566] conn_id: 1 assigned to dwn_conn_0
-[15112.604088448][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.604093889][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.604101120][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17140.874241048][dw_node_debug][dw_node.c:2129] nproc=12 (system capacity)
+[17140.888245400][dw_node_debug][dw_node.c:2262] blk_size = 4096
+[17140.888337803][dw_node_debug][dw_node.c:2326] Using loops_per_usec: -1
+[17140.891254544][dw_node_debug][address_utils.c:27] port_str: :7891
+[17140.891267527][dw_node_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[17140.891272584][dw_node_debug][address_utils.c:43] Resolving 127.0.0.1...
+[17140.891894281][dw_node_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+[17140.891981183][dw_node_debug][connection.c:344] CONN allocated, conn_id: 0, proto=1
+[17140.892016527][dw_node_debug][dw_node.c:1993] Node bound to 127.0.0.1:7891 (with protocol: TCP)
+[17140.892028432][dw_node_debug][dw_node.c:1999] Accepting new connections (max backlog: 5)...
+[17140.892211591][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=12, p_poll=0x565efe3e6970, flags=20000001, aux=12, conn_id=0
+[17140.892231809][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=3, p_poll=0x565efe3e6970, flags=00000001, aux=30064771075, conn_id=-1
+[17140.892242262][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=10, p_poll=0x565efe3e6970, flags=00000001, aux=8589934602, conn_id=-1
+[17140.892250839][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=11, p_poll=0x565efe3e6970, flags=00000001, aux=25769803787, conn_id=-1
+[17140.892257628][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=7, p_poll=0x565efe3e6970, flags=00000001, aux=4294967303, conn_id=-1
+[17140.895545645][dwn_stor_0][dw_poll.c:135] dw_poll_add(): fd=5, p_poll=0x73598d9b89b0, flags=00000001, aux=4294967301, conn_id=-1
+[17140.895577205][dwn_stor_0][dw_poll.c:135] dw_poll_add(): fd=3, p_poll=0x73598d9b89b0, flags=00000001, aux=30064771075, conn_id=-1
+[17142.803781122][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.803805403][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=12
+[17142.803818460][dwn_conn_0][dw_node.c:1504] event_type=LISTEN, event_data=12 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.803833359][dwn_conn_0][dw_io.c:53] accepting from conn_id=0, fd=12
+[17142.803843240][dwn_conn_0][dw_node.c:1515] Accepted connection from: 127.0.0.1:59279
+[17142.803948691][dwn_conn_0][connection.c:344] CONN allocated, conn_id: 1, proto=1
+[17142.803961105][dwn_conn_0][dw_poll.c:135] dw_poll_add(): fd=14, p_poll=0x565efe3e6970, flags=00000001, aux=17179869185, conn_id=1
+[17142.803971777][dwn_conn_0][dw_node.c:1567] conn_id: 1 assigned to dwn_conn_0
+[17142.803977656][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.804016116][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.804022681][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.804028179][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.804034862][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
 exec_request before conn_recv: --- currently, conn.req_list is NULL
-[15112.604113729][dwn_conn_0][dw_node.c:1092] calling conn_recv()
-[15112.604118563][dwn_conn_0][connection.c:642] conn_recv: just entered
+[17142.804047832][dwn_conn_0][dw_node.c:1092] calling conn_recv
+[17142.804053813][dwn_conn_0][connection.c:650] conn_recv: just entered
 conn_recv just entered: --- currently, conn.req_list is NULL
-[15112.604134425][dwn_conn_0][connection.c:669] conn_recv: coing to dw_recvfrom
-[15112.604139753][dwn_conn_0][dw_io.c:146] dw_recvfrom: just entered
+[17142.804062252][dwn_conn_0][connection.c:677] conn_recv: coing to dw_recvfrom
+[17142.804067760][dwn_conn_0][dw_io.c:156] dw_recvfrom: just entered
 dw_recvfrom just entered: --- currently, conn.req_list is NULL
 conn_recv after recvfrom: --- currently, conn.req_list is NULL
-[15112.604153630][dwn_conn_0][connection.c:679] RECV returned: 1024
-[15112.604158431][dwn_conn_0][dw_node.c:1095] returned != 0 from conn_recv()
+[17142.804081860][dwn_conn_0][connection.c:687] RECV returned: 1024
+[17142.804086853][dwn_conn_0][dw_node.c:1095] exec_request: returned != 0 from conn_recv
 exec_request after conn_recv: --- currently, conn.req_list is NULL
-[15112.604171819][dwn_conn_0][connection.c:549] SEND conn_id=1, status=1 (READY), curr_send_size=0, sock=14, send_state=0
-[15112.604179445][dwn_conn_0][connection.c:559] SEND with no data
-[15112.604184348][dwn_conn_0][dw_node.c:1125] conn_id=1, still pending after flush, adding EPOLLOUT
-[15112.604189617][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000004, aux=17179869185
-[15112.604196386][dwn_conn_0][dw_node.c:1134] conns[1].status=1 (READY)
-[15112.604201423][dwn_conn_0][dw_node.c:1137] uring_send_state=0
-[15112.604206244][dwn_conn_0][dw_node.c:1144] exec_request: calling obtain_messages() from conn_id=1's recv buffer
-[15112.604211531][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
+
+
+-------
+-------
+-------
+
+
+<<<<<
+<<<<<
+<<<<<
+
+
+[17142.804095047][dwn_conn_0][connection.c:708] --- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---
+[17142.804106285][dwn_conn_0][connection.c:553] SEND conn_id=1, status=1 (READY), curr_send_size=0, sock=14, send_state=0
+[17142.804114330][dwn_conn_0][connection.c:563] conn_send: SEND with no data
+[17142.804121208][dwn_conn_0][dw_node.c:1126] exec_request: conn_id=1, still pending after flush, adding EPOLLOUT
+[17142.804126390][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000004, aux=17179869185
+
+
+>>>>>
+>>>>>
+>>>>>
 
 ---
+---
+---
 
+
+[17142.804133187][dwn_conn_0][dw_node.c:1135] exec_request: conns[1].status=1 (READY)
+[17142.804138578][dwn_conn_0][dw_node.c:1138] exec_request: uring_send_state=0
+[17142.804143696][dwn_conn_0][dw_node.c:1145] exec_request: calling obtain_messages() from conn_id=1's recv buffer
+[17142.804148026][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
 obtain_messages just entered: --- currently, conn.req_list is NULL
-[15112.604220863][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
-[15112.604226781][dwn_conn_0][connection.c:391] --- --- --- conn_prepare_recv_message: Got complete message of recv size:1024 (expected 1024), ready to process
+[17142.804155717][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[17142.804161408][dwn_conn_0][connection.c:391] --- --- --- conn_prepare_recv_message: Got complete message of recv size:1024 (expected 1024), ready to process
 message (req_id: 0, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.604252139][dwn_conn_0][connection.c:120] REQUEST create req_id:0, conn_id: 1
-[15112.604257880][dwn_conn_0][dw_node.c:960] Received message req_id=0, size=1024, from 127.0.0.1:42577
-[15112.604264332][dwn_conn_0][dw_node.c:830] process_single_message: just entered
-[15112.604269756][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 0,  command: COMPUTE
-[15112.604278040][dwn_conn_0][dw_node.c:684] COMPUTE: computing for 0 usecs
-[15112.604287432][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 0,  command: REPLY
-[15112.604292637][dwn_conn_0][dw_node.c:852] process_single_message: Handling REPLY: req_id=0 --- ---
-[15112.604297802][dwn_conn_0][dw_node.c:599] reply: just entered !!! --- !!! --- !!!
-[15112.604302602][dwn_conn_0][dw_node.c:630] reply: calling conn_prepare_send_message()
-[15112.604307560][dwn_conn_0][dw_node.c:633] reply: done the conn_prepare_send_message()
-[15112.604312379][dwn_conn_0][dw_node.c:641] reply : set m_dst->req_size : 512
-
----
----
-
-
-[15112.604316966][dwn_conn_0][dw_node.c:643] Replying to req 0 (conn_id=1)
+[17142.804185603][dwn_conn_0][connection.c:120] REQUEST create req_id:0, conn_id: 1
+[17142.804191443][dwn_conn_0][dw_node.c:960] Received message req_id=0, size=1024, from 127.0.0.1:59279
+[17142.804197848][dwn_conn_0][dw_node.c:830] process_single_message: just entered
+[17142.804203019][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 0,  command: COMPUTE
+[17142.804211275][dwn_conn_0][dw_node.c:684] COMPUTE: computing for 0 usecs
+[17142.804220590][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 0,  command: REPLY
+[17142.804225868][dwn_conn_0][dw_node.c:852] process_single_message: Handling REPLY: req_id=0 --- ---
+[17142.804231459][dwn_conn_0][dw_node.c:599] reply: just entered !!! --- !!! --- !!!
+[17142.804236113][dwn_conn_0][dw_node.c:630] reply: calling conn_prepare_send_message()
+[17142.804241074][dwn_conn_0][dw_node.c:633] reply: done the conn_prepare_send_message()
+[17142.804245725][dwn_conn_0][dw_node.c:641] reply : set m_dst->req_size : 512
+[17142.804250370][dwn_conn_0][dw_node.c:643] Replying to req 0 (conn_id=1)
 REPLY message (req_id: 0, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
-[15112.604328750][dwn_conn_0][connection.c:453] SEND starting, conn_id: 1, status: READY, msg_size: 512
-[15112.604335288][dwn_conn_0][connection.c:549] SEND conn_id=1, status=1 (READY), curr_send_size=512, sock=14, send_state=0
-[15112.604341295][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
-
----
----
----
+[17142.804262383][dwn_conn_0][connection.c:451] conn_start_send: just entered --- 
+[17142.804267702][dwn_conn_0][connection.c:455] SEND starting, conn_id: 1, status: READY, msg_size: 512
+[17142.804273854][dwn_conn_0][connection.c:474] conn_start_send: calling conn_send --- 
+[17142.804278556][dwn_conn_0][connection.c:553] SEND conn_id=1, status=1 (READY), curr_send_size=512, sock=14, send_state=0
+[17142.804284797][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
 
 
+<<<
+<<<
+<<<
+<<<
+<<<
+<<<
 
-[15112.604345921][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:0; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
-[15112.604353195][dwn_conn_0][connection.c:573] SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()
-[15112.604358190][dwn_conn_0][dw_node.c:666] reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---
-[15112.604362640][dwn_conn_0][dw_node.c:669] reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection
-[15112.604367688][dwn_conn_0][dw_node.c:854] process_single_message: Handling REPLY: req_id=0, we got reply_result:0 .--- ---
-[15112.604373069][dwn_conn_0][dw_node.c:856] process_single_message: reply() returned, conn_id: 1 --- ---
-[15112.604377964][dwn_conn_0][dw_node.c:859] Message req_id=0 is still sending after REPLY, conn_id: 1
-[15112.604383083][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000004, aux=17179869185
-[15112.604389221][dwn_conn_0][dw_node.c:1148] exec_request: obtain_messages returned != 0
-[15112.604428405][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.604434148][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.604441532][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
-[15112.604446936][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=2
-[15112.604453224][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
-[15112.604457438][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:2; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
-[15112.604463593][dwn_conn_0][dw_io.c:122] SEND_URING: conn_id=1 is now ready
-[15112.604468337][dwn_conn_0][connection.c:589] SEND returned: 512
-[15112.604473300][dwn_conn_0][dw_node.c:1129] conn_id=1, flush finished, adding EPOLLIN
-[15112.604478008][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000001, aux=17179869185
-[15112.604485130][dwn_conn_0][dw_node.c:1134] conns[1].status=2 (SENDING)
-[15112.604489880][dwn_conn_0][dw_node.c:1137] uring_send_state=0
-[15112.604494374][dwn_conn_0][dw_node.c:1144] exec_request: calling obtain_messages() from conn_id=1's recv buffer
-[15112.604499364][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
+
+[17142.804289490][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:0; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
+[17142.804296583][dwn_conn_0][dw_io.c:103] dw_sendto: -> SEND_URING: conn_id=1 SQE was submitted, setting state SS_IN_FLIGHT
+[17142.804301924][dwn_conn_0][connection.c:574] conn_send: dw_sendto returned something different from 0 : -1.
+[17142.804306633][dwn_conn_0][connection.c:578] conn_send: dw_sendto returned -1, what does it mean?
+[17142.804311338][dwn_conn_0][connection.c:582] conn_send: SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()
+[17142.804316445][dwn_conn_0][dw_node.c:666] reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---
+[17142.804362893][dwn_conn_0][dw_node.c:669] reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection
+[17142.804368437][dwn_conn_0][dw_node.c:854] process_single_message: Handling REPLY: req_id=0, we got reply_result:0 .--- ---
+[17142.804372953][dwn_conn_0][dw_node.c:856] process_single_message: reply() returned, conn_id: 1 --- ---
+[17142.804376823][dwn_conn_0][dw_node.c:859] process_single_message: Message req_id=0 is still sending after REPLY, conn_id: 1
+[17142.804381653][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000004, aux=17179869185
+[17142.804386976][dwn_conn_0][dw_node.c:1149] exec_request: obtain_messages returned != 0
+[17142.804390992][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.804437327][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.804443224][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.804448473][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.804454679][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17142.804460182][dwn_conn_0][connection.c:708] --- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---
+[17142.804465463][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=2
+[17142.804471836][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
+[17142.804476691][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:2; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
+[17142.804482245][dwn_conn_0][dw_io.c:111] dw_sendto: case SS_COMPLETED, we shall consume the send-CQE!!! ---
+[17142.804488086][dwn_conn_0][dw_io.c:125] dw_sendto: -> SEND_URING: conn_id=1 is now ready, setting state SS_REDY
+[17142.804493439][dwn_conn_0][dw_io.c:129] dw_sendto: send has completed, we might need to call conn_req_remove
+[17142.804498240][dwn_conn_0][connection.c:574] conn_send: dw_sendto returned something different from 0 : 512.
+[17142.804503117][dwn_conn_0][connection.c:597] conn_send: SEND returned: 512
+[17142.804508246][dwn_conn_0][dw_node.c:1130] exec_request: conn_id=1, flush finished, adding EPOLLIN
+[17142.804513272][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000001, aux=17179869185
+[17142.804520480][dwn_conn_0][dw_node.c:1135] exec_request: conns[1].status=2 (SENDING)
+[17142.804525528][dwn_conn_0][dw_node.c:1138] exec_request: uring_send_state=0
+[17142.804530085][dwn_conn_0][dw_node.c:1145] exec_request: calling obtain_messages() from conn_id=1's recv buffer
+[17142.804535128][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
 obtain_messages just entered: --- currently, conn.req_list is not null
-[15112.604507408][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
-[15112.604512512][dwn_conn_0][connection.c:382] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
-[15112.604518178][dwn_conn_0][dw_node.c:1148] exec_request: obtain_messages returned != 0
-[15112.606551789][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.606568155][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.606576727][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17142.804543678][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[17142.804549216][dwn_conn_0][connection.c:382] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
+[17142.804555130][dwn_conn_0][dw_node.c:1149] exec_request: obtain_messages returned != 0
+[17142.804560052][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.806430022][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
 
 
----
----
----
----
----
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
 
 
+[17142.806439273][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.806444172][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.806450232][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
 exec_request before conn_recv: --- currently, conn.req_list is not null
-[15112.606586004][dwn_conn_0][dw_node.c:1092] calling conn_recv()
-[15112.606590794][dwn_conn_0][connection.c:642] conn_recv: just entered
+[17142.806458900][dwn_conn_0][dw_node.c:1092] calling conn_recv
+[17142.806463398][dwn_conn_0][connection.c:650] conn_recv: just entered
 conn_recv just entered: --- currently, conn.req_list is not null
-[15112.606602258][dwn_conn_0][connection.c:669] conn_recv: coing to dw_recvfrom
-[15112.606607664][dwn_conn_0][dw_io.c:146] dw_recvfrom: just entered
+[17142.806471157][dwn_conn_0][connection.c:677] conn_recv: coing to dw_recvfrom
+[17142.806476137][dwn_conn_0][dw_io.c:156] dw_recvfrom: just entered
 dw_recvfrom just entered: --- currently, conn.req_list is not null
 conn_recv after recvfrom: --- currently, conn.req_list is not null
-[15112.606621542][dwn_conn_0][connection.c:679] RECV returned: 1024
-[15112.606626247][dwn_conn_0][dw_node.c:1095] returned != 0 from conn_recv()
+[17142.806488636][dwn_conn_0][connection.c:687] RECV returned: 1024
+[17142.806493365][dwn_conn_0][dw_node.c:1095] exec_request: returned != 0 from conn_recv
 exec_request after conn_recv: --- currently, conn.req_list is not null
-[15112.606633958][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=0, sock=14, send_state=0
-[15112.606640999][dwn_conn_0][connection.c:559] SEND with no data
-[15112.606645469][dwn_conn_0][dw_node.c:1125] conn_id=1, still pending after flush, adding EPOLLOUT
-[15112.606651085][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000004, aux=17179869185
-[15112.606658076][dwn_conn_0][dw_node.c:1134] conns[1].status=2 (SENDING)
-[15112.606663184][dwn_conn_0][dw_node.c:1137] uring_send_state=0
-[15112.606667860][dwn_conn_0][dw_node.c:1144] exec_request: calling obtain_messages() from conn_id=1's recv buffer
-[15112.606672931][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
+[17142.806501320][dwn_conn_0][connection.c:708] --- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---
+[17142.806506511][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=0, sock=14, send_state=0
+[17142.806512541][dwn_conn_0][connection.c:563] conn_send: SEND with no data
+[17142.806517195][dwn_conn_0][dw_node.c:1126] exec_request: conn_id=1, still pending after flush, adding EPOLLOUT
+[17142.806522102][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000004, aux=17179869185
+[17142.806528107][dwn_conn_0][dw_node.c:1135] exec_request: conns[1].status=2 (SENDING)
+[17142.806533321][dwn_conn_0][dw_node.c:1138] exec_request: uring_send_state=0
+[17142.806537751][dwn_conn_0][dw_node.c:1145] exec_request: calling obtain_messages() from conn_id=1's recv buffer
+[17142.806542572][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
 obtain_messages just entered: --- currently, conn.req_list is not null
-[15112.606680129][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
-[15112.606685946][dwn_conn_0][connection.c:391] --- --- --- conn_prepare_recv_message: Got complete message of recv size:1024 (expected 1024), ready to process
+[17142.806550204][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[17142.806555446][dwn_conn_0][connection.c:391] --- --- --- conn_prepare_recv_message: Got complete message of recv size:1024 (expected 1024), ready to process
 message (req_id: 1, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.606711000][dwn_conn_0][connection.c:120] REQUEST create req_id:1, conn_id: 1
-[15112.606716301][dwn_conn_0][dw_node.c:960] Received message req_id=1, size=1024, from 127.0.0.1:42577
-[15112.606723138][dwn_conn_0][dw_node.c:830] process_single_message: just entered
-[15112.606728082][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 1,  command: COMPUTE
-[15112.606733788][dwn_conn_0][dw_node.c:684] COMPUTE: computing for 0 usecs
-[15112.606742964][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 1,  command: REPLY
-[15112.606748247][dwn_conn_0][dw_node.c:852] process_single_message: Handling REPLY: req_id=1 --- ---
-[15112.606753771][dwn_conn_0][dw_node.c:599] reply: just entered !!! --- !!! --- !!!
-[15112.606759296][dwn_conn_0][dw_node.c:630] reply: calling conn_prepare_send_message()
-[15112.606764583][dwn_conn_0][dw_node.c:633] reply: done the conn_prepare_send_message()
-[15112.606769192][dwn_conn_0][dw_node.c:641] reply : set m_dst->req_size : 512
-[15112.606773666][dwn_conn_0][dw_node.c:643] Replying to req 1 (conn_id=1)
+[17142.806577982][dwn_conn_0][connection.c:120] REQUEST create req_id:1, conn_id: 1
+[17142.806583755][dwn_conn_0][dw_node.c:960] Received message req_id=1, size=1024, from 127.0.0.1:59279
+[17142.806589862][dwn_conn_0][dw_node.c:830] process_single_message: just entered
+[17142.806594524][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 1,  command: COMPUTE
+[17142.806600267][dwn_conn_0][dw_node.c:684] COMPUTE: computing for 0 usecs
+[17142.806607697][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 1,  command: REPLY
+[17142.806613050][dwn_conn_0][dw_node.c:852] process_single_message: Handling REPLY: req_id=1 --- ---
+[17142.806618039][dwn_conn_0][dw_node.c:599] reply: just entered !!! --- !!! --- !!!
+[17142.806622824][dwn_conn_0][dw_node.c:630] reply: calling conn_prepare_send_message()
+[17142.806627444][dwn_conn_0][dw_node.c:633] reply: done the conn_prepare_send_message()
+[17142.806631927][dwn_conn_0][dw_node.c:641] reply : set m_dst->req_size : 512
+[17142.806636595][dwn_conn_0][dw_node.c:643] Replying to req 1 (conn_id=1)
 REPLY message (req_id: 1, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
-[15112.606785410][dwn_conn_0][connection.c:453] SEND starting, conn_id: 1, status: SENDING, msg_size: 512
-[15112.606791384][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=0
-[15112.606797406][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
-[15112.606801812][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:0; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
-[15112.606808795][dwn_conn_0][connection.c:573] SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()
-[15112.606813816][dwn_conn_0][dw_node.c:666] reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---
-[15112.606818748][dwn_conn_0][dw_node.c:669] reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection
-[15112.606824030][dwn_conn_0][dw_node.c:854] process_single_message: Handling REPLY: req_id=1, we got reply_result:0 .--- ---
-[15112.606829222][dwn_conn_0][dw_node.c:856] process_single_message: reply() returned, conn_id: 1 --- ---
-[15112.606833922][dwn_conn_0][dw_node.c:859] Message req_id=1 is still sending after REPLY, conn_id: 1
-[15112.606839278][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000004, aux=17179869185
-[15112.606845609][dwn_conn_0][dw_node.c:1148] exec_request: obtain_messages returned != 0
-[15112.606880464][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.606886193][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.606895165][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
-[15112.606901137][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=2
-[15112.606907150][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
-[15112.606911555][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:2; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
-[15112.606917930][dwn_conn_0][dw_io.c:122] SEND_URING: conn_id=1 is now ready
-[15112.606922542][dwn_conn_0][connection.c:589] SEND returned: 512
-[15112.606927323][dwn_conn_0][dw_node.c:1129] conn_id=1, flush finished, adding EPOLLIN
-[15112.606932209][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000001, aux=17179869185
-[15112.606939433][dwn_conn_0][dw_node.c:1134] conns[1].status=2 (SENDING)
-[15112.606944261][dwn_conn_0][dw_node.c:1137] uring_send_state=0
-[15112.606948707][dwn_conn_0][dw_node.c:1144] exec_request: calling obtain_messages() from conn_id=1's recv buffer
-[15112.606953660][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
+[17142.806647783][dwn_conn_0][connection.c:451] conn_start_send: just entered --- 
+[17142.806652444][dwn_conn_0][connection.c:455] SEND starting, conn_id: 1, status: SENDING, msg_size: 512
+[17142.806658277][dwn_conn_0][connection.c:474] conn_start_send: calling conn_send --- 
+[17142.806662855][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=0
+[17142.806668873][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
+[17142.806673845][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:0; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
+[17142.806680237][dwn_conn_0][dw_io.c:103] dw_sendto: -> SEND_URING: conn_id=1 SQE was submitted, setting state SS_IN_FLIGHT
+[17142.806685473][dwn_conn_0][connection.c:574] conn_send: dw_sendto returned something different from 0 : -1.
+[17142.806690135][dwn_conn_0][connection.c:578] conn_send: dw_sendto returned -1, what does it mean?
+[17142.806694550][dwn_conn_0][connection.c:582] conn_send: SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()
+[17142.806699712][dwn_conn_0][dw_node.c:666] reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---
+[17142.806704320][dwn_conn_0][dw_node.c:669] reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection
+[17142.806709461][dwn_conn_0][dw_node.c:854] process_single_message: Handling REPLY: req_id=1, we got reply_result:0 .--- ---
+[17142.806714667][dwn_conn_0][dw_node.c:856] process_single_message: reply() returned, conn_id: 1 --- ---
+[17142.806719454][dwn_conn_0][dw_node.c:859] process_single_message: Message req_id=1 is still sending after REPLY, conn_id: 1
+[17142.806724683][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000004, aux=17179869185
+[17142.806730875][dwn_conn_0][dw_node.c:1149] exec_request: obtain_messages returned != 0
+[17142.806735440][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.806785287][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.806790881][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.806796245][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.806805859][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17142.806810984][dwn_conn_0][connection.c:708] --- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---
+[17142.806815971][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=2
+[17142.806822020][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
+[17142.806826564][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:2; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
+[17142.806831770][dwn_conn_0][dw_io.c:111] dw_sendto: case SS_COMPLETED, we shall consume the send-CQE!!! ---
+[17142.806836984][dwn_conn_0][dw_io.c:125] dw_sendto: -> SEND_URING: conn_id=1 is now ready, setting state SS_REDY
+[17142.806841856][dwn_conn_0][dw_io.c:129] dw_sendto: send has completed, we might need to call conn_req_remove
+[17142.806846362][dwn_conn_0][connection.c:574] conn_send: dw_sendto returned something different from 0 : 512.
+[17142.806850893][dwn_conn_0][connection.c:597] conn_send: SEND returned: 512
+[17142.806855585][dwn_conn_0][dw_node.c:1130] exec_request: conn_id=1, flush finished, adding EPOLLIN
+[17142.806860447][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000001, aux=17179869185
+[17142.806867419][dwn_conn_0][dw_node.c:1135] exec_request: conns[1].status=2 (SENDING)
+[17142.806872434][dwn_conn_0][dw_node.c:1138] exec_request: uring_send_state=0
+[17142.806876861][dwn_conn_0][dw_node.c:1145] exec_request: calling obtain_messages() from conn_id=1's recv buffer
+[17142.806881698][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
 obtain_messages just entered: --- currently, conn.req_list is not null
-[15112.606961420][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
-[15112.606966312][dwn_conn_0][connection.c:382] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
-[15112.606971962][dwn_conn_0][dw_node.c:1148] exec_request: obtain_messages returned != 0
-[15112.609930701][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.609945099][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.609951261][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17142.806889464][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[17142.806895635][dwn_conn_0][connection.c:382] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
+[17142.806901353][dwn_conn_0][dw_node.c:1149] exec_request: obtain_messages returned != 0
+[17142.806905951][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.808925665][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.808932856][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.808937963][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.808943698][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
 exec_request before conn_recv: --- currently, conn.req_list is not null
-[15112.609957764][dwn_conn_0][dw_node.c:1092] calling conn_recv()
-[15112.609961655][dwn_conn_0][connection.c:642] conn_recv: just entered
+[17142.808953833][dwn_conn_0][dw_node.c:1092] calling conn_recv
+[17142.808960556][dwn_conn_0][connection.c:650] conn_recv: just entered
 conn_recv just entered: --- currently, conn.req_list is not null
-[15112.609967253][dwn_conn_0][connection.c:669] conn_recv: coing to dw_recvfrom
-[15112.609971157][dwn_conn_0][dw_io.c:146] dw_recvfrom: just entered
+[17142.808968187][dwn_conn_0][connection.c:677] conn_recv: coing to dw_recvfrom
+[17142.808973084][dwn_conn_0][dw_io.c:156] dw_recvfrom: just entered
 dw_recvfrom just entered: --- currently, conn.req_list is not null
 conn_recv after recvfrom: --- currently, conn.req_list is not null
-[15112.609981494][dwn_conn_0][connection.c:679] RECV returned: 1024
-[15112.609985484][dwn_conn_0][dw_node.c:1095] returned != 0 from conn_recv()
+[17142.808985702][dwn_conn_0][connection.c:687] RECV returned: 1024
+[17142.808990341][dwn_conn_0][dw_node.c:1095] exec_request: returned != 0 from conn_recv
 exec_request after conn_recv: --- currently, conn.req_list is not null
-[15112.609991346][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=0, sock=14, send_state=0
-[15112.609996493][dwn_conn_0][connection.c:559] SEND with no data
-[15112.610012259][dwn_conn_0][dw_node.c:1125] conn_id=1, still pending after flush, adding EPOLLOUT
-[15112.610016582][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000004, aux=17179869185
-[15112.610021802][dwn_conn_0][dw_node.c:1134] conns[1].status=2 (SENDING)
-[15112.610025784][dwn_conn_0][dw_node.c:1137] uring_send_state=0
-[15112.610029385][dwn_conn_0][dw_node.c:1144] exec_request: calling obtain_messages() from conn_id=1's recv buffer
-[15112.610033583][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
+[17142.808997621][dwn_conn_0][connection.c:708] --- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---
+[17142.810815838][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=0, sock=14, send_state=0
+[17142.810824726][dwn_conn_0][connection.c:563] conn_send: SEND with no data
+[17142.810828719][dwn_conn_0][dw_node.c:1126] exec_request: conn_id=1, still pending after flush, adding EPOLLOUT
+[17142.810833555][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000004, aux=17179869185
+[17142.810839661][dwn_conn_0][dw_node.c:1135] exec_request: conns[1].status=2 (SENDING)
+[17142.810843683][dwn_conn_0][dw_node.c:1138] exec_request: uring_send_state=0
+[17142.810847262][dwn_conn_0][dw_node.c:1145] exec_request: calling obtain_messages() from conn_id=1's recv buffer
+[17142.810851143][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
 obtain_messages just entered: --- currently, conn.req_list is not null
-[15112.610042522][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
-[15112.610048631][dwn_conn_0][connection.c:391] --- --- --- conn_prepare_recv_message: Got complete message of recv size:1024 (expected 1024), ready to process
+[17142.810857736][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[17142.810865341][dwn_conn_0][connection.c:391] --- --- --- conn_prepare_recv_message: Got complete message of recv size:1024 (expected 1024), ready to process
 message (req_id: 2, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.610065180][dwn_conn_0][connection.c:120] REQUEST create req_id:2, conn_id: 1
-[15112.610069888][dwn_conn_0][dw_node.c:960] Received message req_id=2, size=1024, from 127.0.0.1:42577
-[15112.610083785][dwn_conn_0][dw_node.c:830] process_single_message: just entered
-[15112.610087759][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 2,  command: COMPUTE
-[15112.610092693][dwn_conn_0][dw_node.c:684] COMPUTE: computing for 0 usecs
-[15112.610099456][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 2,  command: REPLY
-[15112.610103750][dwn_conn_0][dw_node.c:852] process_single_message: Handling REPLY: req_id=2 --- ---
-[15112.610107776][dwn_conn_0][dw_node.c:599] reply: just entered !!! --- !!! --- !!!
-[15112.610111386][dwn_conn_0][dw_node.c:630] reply: calling conn_prepare_send_message()
-[15112.610115116][dwn_conn_0][dw_node.c:633] reply: done the conn_prepare_send_message()
-[15112.610118701][dwn_conn_0][dw_node.c:641] reply : set m_dst->req_size : 512
-[15112.610122515][dwn_conn_0][dw_node.c:643] Replying to req 2 (conn_id=1)
+[17142.810883695][dwn_conn_0][connection.c:120] REQUEST create req_id:2, conn_id: 1
+[17142.810888493][dwn_conn_0][dw_node.c:960] Received message req_id=2, size=1024, from 127.0.0.1:59279
+[17142.810897173][dwn_conn_0][dw_node.c:830] process_single_message: just entered
+[17142.810901344][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 2,  command: COMPUTE
+[17142.810906469][dwn_conn_0][dw_node.c:684] COMPUTE: computing for 0 usecs
+[17142.810912639][dwn_conn_0][dw_node.c:836] PROCESS conn_id: 1, req_id: 2,  command: REPLY
+[17142.810916893][dwn_conn_0][dw_node.c:852] process_single_message: Handling REPLY: req_id=2 --- ---
+[17142.810920905][dwn_conn_0][dw_node.c:599] reply: just entered !!! --- !!! --- !!!
+[17142.810924519][dwn_conn_0][dw_node.c:630] reply: calling conn_prepare_send_message()
+[17142.810928309][dwn_conn_0][dw_node.c:633] reply: done the conn_prepare_send_message()
+[17142.810932120][dwn_conn_0][dw_node.c:641] reply : set m_dst->req_size : 512
+[17142.810935794][dwn_conn_0][dw_node.c:643] Replying to req 2 (conn_id=1)
 REPLY message (req_id: 2, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
-[15112.610133197][dwn_conn_0][connection.c:453] SEND starting, conn_id: 1, status: SENDING, msg_size: 512
-[15112.610138241][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=0
-[15112.610143165][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
-[15112.610146602][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:0; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
-[15112.610152380][dwn_conn_0][connection.c:573] SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()
-[15112.610156345][dwn_conn_0][dw_node.c:666] reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---
-[15112.610159890][dwn_conn_0][dw_node.c:669] reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection
-[15112.610164334][dwn_conn_0][dw_node.c:854] process_single_message: Handling REPLY: req_id=2, we got reply_result:0 .--- ---
-[15112.610168376][dwn_conn_0][dw_node.c:856] process_single_message: reply() returned, conn_id: 1 --- ---
-[15112.610172157][dwn_conn_0][dw_node.c:859] Message req_id=2 is still sending after REPLY, conn_id: 1
-[15112.610176323][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000004, aux=17179869185
-[15112.610181561][dwn_conn_0][dw_node.c:1148] exec_request: obtain_messages returned != 0
-[15112.610212150][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.610216354][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.610221485][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
-[15112.610225970][dwn_conn_0][connection.c:549] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=2
-[15112.610231135][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
-[15112.610234504][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:2; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
-[15112.610239355][dwn_conn_0][dw_io.c:122] SEND_URING: conn_id=1 is now ready
-[15112.610243047][dwn_conn_0][connection.c:589] SEND returned: 512
-[15112.610246915][dwn_conn_0][dw_node.c:1129] conn_id=1, flush finished, adding EPOLLIN
-[15112.610250933][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=40000001, aux=17179869185
-[15112.610256689][dwn_conn_0][dw_node.c:1134] conns[1].status=2 (SENDING)
-[15112.610260486][dwn_conn_0][dw_node.c:1137] uring_send_state=0
-[15112.610264006][dwn_conn_0][dw_node.c:1144] exec_request: calling obtain_messages() from conn_id=1's recv buffer
-[15112.610267879][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
+[17142.810945254][dwn_conn_0][connection.c:451] conn_start_send: just entered --- 
+[17142.810950429][dwn_conn_0][connection.c:455] SEND starting, conn_id: 1, status: SENDING, msg_size: 512
+[17142.810956285][dwn_conn_0][connection.c:474] conn_start_send: calling conn_send --- 
+[17142.810961310][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=0
+[17142.810969355][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
+[17142.810976644][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:0; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
+[17142.810982978][dwn_conn_0][dw_io.c:103] dw_sendto: -> SEND_URING: conn_id=1 SQE was submitted, setting state SS_IN_FLIGHT
+[17142.810988407][dwn_conn_0][connection.c:574] conn_send: dw_sendto returned something different from 0 : -1.
+[17142.810993733][dwn_conn_0][connection.c:578] conn_send: dw_sendto returned -1, what does it mean?
+[17142.810998458][dwn_conn_0][connection.c:582] conn_send: SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()
+[17142.811007790][dwn_conn_0][dw_node.c:666] reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---
+[17142.811012026][dwn_conn_0][dw_node.c:669] reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection
+[17142.811017120][dwn_conn_0][dw_node.c:854] process_single_message: Handling REPLY: req_id=2, we got reply_result:0 .--- ---
+[17142.811023370][dwn_conn_0][dw_node.c:856] process_single_message: reply() returned, conn_id: 1 --- ---
+[17142.811027262][dwn_conn_0][dw_node.c:859] process_single_message: Message req_id=2 is still sending after REPLY, conn_id: 1
+[17142.811034284][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000004, aux=17179869185
+[17142.811039364][dwn_conn_0][dw_node.c:1149] exec_request: obtain_messages returned != 0
+[17142.811043378][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.811095591][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.811101987][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.811107451][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.811113881][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17142.811119274][dwn_conn_0][connection.c:708] --- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---
+[17142.811124546][dwn_conn_0][connection.c:553] SEND conn_id=1, status=2 (SENDING), curr_send_size=512, sock=14, send_state=2
+[17142.811130556][dwn_conn_0][dw_io.c:84] dw_sendto: just entered
+[17142.811135062][dwn_conn_0][dw_io.c:90] dw_sendto: IOURING_ENABLED: conn->uring_send_state:2; remember READY:0 ; IN_FLIGHT:1 ; COMPLETED:2
+[17142.811140538][dwn_conn_0][dw_io.c:111] dw_sendto: case SS_COMPLETED, we shall consume the send-CQE!!! ---
+[17142.811145940][dwn_conn_0][dw_io.c:125] dw_sendto: -> SEND_URING: conn_id=1 is now ready, setting state SS_REDY
+[17142.811150905][dwn_conn_0][dw_io.c:129] dw_sendto: send has completed, we might need to call conn_req_remove
+[17142.811156438][dwn_conn_0][connection.c:574] conn_send: dw_sendto returned something different from 0 : 512.
+[17142.811161440][dwn_conn_0][connection.c:597] conn_send: SEND returned: 512
+[17142.811166271][dwn_conn_0][dw_node.c:1130] exec_request: conn_id=1, flush finished, adding EPOLLIN
+[17142.811171460][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=40000001, aux=17179869185
+[17142.811178858][dwn_conn_0][dw_node.c:1135] exec_request: conns[1].status=2 (SENDING)
+[17142.811183945][dwn_conn_0][dw_node.c:1138] exec_request: uring_send_state=0
+[17142.811188641][dwn_conn_0][dw_node.c:1145] exec_request: calling obtain_messages() from conn_id=1's recv buffer
+[17142.811193795][dwn_conn_0][dw_node.c:922] obtain_messages: just entered
 obtain_messages just entered: --- currently, conn.req_list is not null
-[15112.610273593][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
-[15112.610277687][dwn_conn_0][connection.c:382] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
-[15112.610282214][dwn_conn_0][dw_node.c:1148] exec_request: obtain_messages returned != 0
-[15112.611579663][dwn_conn_0][dw_poll.c:516] conn->uring_aux=17179869185
-[15112.611605992][dwn_conn_0][dw_node.c:1503] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
-[15112.611618788][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
+[17142.811203688][dwn_conn_0][connection.c:377] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[17142.811208914][dwn_conn_0][connection.c:382] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
+[17142.811215294][dwn_conn_0][dw_node.c:1149] exec_request: obtain_messages returned != 0
+[17142.811220375][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.811460837][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.811477141][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=17179869185
+[17142.811483358][dwn_conn_0][dw_node.c:1504] event_type=SOCKET, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.811491064][dwn_conn_0][dw_node.c:1058] exec_request: event_type=SOCKET, conn_id=1
 exec_request before conn_recv: --- currently, conn.req_list is not null
-[15112.611636566][dwn_conn_0][dw_node.c:1092] calling conn_recv()
-[15112.611646235][dwn_conn_0][connection.c:642] conn_recv: just entered
+[17142.811500383][dwn_conn_0][dw_node.c:1092] calling conn_recv
+[17142.811504168][dwn_conn_0][connection.c:650] conn_recv: just entered
 conn_recv just entered: --- currently, conn.req_list is not null
-[15112.611668047][dwn_conn_0][connection.c:669] conn_recv: coing to dw_recvfrom
-[15112.611677467][dwn_conn_0][dw_io.c:146] dw_recvfrom: just entered
+[17142.811513657][dwn_conn_0][connection.c:677] conn_recv: coing to dw_recvfrom
+[17142.811518960][dwn_conn_0][dw_io.c:156] dw_recvfrom: just entered
 dw_recvfrom just entered: --- currently, conn.req_list is not null
 conn_recv after recvfrom: --- currently, conn.req_list is not null
-[15112.611711678][dwn_conn_0][connection.c:679] RECV returned: 0
-[15112.611722851][dwn_conn_0][connection.c:681] RECV connection closed by remote end
-[15112.611731427][dwn_conn_0][dw_node.c:1153] exec_request: started goto err
-[15112.611740404][dwn_conn_0][dw_node.c:820] close_and_forget: removing sock=14 from dw_poll
-[15112.611749846][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x583460cc9470, flags=00000000, aux=0
-[15112.611762027][dwn_conn_0][dw_node.c:823] close_and_forget: removing sock=14 from conns[] by calling conn_del_sock
-[15112.611771584][dwn_conn_0][connection.c:262] conn_del_sock: just entered, found id from sock: 1; if !=-1 will call conn_del_id on it
-[15112.611781167][dwn_conn_0][connection.c:250] conn_del_id: marking conns[1] invalid
-conn_free: just entered[15112.611790679][dwn_conn_0][connection.c:286] Freeing conn 1
-[15112.611799846][dwn_conn_0][connection.c:125] conn_reset: just entered
+[17142.811531642][dwn_conn_0][connection.c:687] RECV returned: 0
+[17142.811535712][dwn_conn_0][connection.c:689] RECV connection closed by remote end
+[17142.811540309][dwn_conn_0][dw_node.c:1154] exec_request: started goto err
+[17142.811546622][dwn_conn_0][dw_node.c:820] close_and_forget: removing sock=14 from dw_poll
+[17142.811551897][dwn_conn_0][dw_poll.c:203] dw_poll_mod(): fd=14, p_poll=0x565efe3e6970, flags=00000000, aux=0
+[17142.811560107][dwn_conn_0][dw_node.c:823] close_and_forget: removing sock=14 from conns[] by calling conn_del_sock
+[17142.811565595][dwn_conn_0][connection.c:262] conn_del_sock: just entered, found id from sock: 1; if !=-1 will call conn_del_id on it
+[17142.811571304][dwn_conn_0][connection.c:250] conn_del_id: marking conns[1] invalid
+conn_free: just entered[17142.811583435][dwn_conn_0][connection.c:286] Freeing conn 1
+[17142.811588120][dwn_conn_0][connection.c:125] conn_reset: just entered
 conn_reset: conns[i].req_list is not null, with i:1;
-[15112.611816116][dwn_conn_0][connection.c:132] conn_reset(1): conn: 1, req_id: 2, .conn_id: 1 -> message (req_id: 2, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.611842028][dwn_conn_0][connection.c:132] conn_reset(1): conn: 1, req_id: 1, .conn_id: 1 -> message (req_id: 1, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.611864192][dwn_conn_0][connection.c:132] conn_reset(1): conn: 1, req_id: 0, .conn_id: 1 -> message (req_id: 0, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
+[17142.811595453][dwn_conn_0][connection.c:132] conn_reset(1): conn: 1, req_id: 2, .conn_id: 1 -> message (req_id: 2, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
+[17142.811613348][dwn_conn_0][connection.c:132] conn_reset(1): conn: 1, req_id: 1, .conn_id: 1 -> message (req_id: 1, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
+[17142.811626779][dwn_conn_0][connection.c:132] conn_reset(1): conn: 1, req_id: 0, .conn_id: 1 -> message (req_id: 0, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
 conn_reset: done first for block, starting second
-[15112.612553461][dwn_conn_0][connection.c:144] conn_reset(): freeing req_id: 2, conn_id: 1, .conn_id: 1 -> message (req_id: 2, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.612581497][dwn_conn_0][request.c:18] REQUEST remove req_id:2
-[15112.612597658][dwn_conn_0][connection.c:144] conn_reset(): freeing req_id: 1, conn_id: 1, .conn_id: 1 -> message (req_id: 1, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.612633144][dwn_conn_0][request.c:18] REQUEST remove req_id:1
-[15112.612642363][dwn_conn_0][connection.c:144] conn_reset(): freeing req_id: 0, conn_id: 1, .conn_id: 1 -> message (req_id: 0, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
-[15112.612665539][dwn_conn_0][request.c:18] REQUEST remove req_id:0
+[17142.812283050][dwn_conn_0][connection.c:144] conn_reset(): freeing req_id: 2, conn_id: 1, .conn_id: 1 -> message (req_id: 2, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
+[17142.812307000][dwn_conn_0][request.c:18] REQUEST remove req_id:2
+[17142.812312474][dwn_conn_0][connection.c:144] conn_reset(): freeing req_id: 1, conn_id: 1, .conn_id: 1 -> message (req_id: 1, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
+[17142.812328358][dwn_conn_0][request.c:18] REQUEST remove req_id:1
+[17142.812332033][dwn_conn_0][connection.c:144] conn_reset(): freeing req_id: 0, conn_id: 1, .conn_id: 1 -> message (req_id: 0, req_size: 1024, num: 2, status: SUCCESS): COMPUTE(0us)->REPLY(512b)->EOM [24 bytes]
+[17142.812345801][dwn_conn_0][request.c:18] REQUEST remove req_id:0
 conn_reset: returning
-[15112.615979756][dwn_conn_0][dw_poll.c:516] conn->uring_aux=0
-[15112.615994859][dwn_conn_0][dw_node.c:1503] event_type=LISTEN, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[17142.815385514][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.815463273][dwn_conn_0][dw_poll.c:394] dw_poll_next: just entered
+
+[17142.815473961][dwn_conn_0][dw_poll.c:517] dw_poll_next: conn->uring_aux=0
+[17142.815478461][dwn_conn_0][dw_node.c:1504] event_type=LISTEN, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
 dw_node_debug: dw_io.c:51: dw_accept: Assertion `conn' failed.
 Aborted                    ./dw_node_debug --accept-mode=child -p uring
 jacopo@jacopocarlonMuletto:~/Desktop/distwalk-iouring/src$ 

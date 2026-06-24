@@ -99,13 +99,16 @@ ssize_t dw_sendto(dw_poll_t *p_poll, const int conn_id, const int flags) {
                 io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_SEND, conn_id));
                 conn->uring_send_state = SS_IN_FLIGHT;
                 errno                  = EAGAIN;
+
+                dw_log("dw_sendto: -> SEND_URING: conn_id=%d SQE was submitted, setting state SS_IN_FLIGHT\n", conn_id);
                 return -1;
             }
             case SS_IN_FLIGHT: {
-                check(0, "should not call dw_sendto while in flight");
+                check(0, "dw_sendto: should not call dw_sendto while in flight");
             }
             case SS_COMPLETED: {
                 // complete: consume the SEND CQE the dispatcher just emitted
+                dw_log("dw_sendto: case SS_COMPLETED, we shall consume the send-CQE!!! ---\n");
                 struct io_uring_cqe *cqe = dw_poll_current_cqe(p_poll);
                 if (!cqe || DW_URING_UNPACK_OP(io_uring_cqe_get_data64(cqe)) != DW_URING_OP_SEND) {
                     errno = EINVAL;
@@ -119,7 +122,14 @@ ssize_t dw_sendto(dw_poll_t *p_poll, const int conn_id, const int flags) {
                 }
 
                 conn->uring_send_state = SS_READY;
-                dw_log("SEND_URING: conn_id=%d is now ready\n", conn_id);
+                dw_log("dw_sendto: -> SEND_URING: conn_id=%d is now ready, setting state SS_REDY\n", conn_id);
+
+                // now that the send has been completed, we shall pass through the reply -> conn_req_remove way.
+                // cannot access req after conn_req_remove()
+                dw_log("dw_sendto: send has completed, we might need to call conn_req_remove\n");
+                //  conn_req_remove(conn, req);
+                // // TODO: how to add this line, which reply does call ?????????
+                //  infos->active_reqs--;
 
                 // TODO: rearm if needed
                 // // If curr_send_size != 0 then other messages were appended to the send buffer in the meantime.

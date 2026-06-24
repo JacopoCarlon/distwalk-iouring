@@ -391,6 +391,7 @@ struct io_uring_sqe * dw_poll_next_sqe(dw_poll_t *p_poll) {
 
 // returned fd is automatically removed from dw_poll if marked 1SHOT
 int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
+    dw_log("dw_poll_next: just entered\n\n");
     switch (p_poll->poll_type) {
         case DW_SELECT:
             while (p_poll->u.select_fds.iter < p_poll->u.select_fds.n_rd_fd && !FD_ISSET(p_poll->u.select_fds.rd_fd[p_poll->u.select_fds.iter],
@@ -513,7 +514,7 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                     return 1;
                 }
 
-                if (conn) dw_log("conn->uring_aux=%ld\n", conn->uring_aux);
+                if (conn) dw_log("dw_poll_next: conn->uring_aux=%ld\n", conn->uring_aux);
                 *aux = conn ? conn->uring_aux : cqe_aux;
                 *flags = 0;
 
@@ -549,12 +550,12 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                 return 1;
             }
             #else
-            check(0, "DW_IOURING used without IOURING_ENABLED");
+            check(0, "dw_poll_next: DW_IOURING used without IOURING_ENABLED");
             #endif
             break;
         }
         default:
-            check(0, "Wrong dw_poll_type");
+            check(0, "dw_poll_next: Wrong dw_poll_type");
     }
     return 0;
 }

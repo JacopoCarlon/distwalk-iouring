@@ -447,6 +447,8 @@ int conn_start_sendfile(conn_info_t *conn, const struct sockaddr_in target, cons
 // returns the number of bytes sent, -1 if an error occurred
 int conn_start_send(conn_info_t *conn, struct sockaddr_in target, dw_poll_t *p_poll) {
     // see conn_prepare_send_message():
+
+    dw_log("conn_start_send: just entered --- \n");
     // the just-built message sits at the append point: curr_send_buf + curr_send_size.
     message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
     conn->target = target;
@@ -468,6 +470,8 @@ int conn_start_send(conn_info_t *conn, struct sockaddr_in target, dw_poll_t *p_p
 
         // TODO: What if SS_COMPLETED
     }
+
+    dw_log("conn_start_send: calling conn_send --- \n");
 
     return conn_send(conn, p_poll);
 }
@@ -556,7 +560,7 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
     #endif
 
     if (conn->curr_send_size == 0) {
-        dw_log("SEND with no data\n");
+        dw_log("conn_send: SEND with no data\n");
         return 0;
     }
 
@@ -564,29 +568,33 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
 
     if (sent == 0) {
         // TODO: should not even be possible, ignoring
-        dw_log("SEND returned 0 (unreachable hopefully) --- --- --- \n");
+        dw_log("conn_send: SEND returned 0 (unreachable hopefully) --- --- --- \n");
         return 0;
     }
+    dw_log("conn_send: dw_sendto returned something different from 0 : %d.\n", sent);
 
     if (sent == -1) {
+        
+        dw_log("conn_send: dw_sendto returned -1, what does it mean?\n");
+        
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            dw_log("SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()\n");
+            // these errors are actively set in the URING path for the SQE-submission.
+            dw_log("conn_send: SEND Got EAGAIN or EWOULDBLOCK, ignoring... and calling conn_send_status()\n");
             // TODO: ensure this makes sense also in non-io_uring paths
             conn_set_status(conn, SENDING);
             return 0;
         }
-        dw_log("conn-send: done, if needed, conn_set_status()\n");
 
         if (errno == EPIPE || errno == ECONNRESET) {
-            dw_log("SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
+            dw_log("conn_send: SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
             conn->status = CLOSING;
             return 0;
         }
 
-        fprintf(stderr, "SEND Unexpected error: %s\n", strerror(errno));
+        fprintf(stderr, "conn_send: SEND Unexpected error: %s\n", strerror(errno));
         return -1;
     }
-    dw_log("SEND returned: %d\n", (int)sent);
+    dw_log("conn_send: SEND returned: %d\n", (int)sent);
 
     conn->curr_send_buf += sent;
     conn->curr_send_size -= sent;
@@ -697,6 +705,7 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
 
 
 int conn_flush(conn_info_t *conn, dw_poll_t *p_poll) {
+    dw_log("--- --- conn_flush: just entered, will call conn_send or conn_send_v2 or will ret -1 --- ---\n");
     if (conn->reply_mode == REPLY_MODE_NORMAL)
         return conn_send(conn, p_poll);
 

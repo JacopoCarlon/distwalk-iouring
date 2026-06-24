@@ -856,21 +856,21 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
                     dw_log("process_single_message: reply() returned, conn_id: %d --- ---\n", conn_id);
 
                     if (conn_get_status_by_id(req->conn_id) == SENDING) {
-                        dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                        dw_log("process_single_message: Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
                         sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
                         return 1;
                     } else {
-                        dw_log("Closing connection conn_id: %d after failed REPLY\n", conn_id);
+                        dw_log("process_single_message: Closing connection conn_id: %d after failed REPLY\n", conn_id);
                         close_and_forget(p_poll, conns[conn_id].sock);
                         return -1;
                     }
                 }
                 if (conn_get_status_by_id(req->conn_id) == SENDING) {
-                    dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                    dw_log("process_single_message:Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
                     sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
                 }
                 // any further cmds[] for replied-to hop, not me
-                printf("process_single_message case REPLY completed, with reply result: %d, will now return 1\n", reply_result);
+                printf("process_single_message: case REPLY completed, with reply result: %d, will now return 1\n", reply_result);
                 return 1;
             case STORE:
             case LOAD: {
@@ -1078,7 +1078,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         return;
 
     if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
-        dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id);
+        dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
         goto err;
     }
     
@@ -1089,10 +1089,10 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
             printf("exec_request before conn_recv: --- currently, conn.req_list is NULL\n");
         }
 
-        dw_log("calling conn_recv()\n");
+        dw_log("calling conn_recv\n");
         if (conn_recv(conn, p_poll) == 0)
             goto err;
-        dw_log("returned != 0 from conn_recv()\n");
+        dw_log("exec_request: returned != 0 from conn_recv\n");
         
         if (conn->req_list){
             printf("exec_request after conn_recv: --- currently, conn.req_list is not null\n");
@@ -1102,9 +1102,10 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     }
 
     if ((pflags & DW_POLLOUT) && (type == CONNECT)) {
-        dw_log("calling establish_conn()\n");
-        if (!establish_conn(p_poll, conn_id))
+        dw_log("exec_request: calling establish_conn()\n");
+        if (!establish_conn(p_poll, conn_id)){
             goto err;
+        }
         infos->active_conns++;
         // we need the send_messages() below to still be tried afterwards
     }
@@ -1122,19 +1123,19 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
 
         if (r == 0) {
             // still pending (does not happen in uring as MSG_WAITALL is set in dw_sendto)
-            dw_log("conn_id=%d, still pending after flush, adding EPOLLOUT\n", conn_id);
+            dw_log("exec_request: conn_id=%d, still pending after flush, adding EPOLLOUT\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
         } else {
             // finished
-            dw_log("conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
+            dw_log("exec_request: conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLIN | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
         }
     }
 
-    dw_log("conns[%d].status=%d (%s)\n", conn_id, conn_get_status(conn), conn_status_str(conn_get_status(conn)));
+    dw_log("exec_request: conns[%d].status=%d (%s)\n", conn_id, conn_get_status(conn), conn_status_str(conn_get_status(conn)));
 
     // skip the check if send in flight
-    dw_log("uring_send_state=%d\n", conn->uring_send_state);
+    dw_log("exec_request: uring_send_state=%d\n", conn->uring_send_state);
     if (conn->uring_send_state == SS_IN_FLIGHT) {
         dw_log("skipped checking messages\n");
         return;
