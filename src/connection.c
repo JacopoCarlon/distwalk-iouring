@@ -270,7 +270,7 @@ int conn_del_sock(int sock) {
 }
 
 void conn_free(int conn_id) {
-    printf("conn_free: just entered");
+    printf("conn_free: just entered\n");
     if (conn_id < 0){
         return;
     }
@@ -665,7 +665,7 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
     ssize_t received;
     // TODO: remove this IF (?only? client passes NULL to poll)
     if (p_poll == NULL) {
-        dw_log("conn_recv: coing to recvfrom\n");
+        dw_log("conn_recv: going to recvfrom\n");
         // dw_client and other contexts without a poll backend bypass the
         // registered-buffer machinery and recv directly into curr_recv_buf.
         received = recvfrom(sock, conn->curr_recv_buf, conn->curr_recv_size, 0,

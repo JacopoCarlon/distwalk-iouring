@@ -1111,6 +1111,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     }
 
     if (pflags & DW_POLLOUT) {
+        dw_log("exec_request: <<pflags & DW_POLLOUT>> is TRUE -> calling conn_flush\n");
         int r = conn_flush(conn, p_poll);
 
         if (r < 0) {
@@ -1129,6 +1130,13 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
             // finished
             dw_log("exec_request: conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLIN | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
+
+            if (p_poll && p_poll->poll_type == DW_IOURING){
+                dw_log("exec_request: after flush, calling conn_req_remove() manually on conn->req_list.\n");
+                conn_req_remove(conn, conn->req_list);
+                infos->active_reqs--;
+            }
+            dw_log("exec_request: conn_flush has returned != 0\n");
         }
     }
 

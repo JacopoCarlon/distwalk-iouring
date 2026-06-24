@@ -460,10 +460,13 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
             // dw_poll_wait sets n_cqes
             while (++p_poll->u.iouring_fds.iter < p_poll->u.iouring_fds.n_cqes) {
                 struct io_uring_cqe *cqe = p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter];
+                dw_log("dw_poll_next: uring cqe res:%lu, flags:%lu, aux:%lu --- ---\n", cqe->res, cqe->flags, io_uring_cqe_get_data64(cqe));
+
                 if (cqe->flags & IORING_CQE_F_MORE) {
                     dw_log("URING: MORE set ignoring, the second one will do the job\n");
                     io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
                     p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter] = NULL;
+                    dw_log("dw_poll_next: continuing <>\n");
                     continue;
                 }
 
@@ -474,12 +477,21 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                 if (cqe_op == DW_URING_OP_CANCEL) {
                     io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
                     p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter] = NULL;
+                    dw_log("dw_poll_next: continuing <1>\n");
                     continue;
                 }
 
                 // re-extract aux data
                 uint64_t cqe_aux = DW_URING_UNPACK_AUX(cqe_userdata);
+
+                dw_log("dw_poll_next: more in detail uring cqe res:%lu, flags:%lu, aux:%lu, cqe_aux:%lu --- ---\n", cqe->res, cqe->flags, io_uring_cqe_get_data64(cqe), cqe_aux);
                 conn_info_t *conn = cqe_op != DW_URING_OP_POLL ? conn_get_by_id(cqe_aux) : NULL;
+                if (conn && (conn->status == CLOSE || conn->status == NOT_INIT) ){
+                    io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
+                    p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter] = NULL;
+                    dw_log("dw_poll_next: continuing <22>\n");
+                    continue;
+                }
 
                 // Checks for spurious CQE after a deferred conn_free.
                 // The real conn_free is executed once nothing is left in flight. TODO: also handle spurious recv CQEs
@@ -493,6 +505,7 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                         conn_free(conn_get_id_by_ptr(conn));
                     }
 
+                    dw_log("dw_poll_next: continuing <333>\n");
                     continue;
                 }
 
@@ -541,6 +554,7 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                         conn->uring_send_state = SS_COMPLETED;
                         break;
                     case DW_URING_OP_CANCEL:
+                    case DW_URING_OP_POLL_CONNECTING:
                         __builtin_unreachable();
                         break;
                 }

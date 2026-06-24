@@ -32,12 +32,14 @@ static int is_uring(dw_poll_t *p_poll) {
 
 #ifdef IOURING_ENABLED
 static void uring_rearm_recv(dw_poll_t *p_poll, conn_info_t *conn, int flags) {
+    dw_log("uring_rearm_recv: on conn_id : %d\n", conn_get_id_by_ptr(conn));
     struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
     io_uring_prep_recv(sqe, conn->sock, conn->curr_recv_buf, conn->curr_recv_size, flags);
     io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_RECV, conn_get_id_by_ptr(conn)));
 }
 
 static void uring_rearm_accept(dw_poll_t *p_poll, conn_info_t *conn) {
+    dw_log("uring_rearm_accept: on conn_id : %d\n", conn_get_id_by_ptr(conn));
     // TODO: this snippet to get an sqe should be a dw_poll exposed method together with seen etc
     struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
     socklen_t            len = sizeof(conn->accept);
@@ -47,6 +49,7 @@ static void uring_rearm_accept(dw_poll_t *p_poll, conn_info_t *conn) {
 #endif
 
 int dw_accept(dw_poll_t *p_poll, const int conn_id, struct sockaddr_in *addr, socklen_t *addrlen) {
+    dw_log("dw_accept: just entered _ attemping to get connection conn_id:%d\n", conn_id);
     conn_info_t *conn = conn_get_by_id(conn_id);
     assert(conn);
     const int listen_fd = conn->sock;

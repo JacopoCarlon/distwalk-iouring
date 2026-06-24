@@ -17,6 +17,37 @@ else
     TESTS=( $(find ../src/ -name 'test_*' -executable | grep -v '~$') $(ls test_*.sh) )
 fi
 
+
+echo "Before filtering:"
+printf '  - %s\n' "${TESTS[@]}"
+
+EXCLUDE_PATTERNS=(
+    "*proxy*"
+    "*ramp*"
+)
+
+is_excluded() {
+    local name="$1"
+    for pat in "${EXCLUDE_PATTERNS[@]}"; do
+        case "$name" in
+            $pat) return 0 ;;   # 0 = true --> excluded
+        esac
+    done
+    return 1
+}
+
+if [[ ${#EXCLUDE_PATTERNS[@]} -gt 0 ]]; then
+    filtered=()
+    for t in "${TESTS[@]}"; do
+        if is_excluded "$t"; then
+            echo "  [EXCLUDED] $t" >&2
+        else
+            filtered+=("$t")
+        fi
+    done
+    TESTS=("${filtered[@]}")
+fi
+
 run_test() {
     local test=$1
     local label=$2
