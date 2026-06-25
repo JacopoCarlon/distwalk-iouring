@@ -159,9 +159,9 @@ ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struc
     dw_log("dw_recvfrom: just entered\n");
 
     if (conn->req_list){
-        printf("dw_recvfrom just entered: --- currently, conn.req_list is not null\n");
+        dw_log("dw_recvfrom just entered: --- currently, conn.req_list is not null\n");
     }else{
-        printf("dw_recvfrom just entered: --- currently, conn.req_list is NULL\n");
+        dw_log("dw_recvfrom just entered: --- currently, conn.req_list is NULL\n");
     }
 
     if (is_uring(p_poll)) {

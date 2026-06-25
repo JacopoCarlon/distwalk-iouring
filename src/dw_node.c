@@ -923,9 +923,9 @@ int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t *infos) {
     conn_info_t *conn = conn_get_by_id(conn_id);
 
     if (conn->req_list){
-        printf("obtain_messages just entered: --- currently, conn.req_list is not null\n");
+        dw_log("obtain_messages just entered: --- currently, conn.req_list is not null\n");
     }else{
-        printf("obtain_messages just entered: --- currently, conn.req_list is NULL\n");
+        dw_log("obtain_messages just entered: --- currently, conn.req_list is NULL\n");
     }
 
     // batch processing of multiple messages, if received more than 1
@@ -1085,9 +1085,9 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     
     if (pflags & DW_POLLIN) {
         if (conn->req_list){
-            printf("exec_request before conn_recv: --- currently, conn.req_list is not null\n");
+            dw_log("exec_request before conn_recv: --- currently, conn.req_list is not null\n");
         }else{
-            printf("exec_request before conn_recv: --- currently, conn.req_list is NULL\n");
+            dw_log("exec_request before conn_recv: --- currently, conn.req_list is NULL\n");
         }
 
         dw_log("calling conn_recv\n");
@@ -1096,9 +1096,9 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         dw_log("exec_request: returned != 0 from conn_recv\n");
         
         if (conn->req_list){
-            printf("exec_request after conn_recv: --- currently, conn.req_list is not null\n");
+            dw_log("exec_request after conn_recv: --- currently, conn.req_list is not null\n");
         }else{
-            printf("exec_request after conn_recv: --- currently, conn.req_list is NULL\n");
+            dw_log("exec_request after conn_recv: --- currently, conn.req_list is NULL\n");
         }
     }
 
