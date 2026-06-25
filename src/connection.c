@@ -571,7 +571,7 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
         dw_log("conn_send: SEND returned 0 (unreachable hopefully) --- --- --- \n");
         return 0;
     }
-    dw_log("conn_send: dw_sendto returned something different from 0 : %d.\n", sent);
+    dw_log("conn_send: dw_sendto returned something different from 0 : %ld.\n", sent);
 
     if (sent == -1) {
         
@@ -603,7 +603,7 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
         return (int) sent;
     }
 
-    dw_log("conn_send: returning sent:%d\n", sent);
+    dw_log("conn_send: returning sent:%ld\n", sent);
     return (int) sent;
 }
 
@@ -652,14 +652,17 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
     socklen_t recvsize = sizeof(conn->target);
 
     #ifdef SSL_ENABLED
-    if (conn->use_ssl)
-        return conn_ssl_recv(conn);
+    if (conn->use_ssl){
+        int conn_ssl_res = conn_ssl_recv(conn);
+        dw_log("conn_recv : using ssl, conn_ssl_recv returned:%d\n", conn_ssl_res); 
+        return conn_ssl_res;
+    }
     #endif
 
     if (conn->req_list){
-        printf("conn_recv just entered: --- currently, conn.req_list is not null\n");
+        dw_log("conn_recv just entered: --- currently, conn.req_list is not null\n");
     }else{
-        printf("conn_recv just entered: --- currently, conn.req_list is NULL\n");
+        dw_log("conn_recv just entered: --- currently, conn.req_list is NULL\n");
     }
 
     ssize_t received;
@@ -668,8 +671,7 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
         dw_log("conn_recv: going to recvfrom\n");
         // dw_client and other contexts without a poll backend bypass the
         // registered-buffer machinery and recv directly into curr_recv_buf.
-        received = recvfrom(sock, conn->curr_recv_buf, conn->curr_recv_size, 0,
-                            (struct sockaddr *) &conn->target, &recvsize);
+        received = recvfrom(sock, conn->curr_recv_buf, conn->curr_recv_size, 0, (struct sockaddr *) &conn->target, &recvsize);
 
         conn->curr_recv_buf += received;
         conn->curr_recv_size -= received;
@@ -679,27 +681,28 @@ int conn_recv(conn_info_t *conn, dw_poll_t *p_poll) {
     }
 
     if (conn->req_list){
-        printf("conn_recv after recvfrom: --- currently, conn.req_list is not null\n");
+        dw_log("conn_recv after recvfrom: --- currently, conn.req_list is not null\n");
     }else{
-        printf("conn_recv after recvfrom: --- currently, conn.req_list is NULL\n");
+        dw_log("conn_recv after recvfrom: --- currently, conn.req_list is NULL\n");
     }
 
     dw_log("RECV returned: %d\n", (int)received);
     if (received == 0) {
-        dw_log("RECV connection closed by remote end\n");
+        dw_log("RECV connection closed by remote end, returning 0 !!!\n");
         return 0;
     }
 
     if (received == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            dw_log("RECV Got EAGAIN or EWOULDBLOCK, ignoring...\n");
+            dw_log("RECV Got EAGAIN or EWOULDBLOCK, ignoring... and returning -1.\n");
             return -1;
         }
 
-        fprintf(stderr, "RECV Unexpected error: %s\n", strerror(errno));
+        fprintf(stderr, "RECV Unexpected error: %s. Returning 0\n", strerror(errno));
         return 0;
     }
 
+    dw_log("conn_recv finished, returning 1\n");
     return 1;
 }
 

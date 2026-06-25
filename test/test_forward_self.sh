@@ -21,5 +21,7 @@ cat $TMP_C0 | grep -q " is over (after receive/skip of pkt 0), closing socket"
 
 kill_all SIGINT
 
+# echo $?
+
 rm $TMP_N0
 rm $TMP_C0

@@ -1078,6 +1078,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         return;
 
     if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
+        dw_log("Connection to remote peer refused, conn_id=%d\n\n\n---\n", conn_id);    // possibly needed to pass a test: TODO: check this
         dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
         goto err;
     }

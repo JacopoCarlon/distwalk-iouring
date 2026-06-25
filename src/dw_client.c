@@ -330,7 +330,7 @@ void *thread_sender(void *data) {
         }
     }
 
-    dw_log("Sender thread terminating\n");
+    dw_log("dw_client: thread_sender: Sender thread terminating --- --- --- ---\n\n");
     return 0;
 }
 
@@ -503,6 +503,7 @@ void *thread_receiver(void *data) {
 
         do {
             recv = conn_recv(conn, NULL);
+            dw_log("dw_client: thread_receiver: conn_recv returned: %d ---- ----\n", recv);
             if (recv == 0) {
                 printf("Error: cannot read received message\n");
                 unsigned long skip_pkts =
@@ -520,8 +521,10 @@ void *thread_receiver(void *data) {
                 if (p_cmd->cmd == EOM && m->req_size > msg_size) {
                     /* long REPLY case */
                     command_t *p_next = cmd_bounded_next(p_cmd, message_end(m));
-                    if (!p_next)
+                    if (!p_next){
+                        dw_log("dw_client: thread_receiver: using goto skip !!!\n");
                         goto skip;
+                    }
                     size_t diff = conn->curr_recv_buf - (unsigned char*)p_next;
                     #ifdef DW_DEBUG
                     dw_log("req_size=%d, diff=%lu\n", m->req_size, diff);
@@ -548,6 +551,7 @@ void *thread_receiver(void *data) {
         }
 
     skip:
+        dw_log("dw_client: thread_receiver went to <goto skip>\n");
         if ((pkt_i + i_incr) % pkts_per_session == 0) {
             int sess_id = pkt_i / pkts_per_session;
             dw_log("Session %d is over (after receive/skip of pkt %d), closing socket\n", sess_id, pkt_i);
@@ -596,7 +600,7 @@ void *thread_receiver(void *data) {
     }
 
     printf("Sent pkts - success: %d, error: %d, timeout: %d, thr_id: %d\n", num_success, num_error, num_timedout, thread_id);
-    dw_log("Receiver thread terminating\n");
+    dw_log("dw_client: thread_receiver: Receiver thread terminating --- --- --- ---\n");
     return 0;
 }
 
@@ -1531,17 +1535,20 @@ int main(int argc, char *argv[]) {
             sys_check(pthread_create(&receiver[i], NULL, thread_receiver, (void *)(unsigned long) i));
         }
 
-        for (int i = 0; i < input_args.num_threads; i++)
+        for (int i = 0; i < input_args.num_threads; i++){
+            dw_log("dw_client: main: joining receiver thread index: %d --- ---\n", i);
             pthread_join(receiver[i], NULL);
+        }
 
-        dw_log("Joined sender and receiver threads, exiting\n");
+        dw_log("dw_client: main: Joined receiver thread(s), exiting --- --- --- ---\n");
     }
 
+    dw_log("dw_client: main: joined all threads, closing\n");
     for (int i = 0; i < input_args.num_threads; i++) {
         free(usecs_send[i]);
         free(usecs_elapsed[i]);
     }
-    
+
     ccmd_destroy(&ccmd);
 
     // cleanup the client SSL context if we created one
@@ -1552,6 +1559,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef DPDK_ENABLED
     if (use_dpdk) {
+        dw_log("dw_client: main: joined all threads, closing + dpdkCleanup\n");
         dpdk_cleanup();
     }
 #endif

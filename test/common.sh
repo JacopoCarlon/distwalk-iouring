@@ -6,6 +6,8 @@ kill_all() {
     for p in dw_client dw_node dw_client_debug dw_node_debug dw_proxy dw_proxy_debug; do
         kill -$sig $(pidof $p) &> /dev/null || true
     done
+    echo "using <kill> on all with signal ${sig}"
+  
     wait
 
     id=0

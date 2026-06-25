@@ -25,6 +25,7 @@ cat $TMP_C0 | grep -q "is over (after receive/skip of pkt 0), closing socket"
 
 node_bg &> $TMP_N0
 
+## test forwarding to a non-existing client
 client -C 1000 -F localhost:7895 -C 2000 &> $TMP_C0 &
 sleep 1
 
