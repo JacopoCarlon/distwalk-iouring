@@ -668,8 +668,10 @@ int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t *inf
 
     if (rv == 0 && p_poll->poll_type == DW_IOURING){
         dw_log("reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection\n");
-        // then we have done the submit but not completed it yet, 
+        // then we have done the submit but not completed it yet,
         // we shall not remove the connection!!!
+        // remember which req this was, so exec_request() can remove the right one once the send actually completes
+        conn->uring_deferred_reply_req = req;
         return rv;
     }
 
@@ -1134,10 +1136,11 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
             dw_log("exec_request: conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLIN | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
 
-            // if forwarding conn->req_list may already be null here
-            if (p_poll && p_poll->poll_type == DW_IOURING && conn->req_list){
-                dw_log("exec_request: after flush, calling conn_req_remove() manually on conn->req_list.\n");
-                conn_req_remove(conn, conn->req_list);
+            // handle deferred removal if it exists
+            if (p_poll && p_poll->poll_type == DW_IOURING && conn->uring_deferred_reply_req){
+                dw_log("exec_request: after flush, calling conn_req_remove() on the deferred-reply req.\n");
+                conn_req_remove(conn, conn->uring_deferred_reply_req);
+                conn->uring_deferred_reply_req = NULL;
                 infos->active_reqs--;
             }
             dw_log("exec_request: conn_flush has returned != 0\n");
@@ -1164,7 +1167,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
 
 err:
     dw_log("exec_request: started goto err\n");
-    if (conns->proto == TCP && conn_get_status(conn) == READY) {
+    if (conn->proto == TCP && conn_get_status(conn) == READY) {
         infos->active_conns--;
     }
     close_and_forget(p_poll, conn->sock);
@@ -1647,6 +1650,8 @@ void *conn_worker(void *args) {
                 printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n",
                         ts.tv_sec, ts.tv_nsec, thread_name,
                         total_active_conns, total_active_reqs);
+                // make sure to flusb the stats
+                fflush(stdout);
 
                 break;
             } else {

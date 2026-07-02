@@ -43,8 +43,8 @@ static void uring_rearm_accept(dw_poll_t *p_poll, conn_info_t *conn) {
     dw_log("uring_rearm_accept: on conn_id : %d\n", conn_get_id_by_ptr(conn));
     // TODO: this snippet to get an sqe should be a dw_poll exposed method together with seen etc
     struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
-    socklen_t            len = sizeof(conn->accept);
-    io_uring_prep_accept(sqe, conn->sock, (struct sockaddr *) &conn->accept, &len, 0);
+    conn->accept_addrlen = sizeof(conn->accept);
+    io_uring_prep_accept(sqe, conn->sock, (struct sockaddr *) &conn->accept, &conn->accept_addrlen, 0);
     io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_ACCEPT, conn_get_id_by_ptr(conn)));
 }
 #endif

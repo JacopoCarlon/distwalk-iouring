@@ -607,6 +607,10 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
     conn->curr_send_size -= sent;
     if (conn->curr_send_size == 0) {
         conn->curr_send_buf = conn->send_buf;
+
+        // reset status as the buffer is now fully empty
+        if (conn->status == SENDING)
+            conn_set_status(conn, READY);
         return (int) sent;
     }
 

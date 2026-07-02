@@ -63,8 +63,8 @@ static int dw_uring_arm_pollin(dw_poll_t *p_poll, int fd, dw_poll_flags flags, u
     if (flags & DW_ACCEPT) {
         assert(conn);
         struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
-        socklen_t len = sizeof(conn->accept);
-        io_uring_prep_accept(sqe, fd, (struct sockaddr *) &conn->accept, &len, 0);
+        conn->accept_addrlen = sizeof(conn->accept);
+        io_uring_prep_accept(sqe, fd, (struct sockaddr *) &conn->accept, &conn->accept_addrlen, 0);
         io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_ACCEPT, conn_get_id_by_ptr(conn)));
         return 0;
     }

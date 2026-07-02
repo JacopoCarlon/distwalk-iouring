@@ -77,8 +77,12 @@ typedef struct {
 
     // Uring fields
     struct sockaddr_in accept;    // accepted fd address scratch
+    socklen_t accept_addrlen;     // addrlen scratch
+
     uint64_t uring_aux;           // outer loop aux
     void* uring_sendfile_scratch;
+    // reply() defers conn_req_remove() when a uring send hasn't completed yet, remember which one it is
+    req_info_t *uring_deferred_reply_req;
     uring_send_state_t uring_send_state;
     int uring_recv_in_flight;     // 1 if a recv SQE is currently outstanding for this conn
 
