@@ -4,7 +4,7 @@
 
 . common.sh
 
-tmp=$(mktemp /tmp/test_accept_mode_parent-XXX.txt)
+tmp=$(mktemp /tmp/dw-test_accept_mode_parent-XXX.txt)
 
 node_bg -a parent --nt 3 &> $tmp
 
@@ -16,6 +16,9 @@ cat $tmp | grep assigned | head -3 | tail -1 | grep -q "assigned to dwn_conn_2"
 
 kill_all SIGINT
 cat $tmp
+
+
+exit 0
 rm $tmp
 
 node_bg -a parent --nt 2

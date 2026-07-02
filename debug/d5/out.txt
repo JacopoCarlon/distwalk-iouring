@@ -1,0 +1,56 @@
+jacopo@JC-fisso:~/Desktop/distwalk-iouring/test$ POLL_MODE=uring ./test_accept_mode_parent.sh 
+using <kill> on all with signal SIGKILL
+[5315.283474282][dw_client_debug][address_utils.c:27] port_str: :0
+[5315.283532231][dw_client_debug][address_utils.c:40] hostport_str: 0.0.0.0
+[5315.283534787][dw_client_debug][address_utils.c:43] Resolving 0.0.0.0...
+[5315.283857726][dw_client_debug][address_utils.c:46] Host 0.0.0.0 resolved to 4 bytes: 0.0.0.0
+[5315.283866938][dw_client_debug][address_utils.c:27] port_str: :7891
+[5315.283868927][dw_client_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[5315.283870165][dw_client_debug][address_utils.c:43] Resolving 127.0.0.1...
+[5315.283879136][dw_client_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+Configuration:
+  clienthost=0.0.0.0:0
+  serverhost=127.0.0.1:7891
+  num_threads: 1
+  num_pkts=3
+  period=100000us
+  waitspin=0
+  rate=10
+  rate_step_secs=0
+  pkt_size=1024 (+66 for headers)
+  resp_size=512 (+66 with headers)
+  min packet size due to header: send=20, reply=12
+  max packet size: 16777216
+  no_delay: 1
+  num_sessions: 3
+  use_per_session_output: 0
+  num_conn_retries: 0 (retry_period: 200 ms)
+  seed: 1782985675
+  request template: COMPUTE(1000us)->REPLY(512b, mode=normal, dev=0)
+[5315.288671926][dwc_recv_0][dw_client.c:379] Connecting to 127.0.0.1:7891 (sess_id=0) ...
+Connection to 127.0.0.1:7891 failed: Connection refused
+Fast-forwarding i by 1 pkts
+[5315.488936052][dwc_recv_0][dw_client.c:554] dw_client: thread_receiver went to <goto skip>
+[5315.488940360][dwc_recv_0][dw_client.c:557] Session 0 is over (after receive/skip of pkt 0), closing socket
+[5315.488943140][dwc_recv_0][dw_client.c:591] end of while loop for Sent pkts - success: 0, error: 1, timeout: 0, thr_id: 0
+[5315.488945122][dwc_recv_0][dw_client.c:379] Connecting to 127.0.0.1:7891 (sess_id=1) ...
+Connection to 127.0.0.1:7891 failed: Connection refused
+Fast-forwarding i by 1 pkts
+[5315.689132087][dwc_recv_0][dw_client.c:554] dw_client: thread_receiver went to <goto skip>
+[5315.689136073][dwc_recv_0][dw_client.c:557] Session 1 is over (after receive/skip of pkt 1), closing socket
+[5315.689138340][dwc_recv_0][dw_client.c:591] end of while loop for Sent pkts - success: 0, error: 2, timeout: 0, thr_id: 0
+[5315.689140474][dwc_recv_0][dw_client.c:379] Connecting to 127.0.0.1:7891 (sess_id=2) ...
+Connection to 127.0.0.1:7891 failed: Connection refused
+Fast-forwarding i by 1 pkts
+[5315.889325066][dwc_recv_0][dw_client.c:554] dw_client: thread_receiver went to <goto skip>
+[5315.889329301][dwc_recv_0][dw_client.c:557] Session 2 is over (after receive/skip of pkt 2), closing socket
+[5315.889331423][dwc_recv_0][dw_client.c:591] end of while loop for Sent pkts - success: 0, error: 3, timeout: 0, thr_id: 0
+t: 0 us, elapsed: 0 us, req_id: 0, thr_id: 0, sess_id: 0
+t: 0 us, elapsed: 0 us, req_id: 1, thr_id: 0, sess_id: 1
+t: 0 us, elapsed: 0 us, req_id: 2, thr_id: 0, sess_id: 2
+Sent pkts - success: 0, error: 3, timeout: 0, thr_id: 0
+[5315.889339077][dwc_recv_0][dw_client.c:603] dw_client: thread_receiver: Receiver thread terminating --- --- --- ---
+[5315.889340970][dwc_recv_0][dw_client.c:1546] dw_client: main: joined all threads, closing
+using <kill> on all with signal SIGINT
+using <kill> on all with signal SIGINT
+jacopo@JC-fisso:~/Desktop/distwalk-iouring/test$ 
