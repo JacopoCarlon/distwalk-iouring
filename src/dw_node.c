@@ -559,6 +559,12 @@ int handle_forward_reply(int req_id, dw_poll_t *p_poll, conn_worker_info_t *info
     }
 
 
+    if (req->fwd_replies_left == -1) {
+        // TODO: why does this even happen?
+        dw_log("Got a late/stray REPLY to FORWARD from %s, req_id:%d, with no forward currently pending - dropped\n", addr_str, req_id);
+        return -1;
+    }
+
     message_t *req_m = req_get_message(req);
     void *req_msg_end = message_end(req_m);
     int reply_id = find_forward_reply_id(req->curr_cmd, match_addr, req_msg_end);
