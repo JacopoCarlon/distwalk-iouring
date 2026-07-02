@@ -24,4 +24,5 @@ kill_all SIGINT
 # echo $?
 
 rm $TMP_N0
+
 rm $TMP_C0

@@ -21,5 +21,6 @@ kill_all SIGINT
 
 rm $TMP_N0
 rm $TMP_N1
+
 rm $TMP_C0
 

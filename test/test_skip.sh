@@ -56,6 +56,8 @@ client -p 1000 -C 15 --skip 1,prob=0.3 -C 25 -n 100 --seed 17
 [ $(grep -c "COMPUTE.25us" $TMP) -eq 68 ]
 kill_all SIGINT
 
+rm $TMP
+
 
 #
 echo "TEST SKIP PROB FWD"
@@ -71,6 +73,9 @@ client -p 1000 -C 10 --skip 1,prob=0.5 -F :7892 -C 20 -n 100 --seed 17
 [ $(grep -c "COMPUTE.10us" $TMP1) -eq 100 ]
 [ $(grep -c "COMPUTE.20us" $TMP2) -eq 45 ]
 kill_all SIGINT
+
+rm $TMP1
+rm $TMP2
 
 
 #

@@ -32,6 +32,12 @@ sleep 1
 kill_all SIGINT
 cat $TMP_N0 | grep -q "Connection to remote peer refused, conn_id=2"
 
+rm $TMP_N0
+rm $TMP_N1
+
+rm $TMP_C0
+
+
 #
 TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
 TMP_N1=$(mktemp /tmp/dw-node-fwd-2-XXX.txt)

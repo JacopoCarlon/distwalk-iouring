@@ -40,3 +40,6 @@ kill_all SIGINT
 rm $TMP_N0
 rm $TMP_N1
 rm $TMP_N2
+rm $TMP_N3
+
+rm $tmp_client

@@ -18,7 +18,8 @@ client -C 1000 --skip=1,every=2 -F localhost:7892 -C 10ms -n 10 &> $TMP_C0
 
 kill_all SIGINT
 
-rm $TMP_N0 
-rm $TMP_N1 
+rm $TMP_N0
+rm $TMP_N1
+
 rm $TMP_C0 
 
