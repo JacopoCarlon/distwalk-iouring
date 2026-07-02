@@ -95,6 +95,10 @@ typedef enum {
 // initialize the list of monitored fds
 int dw_poll_init(dw_poll_t *p_poll, dw_poll_type_t type, int use_spinning);
 
+#ifdef IOURING_ENABLED
+int dw_poll_iouring_create(dw_poll_t *p_poll);
+#endif
+
 // add fd to the list of monitored fds, with associated custom data aux.
 // TODO: desc
 int dw_poll_add(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux, int conn_id);

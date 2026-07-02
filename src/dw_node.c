@@ -1232,8 +1232,11 @@ void *storage_worker(void *args) {
 
     check(dw_poll_init(p_poll, poll_mode, infos->use_wait_spin) == 0);
     #ifdef IOURING_ENABLED
-    if (poll_mode == DW_IOURING)
+    if (poll_mode == DW_IOURING) {
+        // must happen from this thread, see the comment in conn_worker()
+        sys_check(dw_poll_iouring_create(p_poll));
         p_poll->u.iouring_fds.cqe_batch_limit = uring_cqe_batch;
+    }
     #endif
     // TODO: in general, ensure that if iouring is not enable, pollmode is not iouring
 
@@ -1385,6 +1388,12 @@ void *conn_worker(void *args) {
     }
 
     sys_check(sched_setattr(0, &infos->sched_attrs, 0));
+
+    #ifdef IOURING_ENABLED
+    // ORING_SETUP_SINGLE_ISSUER binds the ring to io_uring_setup() caller
+    if (infos->dw_poll.poll_type == DW_IOURING)
+        sys_check(dw_poll_iouring_create(&infos->dw_poll));
+    #endif
 
     #ifdef DPDK_ENABLED
     if (use_dpdk) {

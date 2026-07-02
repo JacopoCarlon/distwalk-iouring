@@ -28,12 +28,6 @@ int dw_poll_init(dw_poll_t *p_poll, dw_poll_type_t type, int use_spinning) {
             break;
         case DW_IOURING:
             #ifdef IOURING_ENABLED
-            // int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SQPOLL);
-            int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SINGLE_ISSUER | IORING_SETUP_DEFER_TASKRUN | IORING_SETUP_COOP_TASKRUN);
-            if (rv < 0) {
-                errno = -rv;
-                sys_check(rv);
-            }
             p_poll->u.iouring_fds.n_cqes = 0;
             p_poll->u.iouring_fds.iter = -1;
             p_poll->u.iouring_fds.cqe_batch_limit = 4;
@@ -47,6 +41,19 @@ int dw_poll_init(dw_poll_t *p_poll, dw_poll_type_t type, int use_spinning) {
     }
     return 0;
 }
+
+#ifdef IOURING_ENABLED
+int dw_poll_iouring_create(dw_poll_t *p_poll) {
+    assert(p_poll->poll_type == DW_IOURING);
+    // int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SQPOLL);
+    int rv = io_uring_queue_init(MAX_POLLFD, &p_poll->u.iouring_fds.ring, IORING_SETUP_SINGLE_ISSUER | IORING_SETUP_DEFER_TASKRUN | IORING_SETUP_COOP_TASKRUN);
+    if (rv < 0) {
+        errno = -rv;
+        return -1;
+    }
+    return 0;
+}
+#endif
 
 #ifdef IOURING_ENABLED
 static int dw_uring_arm_pollin(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux, conn_info_t *conn) {
