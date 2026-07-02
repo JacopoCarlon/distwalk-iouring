@@ -342,7 +342,7 @@ int dw_poll_wait(dw_poll_t *p_poll) {
             #ifdef IOURING_ENABLED
             struct io_uring *r = &p_poll->u.iouring_fds.ring;
             if (p_poll->use_spinning) {
-                io_uring_submit(r);
+                io_uring_submit_and_get_events(r);
             } else {
                 int srv = io_uring_submit_and_wait(r, 1);
                 if (srv < 0) {
@@ -538,7 +538,8 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                     assert(conn);
                     *aux = conn->uring_aux;
                     *flags = DW_POLLOUT;
-                    if (cqe->res < 0) *flags |= DW_POLLERR;
+                    // check poll on listen-fd result
+                    if (cqe->res < 0 || (cqe->res & (POLLERR | POLLHUP))) *flags |= DW_POLLERR;
                     io_uring_cqe_seen(&p_poll->u.iouring_fds.ring, cqe);
                     p_poll->u.iouring_fds.cqes[p_poll->u.iouring_fds.iter] = NULL;
                     return 1;
