@@ -131,17 +131,6 @@ ssize_t dw_sendto(dw_poll_t *p_poll, const int conn_id, const int flags) {
                 // now that the send has been completed, we shall pass through the reply -> conn_req_remove way.
                 // cannot access req after conn_req_remove()
                 dw_log("dw_sendto: send has completed, we might need to call conn_req_remove\n");
-                //  conn_req_remove(conn, req);
-                // // TODO: how to add this line, which reply does call ?????????
-                //  infos->active_reqs--;
-
-                // TODO: rearm if needed
-                // // If curr_send_size != 0 then other messages were appended to the send buffer in the meantime.
-                // // Submit a fresh send for [curr_send_buf, curr_send_buf+curr_send_size).
-                // if (p_poll != NULL && p_poll->poll_type == DW_IOURING && conn->uring_send_state == SS_COMPLETED) {
-                //     dw_log("SEND_URING: %lu bytes queued after submit, re-arming SEND\n", conn->curr_send_size);
-                //     conn_send(conn, p_poll);
-                // }
 
                 return res;
             };

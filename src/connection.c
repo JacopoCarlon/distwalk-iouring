@@ -610,6 +610,12 @@ int conn_send(conn_info_t *conn, dw_poll_t *p_poll) {
         return (int) sent;
     }
 
+    // re-arm uring send if there was more data appended while we sent
+    if (p_poll != NULL && p_poll->poll_type == DW_IOURING && conn->uring_send_state == SS_READY) {
+        dw_log("conn_send: %lu bytes queued after send completion, re-arming SEND\n", conn->curr_send_size);
+        conn_send(conn, p_poll);
+    }
+
     dw_log("conn_send: returning sent:%ld\n", sent);
     return (int) sent;
 }

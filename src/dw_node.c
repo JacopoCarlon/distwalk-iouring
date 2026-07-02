@@ -478,8 +478,9 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
     msg_log(m_dst, "  f: ");
     #endif
 
-    // TODO: this called a bare send, even with epoll, what is the expected behav?
-    if (conn_start_send(fwd_conn, addr, p_poll) < 0)
+    // URING: conn_start_send() returns -1 when a send is already in flight on this connection
+    //        conn_send will auto re-arm, so ignore this
+    if (conn_start_send(fwd_conn, addr, p_poll) < 0 && fwd_conn->uring_send_state != SS_IN_FLIGHT)
         return NULL;
 
     #ifdef IOURING_ENABLED
@@ -1133,7 +1134,8 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
             dw_log("exec_request: conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLIN | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
 
-            if (p_poll && p_poll->poll_type == DW_IOURING){
+            // if forwarding conn->req_list may already be null here
+            if (p_poll && p_poll->poll_type == DW_IOURING && conn->req_list){
                 dw_log("exec_request: after flush, calling conn_req_remove() manually on conn->req_list.\n");
                 conn_req_remove(conn, conn->req_list);
                 infos->active_reqs--;
