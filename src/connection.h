@@ -80,6 +80,7 @@ typedef struct {
     uint64_t uring_aux;           // outer loop aux
     void* uring_sendfile_scratch;
     uring_send_state_t uring_send_state;
+    int uring_recv_in_flight;     // 1 if a recv SQE is currently outstanding for this conn
 
     size_t defer_defrag;
 

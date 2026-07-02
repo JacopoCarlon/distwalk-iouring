@@ -345,6 +345,7 @@ int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
     conns[conn_id].ssl_handshake_done = 0;
     conns[conn_id].ssl_is_server = 0;
     conns[conn_id].uring_send_state = SS_READY;
+    conns[conn_id].uring_recv_in_flight = 0;
 
     dw_log("CONN allocated, conn_id: %d, proto=%d\n", conn_id, proto);
     conns[conn_id].curr_recv_buf = conns[conn_id].recv_buf;

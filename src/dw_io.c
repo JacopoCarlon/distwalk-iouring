@@ -36,6 +36,7 @@ static void uring_rearm_recv(dw_poll_t *p_poll, conn_info_t *conn, int flags) {
     struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
     io_uring_prep_recv(sqe, conn->sock, conn->curr_recv_buf, conn->curr_recv_size, flags);
     io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_RECV, conn_get_id_by_ptr(conn)));
+    conn->uring_recv_in_flight = 1;
 }
 
 static void uring_rearm_accept(dw_poll_t *p_poll, conn_info_t *conn) {
@@ -173,6 +174,8 @@ ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struc
         }
         int res = cqe->res;
         dw_poll_cqe_seen(p_poll, cqe);
+
+        conn->uring_recv_in_flight = 0;
 
         if (res < 0) {
             errno = -res;

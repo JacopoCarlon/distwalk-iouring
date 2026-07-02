@@ -59,11 +59,10 @@ int dw_poll_iouring_create(dw_poll_t *p_poll) {
 static int dw_uring_arm_pollin(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux, conn_info_t *conn) {
     assert(flags & DW_POLLIN);
 
-    struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
-
     // prepare an accept
     if (flags & DW_ACCEPT) {
         assert(conn);
+        struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
         socklen_t len = sizeof(conn->accept);
         io_uring_prep_accept(sqe, fd, (struct sockaddr *) &conn->accept, &len, 0);
         io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_ACCEPT, conn_get_id_by_ptr(conn)));
@@ -73,18 +72,29 @@ static int dw_uring_arm_pollin(dw_poll_t *p_poll, int fd, dw_poll_flags flags, u
     if (conn) {
         if (conn->status == NOT_INIT || conn->status == CONNECTING) {
             // oneshot recv into the registered buffer at the current write head
+            struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
             io_uring_prep_poll_add(sqe, fd, POLLOUT);
             io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_POLL_CONNECTING, conn_get_id_by_ptr(conn)));
             return 0;
         }
 
+        // avoid double re-arm
+        if (conn->uring_recv_in_flight) {
+            dw_log("dw_uring_arm_pollin: recv already in flight for conn_id=%d, skipping re-arm\n",
+                   conn_get_id_by_ptr(conn));
+            return 0;
+        }
+
         // oneshot recv into the registered buffer at the current write head
+        struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
         io_uring_prep_recv(sqe, fd, conn->curr_recv_buf, conn->curr_recv_size, 0);
         io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_RECV, conn_get_id_by_ptr(conn)));
+        conn->uring_recv_in_flight = 1;
         return 0;
     }
 
     // readiness only if no registered buffer used for timerfd, eventfd, signalfd, ...
+    struct io_uring_sqe *sqe = dw_poll_next_sqe(p_poll);
     io_uring_prep_poll_add(sqe, fd, POLLIN);
     io_uring_sqe_set_data64(sqe, DW_URING_PACK(DW_URING_OP_POLL, aux));
     return 0;
