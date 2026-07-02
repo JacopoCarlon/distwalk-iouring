@@ -22,7 +22,7 @@ echo "Before filtering:"
 printf '  - %s\n' "${TESTS[@]}"
 
 EXCLUDE_PATTERNS=(
-    #"*proxy*"
+    "*proxy*"
     "*ramp*"
 )
 

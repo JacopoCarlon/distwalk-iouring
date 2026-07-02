@@ -275,7 +275,7 @@ int conn_del_sock(int sock) {
 }
 
 void conn_free(int conn_id) {
-    printf("conn_free: just entered\n");
+    dw_log("conn_free: just entered\n");
     if (conn_id < 0){
         return;
     }
