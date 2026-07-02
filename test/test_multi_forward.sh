@@ -35,3 +35,8 @@ client -F :7892,branch,nack=1 -C 5000 -F :7893,:7894,branch -C 1000000 -R > $tmp
 elapsed=$(cat $tmp_client | grep 'elapsed:' | sed -e 's/.*elapsed: //; s/ us.*//')
 [ $elapsed -gt 5000 ] && [ $elapsed -lt 100000 ]
 kill_all SIGINT
+
+
+rm $TMP_N0
+rm $TMP_N1
+rm $TMP_N2

@@ -126,6 +126,7 @@ proxy_bg() {
     check_executable dw_proxy_debug || { exit -1; }
     run dw_proxy_debug "$@" &
     id=$[$id+1]
+    sleep 1
 }
 
 kill_all SIGKILL
