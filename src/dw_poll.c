@@ -540,7 +540,6 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                 }
 
                 // convert from OP to POLL* flags
-                // TODO !!!! what about DW_URING_OP_POLL_CONNECTING ???????'
                 switch (cqe_op) {
                     case DW_URING_OP_ACCEPT:
                     case DW_URING_OP_RECV:

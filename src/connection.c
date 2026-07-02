@@ -176,6 +176,9 @@ req_info_t *conn_req_remove(conn_info_t *conn, req_info_t *req) {
                    temp->message_ptr - req_size,
                    temp->message_ptr - req_size + req_get_message(temp)->req_size);
             temp->message_ptr -= req_size;
+
+            if (temp->curr_cmd != NULL)
+                temp->curr_cmd = (command_t *)((unsigned char *)temp->curr_cmd - req_size);
         }
     }
 
@@ -198,7 +201,7 @@ int conn_find_existing(struct sockaddr_in target, proto_t proto) {
     //    sys_check(pthread_mutex_lock(&socks_mtx));
 
     pthread_t curr_thread = pthread_self();
-    for (int i = 1; i < MAX_CONNS; i++) {
+    for (int i = 0; i < MAX_CONNS; i++) {
         if (proto == DPDK && conns[i].proto == DPDK && conns[i].parent_thread == curr_thread) {
             rv = i;
             break;
