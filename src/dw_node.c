@@ -930,6 +930,7 @@ int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t *infos) {
 
     // batch processing of multiple messages, if received more than 1
     if (conn->serialize_request && conn->req_list != NULL){
+        dw_log("obtain_messages: batch processing is required -> returning 1\n");
         return 1;
     }
 
