@@ -23,7 +23,7 @@ printf '  - %s\n' "${TESTS[@]}"
 
 EXCLUDE_PATTERNS=(
     "*proxy*"
-    "*ramp*"
+    #"*ramp*"
 )
 
 is_excluded() {
