@@ -1990,6 +1990,9 @@ void init_listen_sock(int i, accept_mode_t accept_mode, proto_t proto, struct so
         check(conn_id != -1, "conn_alloc() failed, terminating!");
         conn_set_status_by_id(conn_id, READY);
         conn_get_by_id(conn_id)->enable_defrag = enable_defrag;
+        // TCP/TLS listen sockets must be excluded from conn_find_existing(), a UDP socket is shared
+        if (proto == TCP || proto == TLS)
+            conn_get_by_id(conn_id)->is_listen = 1;
 
         int val = 1;
         sys_check(setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(val)));

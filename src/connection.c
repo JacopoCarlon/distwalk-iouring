@@ -208,6 +208,8 @@ int conn_find_existing(struct sockaddr_in target, proto_t proto) {
         }
         if (conns[i].sock == -1)
             continue;
+        if (conns[i].is_listen)
+            continue;
         if (proto == UDP && conns[i].parent_thread == curr_thread) {
             rv = i;
             break;
@@ -351,6 +353,7 @@ int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
     conns[conn_id].curr_send_buf = conns[conn_id].send_buf;
     conns[conn_id].curr_send_size = 0;
     conns[conn_id].serialize_request = 0;
+    conns[conn_id].is_listen = 0;
 
     ((message_t *) conns[conn_id].send_buf)->cmds[0].cmd = EOM;
     ((message_t *) conns[conn_id].recv_buf)->cmds[0].cmd = EOM;
