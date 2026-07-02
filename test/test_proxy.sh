@@ -7,6 +7,11 @@ tmp_client=$(mktemp /tmp/dw-client-XXX.txt)
 
 node_bg -b :7892 &> $tmp_node
 ../src/dw_proxy -b :7891 --to :7892 &
+
+sleep 2
+echo "ciao"
+sleep 1
+
 client --to :7891 -C 0 -n 1 &> $tmp_client
 
 kill_all SIGKILL
