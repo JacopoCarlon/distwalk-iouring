@@ -3,7 +3,7 @@
 . common.sh
 
 # creates a temporary directory for the test in tmp and ensures it is cleaned up on exit
-TMPDIR=$(mktemp -d /tmp/dw-output-XXX)
+TMPDIR=$(mktemp -d /tmp/dw-test_client_output-XXX)
 trap 'rm -rf "$TMPDIR"; kill_all SIGINT' SIGINT SIGTERM EXIT ERR
 
 #verifies that the output file contains a line matching the given regex
