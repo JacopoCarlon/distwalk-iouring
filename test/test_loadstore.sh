@@ -2,8 +2,8 @@
 
 . common.sh
 
-TMP=$(mktemp /tmp/dw-store-XXX.txt)
-trace_log=/tmp/dw-log.txt
+TMP=$(mktemp /tmp/dw-loadstore-XXX.txt)
+trace_log=/tmp/dw-loadstore-log.txt
 
 node_bg -s ${TMP}
 client -S 32000000
