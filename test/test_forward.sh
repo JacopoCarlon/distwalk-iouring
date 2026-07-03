@@ -2,9 +2,9 @@
 
 . common.sh
 
-TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
-TMP_N1=$(mktemp /tmp/dw-node-fwd-2-XXX.txt)
-TMP_C0=$(mktemp /tmp/dw-client-fwd-XXX.txt)
+TMP_N0=$(mktemp /tmp/dw-node-test_forward-0-XXX.txt)
+TMP_N1=$(mktemp /tmp/dw-node-test_forward-1-XXX.txt)
+TMP_C0=$(mktemp /tmp/dw-client-test_forward-c0-XXX.txt)
 
 node_bg -b :7891 &> $TMP_N0
 node_bg -b :7892 &> $TMP_N1
@@ -39,11 +39,11 @@ rm $TMP_C0
 
 
 #
-TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
-TMP_N1=$(mktemp /tmp/dw-node-fwd-2-XXX.txt)
-TMP_N2=$(mktemp /tmp/dw-node-fwd-3-XXX.txt)
+TMP_N0=$(mktemp /tmp/dw-node-test_forward-10-XXX.txt)
+TMP_N1=$(mktemp /tmp/dw-node-test_forward-11-XXX.txt)
+TMP_N2=$(mktemp /tmp/dw-node-test_forward-12-XXX.txt)
 
-TMP_C0=$(mktemp /tmp/dw-client-fwd-XXX.txt)
+TMP_C0=$(mktemp /tmp/dw-client-test_forward-c1-XXX.txt)
 
 node_bg -b :7891 &> $TMP_N0
 node_bg -b :7892 &> $TMP_N1

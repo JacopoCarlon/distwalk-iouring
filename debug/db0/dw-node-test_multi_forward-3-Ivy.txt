@@ -1,0 +1,27 @@
+[7193.610451111][dw_node_debug][dw_node.c:2164] nproc=20 (system capacity)
+[7193.616890788][dw_node_debug][dw_node.c:2297] blk_size = 4096
+[7193.616944027][dw_node_debug][dw_node.c:2361] Using loops_per_usec: -1
+[7193.618224423][dw_node_debug][address_utils.c:27] port_str: :7894
+[7193.618230020][dw_node_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[7193.618231541][dw_node_debug][address_utils.c:43] Resolving 127.0.0.1...
+[7193.618500388][dw_node_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+[7193.618543606][dw_node_debug][connection.c:350] CONN allocated, conn_id: 0, proto=1
+[7193.618555631][dw_node_debug][dw_node.c:2028] Node bound to 127.0.0.1:7894 (with protocol: TCP)
+[7193.618560814][dw_node_debug][dw_node.c:2034] Accepting new connections (max backlog: 5)...
+[7193.618653148][dwn_conn_0][dw_poll.c:152] dw_poll_add(): fd=11, p_poll=0x597898ee4790, flags=20000001, aux=11, conn_id=0
+[7193.618661947][dwn_conn_0][dw_poll.c:152] dw_poll_add(): fd=3, p_poll=0x597898ee4790, flags=00000001, aux=30064771075, conn_id=-1
+[7193.618664737][dwn_conn_0][dw_poll.c:152] dw_poll_add(): fd=9, p_poll=0x597898ee4790, flags=00000001, aux=8589934601, conn_id=-1
+[7193.618666972][dwn_conn_0][dw_poll.c:152] dw_poll_add(): fd=10, p_poll=0x597898ee4790, flags=00000001, aux=25769803786, conn_id=-1
+[7193.618669072][dwn_conn_0][dw_poll.c:152] dw_poll_add(): fd=7, p_poll=0x597898ee4790, flags=00000001, aux=4294967303, conn_id=-1
+[7193.618671108][dwn_conn_0][dw_poll.c:327] poll()ing: n_pollfds=5
+[7193.620096134][dwn_stor_0][dw_poll.c:152] dw_poll_add(): fd=5, p_poll=0x7a694ebb89b0, flags=00000001, aux=4294967301, conn_id=-1
+[7193.620105262][dwn_stor_0][dw_poll.c:152] dw_poll_add(): fd=3, p_poll=0x7a694ebb89b0, flags=00000001, aux=30064771075, conn_id=-1
+[7193.620108617][dwn_stor_0][dw_poll.c:327] poll()ing: n_pollfds=2
+dw_node_debug showing up 7 times, not 8 ones up on netstat, waiting...
+[7194.004588074][dwn_conn_0][dw_poll.c:411] dw_poll_next: just entered
+
+[7194.004590435][dwn_stor_0][dw_poll.c:411] dw_poll_next: just entered
+
+[7194.004607055][dwn_conn_0][dw_node.c:1534] event_type=TERMINATION, event_data=3 (conn_id if event_type==SOCKET, polled fd otherwise)
+[7194.004613878][dwn_stor_0][dw_node.c:1310] TERMINATION
+[7194.004618714][dwn_conn_0][dw_node.c:1631] TERMINATION

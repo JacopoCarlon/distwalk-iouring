@@ -2,8 +2,8 @@
 
 . common.sh
 
-TMP1=$(mktemp /tmp/dw-node-stats-1-XXX.txt)
-TMP2=$(mktemp /tmp/dw-node-stats-2-XXX.txt)
+TMP1=$(mktemp /tmp/dw-node-test_stats-1-XXX.txt)
+TMP2=$(mktemp /tmp/dw-node-test_stats-2-XXX.txt)
 
 
 echo "Step 1"
@@ -62,4 +62,3 @@ kill_all SIGINT
 
 rm $TMP1
 rm $TMP2
-

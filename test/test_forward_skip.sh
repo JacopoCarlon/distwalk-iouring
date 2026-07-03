@@ -2,9 +2,9 @@
 
 . common.sh
 
-TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
-TMP_N1=$(mktemp /tmp/dw-node-fwd-2-XXX.txt)
-TMP_C0=$(mktemp /tmp/dw-client-fwd-XXX.txt)
+TMP_N0=$(mktemp /tmp/dw-node-test_forward_skip-0-XXX.txt)
+TMP_N1=$(mktemp /tmp/dw-node-test_forward_skip-1-XXX.txt)
+TMP_C0=$(mktemp /tmp/dw-client-test_forward_skip-XXX.txt)
 
 node_bg -b :7891 &> $TMP_N0
 node_bg -b :7892 &> $TMP_N1
@@ -16,8 +16,6 @@ client -C 1000 --skip=1,every=2 -F localhost:7892 -C 10ms -n 10 &> $TMP_C0
 [ $(grep 'elapsed: .*req_id: [13579]' $TMP_C0 | grep -c 'elapsed: [0-9]\{5\} us') == 5 ]
 
 kill_all SIGINT
-
-# echo $?
 
 rm $TMP_N0
 rm $TMP_N1

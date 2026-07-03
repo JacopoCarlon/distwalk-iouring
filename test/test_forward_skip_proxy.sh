@@ -2,9 +2,9 @@
 
 . common.sh
 
-TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
-TMP_N1=$(mktemp /tmp/dw-node-fwd-2-XXX.txt)
-TMP_C0=$(mktemp /tmp/dw-client-fwd-XXX.txt)
+TMP_N0=$(mktemp /tmp/dw-node-test_forward_skip_proxy-0-XXX.txt)
+TMP_N1=$(mktemp /tmp/dw-node-test_forward_skip_proxy-1-XXX.txt)
+TMP_C0=$(mktemp /tmp/dw-client-test_forward_skip_proxy-XXX.txt)
 
 node_bg -b :7891 &> $TMP_N0
 proxy_bg -b :7892 --to :7893 -d 10

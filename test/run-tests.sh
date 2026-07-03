@@ -18,12 +18,12 @@ else
 fi
 
 
-echo "Before filtering:"
-printf '  - %s\n' "${TESTS[@]}"
+##  echo "Before filtering:"
+##  printf '  - %s\n' "${TESTS[@]}"
 
 EXCLUDE_PATTERNS=(
-#    "*proxy*"
-#    "*ramp*"
+    "*proxy*"
+    "*ramp*"    ## skip ramp because it is slow.
 )
 
 is_excluded() {
@@ -65,6 +65,9 @@ run_test() {
 }
 
 SKIP_URING_RE='test_poll_mode\.sh$|test_ssl\.sh$'
+SKIP_POLL_RE='test_poll_mode\.sh$|test_ssl\.sh$'
+SKIP_EPOLL_RE='test_poll_mode\.sh$|test_ssl\.sh$'
+SKIP_SELECT_RE='test_poll_mode\.sh$|test_ssl\.sh$'
 
 for test in "${TESTS[@]}"; do
     if [[ "$test" == *dpdk* ]]; then
@@ -76,9 +79,17 @@ for test in "${TESTS[@]}"; do
         if ! [[ "$test" =~ $SKIP_URING_RE ]]; then
             POLL_MODE=uring run_test "$test" "$test (poll-mode=uring)"
         fi
+        if ! [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
+            POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
+        fi
+        if ! [[ "$test" =~ $SKIP_POLL_RE ]]; then
+            POLL_MODE=poll run_test "$test" "$test (poll-mode=poll)"
+        fi
+        if ! [[ "$test" =~ $SKIP_SELECT_RE ]]; then
+            POLL_MODE=select run_test "$test" "$test (poll-mode=select)"
+        fi
     fi
 done
-
 sleep 1
 
 for d in gcov/*; do
@@ -86,3 +97,4 @@ for d in gcov/*; do
 done
 
 gcovr --object-directory ../src --root ../ --gcov-ignore-parse-errors
+
