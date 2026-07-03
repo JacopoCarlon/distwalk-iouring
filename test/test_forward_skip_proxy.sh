@@ -17,3 +17,9 @@ client -C 1000 --skip=1,every=2 -F localhost:7892 -C 10ms -n 10 &> $TMP_C0
 [ $(grep 'elapsed: .*req_id: [13579]' $TMP_C0 | grep -c 'elapsed: [0-9]\{5\} us') == 5 ]
 
 kill_all SIGINT
+
+rm $TMP_N0
+rm $TMP_N1
+
+rm $TMP_C0 
+

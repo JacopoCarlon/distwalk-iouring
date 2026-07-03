@@ -11,3 +11,5 @@ node_bg -b :7894
 
 cat $tmp
 cat $tmp | grep -q "Connection to 127.0.0.1:7894 failed:"
+
+rm $tmp

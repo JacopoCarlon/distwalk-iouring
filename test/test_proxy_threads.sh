@@ -15,3 +15,6 @@ echo "$children"
 [ $(echo $children | grep -c "") -eq 1 ]
 
 kill_all SIGKILL
+
+rm $tmp_node
+rm $tmp_client

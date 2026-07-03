@@ -19,6 +19,11 @@ kill_all SIGINT
 node_bg --poll-mode epoll
 kill_all SIGINT
 
+node_bg -p uring
+kill_all SIGINT
+node_bg --poll-mode uring
+kill_all SIGINT
+
 ! node_bg -p xxx
 ! node_bg --poll-mode xxx
 ! node_bg -p select1
@@ -41,6 +46,11 @@ kill_all SIGINT
 strace_node_bg -p epoll > $tmp 2>&1
 client -C 10ms -n 1
 grep epoll $tmp && [ $(grep -c " poll[^e]" $tmp) -eq 0 ] && [ $(grep -c select $tmp) -eq 0 ]
+kill_all SIGINT
+
+strace_node_bg -p uring > $tmp 2>&1
+client -C 10ms -n 1
+grep io_uring_enter $tmp && [ $(grep -c epoll $tmp) -eq 0 ] && [ $(grep -c " poll[^e]" $tmp) -eq 0 ] && [ $(grep -c select $tmp) -eq 0 ]
 kill_all SIGINT
 
 rm $tmp

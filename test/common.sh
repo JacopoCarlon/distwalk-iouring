@@ -6,6 +6,8 @@ kill_all() {
     for p in dw_client dw_node dw_client_debug dw_node_debug dw_proxy dw_proxy_debug; do
         kill -$sig $(pidof $p) &> /dev/null || true
     done
+    echo "using <kill> on all with signal ${sig}"
+  
     wait
 
     id=0
@@ -48,9 +50,25 @@ strace_client() {
     id=$[$id+1]
 }
 
+# DW_NODE_ARGS contains passed args + merged POLL_MODE if it exists and was not there already
+inject_poll_mode() {
+    DW_NODE_ARGS=( "$@" )
+    if [ -z "$POLL_MODE" ]; then
+        return 0
+    fi
+    for a in "$@"; do
+        case "$a" in
+            --poll-mode|--poll-mode=*|-p)
+                return 0;;
+        esac
+    done
+    DW_NODE_ARGS+=( --poll-mode "$POLL_MODE" )
+}
+
 node() {
     check_executable dw_node_debug || { exit -1; }
-    run dw_node_debug "$@"
+    inject_poll_mode "$@"
+    run dw_node_debug "${DW_NODE_ARGS[@]}"
     id=$[$id+1]
 }
 
@@ -61,9 +79,10 @@ node_bg() {
         inc=$2
         shift 2
     fi
+    inject_poll_mode "$@"
     n_beg=$(netstat -anp --inet 2> /dev/null | grep -c dw_node || true)
     n_exp=$[$n_beg+$inc]
-    run dw_node_debug "$@" &
+    run dw_node_debug "${DW_NODE_ARGS[@]}" &
     id=$[$id+1]
     for ((i=0; i<5; i++)); do
         n=$(netstat -anp --inet 2> /dev/null | grep -c dw_node || true)
@@ -82,9 +101,10 @@ strace_node_bg() {
         inc=$2
         shift 2
     fi
+    inject_poll_mode "$@"
     n_beg=$(netstat -anp --inet 2> /dev/null | grep -c dw_node || true)
     n_exp=$[ $n_beg + $inc ]
-    run strace -f dw_node_debug "$@" &
+    run strace -f dw_node_debug "${DW_NODE_ARGS[@]}" &
     id=$[$id+1]
     for ((i=0; i<5; i++)); do
         n=$(netstat -anp --inet 2> /dev/null | grep -c dw_node || true)
@@ -106,6 +126,7 @@ proxy_bg() {
     check_executable dw_proxy_debug || { exit -1; }
     run dw_proxy_debug "$@" &
     id=$[$id+1]
+    sleep 1
 }
 
 kill_all SIGKILL

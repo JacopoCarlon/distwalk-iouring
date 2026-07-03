@@ -6,8 +6,12 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <openssl/ssl.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 #include "message.h"
 #include "request.h"
+#include "dw_poll.h"
 
 #ifdef DPDK_ENABLED
 #include "dw_dpdk.h"
@@ -21,9 +25,16 @@ typedef enum {
     SENDING,
     CONNECTING,    // used with TCP only
     SSL_HANDSHAKE, // used with SSL only
+    CLOSING,       // used by uring to defer closing
     CLOSE,
     STATUS_NUMBER  // keep this as last
 } conn_status_t;
+
+typedef enum {
+    SS_READY,
+    SS_IN_FLIGHT,
+    SS_COMPLETED
+} uring_send_state_t;
 
 typedef struct {
     proto_t proto;                // transport protocol to use (TCP or UDP)
@@ -53,8 +64,10 @@ typedef struct {
     unsigned int serialize_request;
     pthread_t parent_thread;
     atomic_int busy;             // 1 if conn is allocated, 0 otherwise
-    
+
     int enable_defrag;            // Defragment receive buffer to reduce memory usage
+
+    int is_listen;                // 1 if this conn wraps a listening socket: not usable as a forward conn
 
 #ifdef DPDK_ENABLED
     struct rte_mbuf *rx_mbufs[RX_BURST_SIZE];
@@ -62,6 +75,20 @@ typedef struct {
     uint16_t tx_count;
 #endif
 
+    // Uring fields
+    struct sockaddr_in accept;    // accepted fd address scratch
+    socklen_t accept_addrlen;     // addrlen scratch
+
+    uint64_t uring_aux;           // outer loop aux
+    void* uring_sendfile_scratch;
+    // reply() defers conn_req_remove() when a uring send hasn't completed yet, remember which one it is
+    req_info_t *uring_deferred_reply_req;
+    uring_send_state_t uring_send_state;
+    int uring_recv_in_flight;     // 1 if a recv SQE is currently outstanding for this conn
+
+    size_t defer_defrag;
+
+    // TODO: wrap with SSL_TLS_ENABLED
     // SSL/TLS support
     int use_ssl;                  // 1 if SSL is enabled for this connection
     SSL *ssl;                     // OpenSSL handle for this connection
@@ -85,7 +112,7 @@ conn_status_t conn_set_status(conn_info_t* conn, conn_status_t status);
 conn_status_t conn_set_status_by_id(int conn_id, conn_status_t status);
 
 conn_info_t* conn_get_by_id(int conn_id);
-int conn_get_id_by_ptr(conn_info_t * conn);
+int conn_get_id_by_ptr(const conn_info_t * conn);
 
 req_info_t* conn_req_add(conn_info_t *conn);
 req_info_t* conn_req_remove(conn_info_t *conn, req_info_t *req);
@@ -103,12 +130,12 @@ int conn_find_sock(int sock);
 void conn_del_id(int id);
 int conn_del_sock(int sock);
 
-int conn_start_send(conn_info_t *conn, struct sockaddr_in target);
-int conn_start_sendfile(conn_info_t *conn, struct sockaddr_in target, int fd_sendfile, off_t sendfile_offset, size_t sendfile_size);
-int conn_send(conn_info_t *conn);
-int conn_send_v2(conn_info_t *conn);
-int conn_recv(conn_info_t *conn);
-int conn_flush(conn_info_t *conn);
+int conn_start_send(conn_info_t *conn, struct sockaddr_in target, dw_poll_t *p_poll);
+int conn_start_sendfile(conn_info_t *conn, struct sockaddr_in target, int fd_sendfile, off_t sendfile_offset, size_t sendfile_size, dw_poll_t *p_poll);
+int conn_send(conn_info_t *conn, dw_poll_t *p_poll);
+int conn_send_v2(conn_info_t *conn, dw_poll_t *p_poll);
+int conn_recv(conn_info_t *conn, dw_poll_t *p_poll);
+int conn_flush(conn_info_t *conn, dw_poll_t *p_poll);
 
 
 int conn_enable_ssl(int conn_id, SSL_CTX *ctx, int is_server);

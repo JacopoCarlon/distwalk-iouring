@@ -35,7 +35,9 @@
 #include "request.h"
 #include "connection.h"
 #include "address_utils.h"
+#include "dw_io.h"
 #include "dw_poll.h"
+#include "dw_event.h"
 
 #ifdef DPDK_ENABLED
 #include "dw_dpdk.h"
@@ -53,31 +55,7 @@ volatile uint8_t running = 1;
 int ssl_enable = 0;
 SSL_CTX *server_ssl_ctx = NULL;
 
-static inline uint64_t i2l(uint32_t ln, uint32_t rn) {
-    return ((uint64_t) ln) << 32 | rn;
-}
-
-static inline void l2i(uint64_t n, uint32_t* ln, uint32_t* rn) {
-    if (ln)
-        *ln = n >> 32;
-
-    if (rn)
-        *rn = (uint32_t) n;
-}
-
-typedef enum {
-    LISTEN,
-    STORAGE,
-    TIMER,
-    CONNECT,
-    SOCKET,
-    DISPATCH,
-    STATS,
-    TERMINATION,
-    EVENT_NUMBER
-} event_t;
-
-const char* get_event_str(event_t event) {
+const char *get_event_str(event_t event) {
     static char *event_str[EVENT_NUMBER] = {
         "LISTEN",
         "STORAGE",
@@ -101,11 +79,12 @@ const char* get_event_str(event_t event) {
 
 #define MAX_LISTEN_SOCKETS 16
 static int n_bind_addrs = 0;
+
 static struct {
     char nodehostport[MAX_HOSTPORT_STRLEN];
     proto_t protocol;
 } bind_addrs[MAX_LISTEN_SOCKETS] = {
-    [0 ... MAX_LISTEN_SOCKETS-1] = { .nodehostport = DEFAULT_ADDR ":" DEFAULT_PORT, .protocol = TCP }
+    [0 ... MAX_LISTEN_SOCKETS - 1] = {.nodehostport = DEFAULT_ADDR ":" DEFAULT_PORT, .protocol = TCP}
 };
 
 typedef struct {
@@ -113,8 +92,8 @@ typedef struct {
     proto_t listen_socks_proto[MAX_LISTEN_SOCKETS];
     int n_listen_socks;
 
-    int timerfd;        // special timerfd to handle forward timeouts
-    int statfd;         // special signalfd to print statistics
+    int timerfd; // special timerfd to handle forward timeouts
+    int statfd; // special signalfd to print statistics
     dw_poll_t dw_poll;
 
     pqueue_t *timeout_queue;
@@ -139,9 +118,9 @@ typedef struct {
     atomic_int active_conns;
     atomic_int active_reqs;
 
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     uint16_t queue_id;
-#endif
+    #endif
 } conn_worker_info_t;
 
 typedef struct {
@@ -164,7 +143,7 @@ typedef struct {
     int storefd[MAX_THREADS]; // read
     int store_replyfd[MAX_THREADS]; //write
 
-    pqueue_t* sync_waiting_queue; // worker threads waiting for periodic timer to be triggered
+    pqueue_t *sync_waiting_queue; // worker threads waiting for periodic timer to be triggered
     int worker_id;
     int core_id; // core pinning
     int count;
@@ -177,6 +156,7 @@ typedef struct {
     int worker_id;
     int req_id;
     command_t cmd;
+
     union {
         load_opts_t load_opts;
         store_opts_t store_opts;
@@ -201,8 +181,10 @@ int use_wait_spinning = 0;
 int enable_defrag = 1;
 
 typedef enum { AM_CHILD, AM_SHARED, AM_PARENT } accept_mode_t;
+
 accept_mode_t accept_mode = AM_CHILD;
 dw_poll_type_t poll_mode = DW_EPOLL;
+int uring_cqe_batch = 32; // see --uring-cqe-batch
 int listen_backlog = 5;
 
 int terminationfd; // special signalfd to handle termination
@@ -250,7 +232,7 @@ int safe_read(int fd, unsigned char *buf, size_t len) {
     return 0;
 }
 
-void insert_timeout(conn_worker_info_t* infos, int req_id, dw_poll_t *p_poll, int micros) {
+void insert_timeout(conn_worker_info_t *infos, int req_id, dw_poll_t *p_poll, int micros) {
     data_t data = {.value = req_id};
     req_info_t *req = req_get_by_id(req_id);
     int new_micros = micros;
@@ -283,7 +265,7 @@ void insert_timeout(conn_worker_info_t* infos, int req_id, dw_poll_t *p_poll, in
 }
 
 // remove a timeout from a request and returns the time remained before timeout
-int remove_timeout(conn_worker_info_t* infos, int req_id, dw_poll_t *p_poll) {
+int remove_timeout(conn_worker_info_t *infos, int req_id, dw_poll_t *p_poll) {
     req_info_t *req = req_get_by_id(req_id);
     if (!req || !req->timeout_node)
         return -1;
@@ -317,7 +299,6 @@ int remove_timeout(conn_worker_info_t* infos, int req_id, dw_poll_t *p_poll) {
         timerspec = us_to_its(0);
         sys_check(timerfd_settime(infos->timerfd, 0, &timerspec, NULL));
         dw_log("TIMEOUT removed, req_id: %d, timer disarmed.\n", req_id);
-
     }
 
     return req_timeout - time_elapsed;
@@ -360,7 +341,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
             cmd_log(cmd, msg_end);
         return cmd == NULL ? cmd_bounded_skip(req->curr_cmd, 1, msg_end) : cmd;
     }
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     if (fwd.proto == DPDK) {
         conn_info_t *my_conn = conn_get_by_id(req->conn_id);
         if (my_conn->tx_count >= TX_BURST_SIZE)
@@ -401,7 +382,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
             insert_timeout(infos, req->req_id, p_poll, req->fwd_timeout);
         return cmd;
     }
-#endif
+    #endif
     int fwd_conn_id = conn_find_existing(addr, fwd.proto);
     conn_info_t *fwd_conn;
     if (fwd_conn_id == -1) {
@@ -410,8 +391,8 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
         if (fwd.proto == TCP || fwd.proto == TLS) {
             sys_check(clientSocket = socket(AF_INET, SOCK_STREAM, 0));
             sys_check(setsockopt(clientSocket, IPPROTO_TCP,
-                                 TCP_NODELAY, (void *)&no_delay,
-                                 sizeof(no_delay)));
+                TCP_NODELAY, (void *)&no_delay,
+                sizeof(no_delay)));
         } else {
             sys_check(clientSocket = socket(AF_INET, SOCK_DGRAM, 0));
         }
@@ -427,7 +408,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
 
         fwd_conn->enable_defrag = enable_defrag;
         if (fwd.proto == TCP || fwd.proto == TLS) {
-            check(dw_poll_add(p_poll, clientSocket, DW_POLLOUT | DW_POLLIN, i2l(CONNECT, fwd_conn_id)) == 0);
+            check(dw_poll_add(p_poll, clientSocket, DW_POLLOUT | DW_POLLIN, i2l(CONNECT, fwd_conn_id), fwd_conn_id) == 0);
 
             dw_log("connecting to: %s:%d\n", inet_ntoa((struct in_addr) { addr.sin_addr.s_addr }),
                    ntohs(addr.sin_port));
@@ -436,6 +417,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
                 if (conn_enable_ssl(fwd_conn_id, server_ssl_ctx, 0) < 0) {
                     fprintf(stderr, "SSL_connect() failed on forward connection\n");
                     close(clientSocket);
+                    dw_log("single_start_forward: calling conn_free from TLS\n");
                     conn_free(fwd_conn_id);
                     return NULL;
                 }
@@ -479,7 +461,7 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
     while (c && c->cmd == FORWARD_CONTINUE)
         c = cmd_bounded_next(c, msg_end);
 
-    command_t* reply_cmd = message_copy_tail(m, m_dst, c);
+    command_t *reply_cmd = message_copy_tail(m, m_dst, c);
     if (!reply_cmd) {
         dw_log("message_copy_tail(): destination message out-of-space\n");
         return NULL;
@@ -487,17 +469,23 @@ command_t *single_start_forward(req_info_t *req, message_t *m, command_t *cmd, d
 
     m_dst->req_id = req->req_id;
     m_dst->req_size = fwd.pkt_size;
+    dw_log("single_start_forward: set m_dst->req_size : %d\n", m_dst->req_size);
 
     dw_log("Forwarding req %u to %s:%d\n", m_dst->req_id,
            inet_ntoa((struct in_addr) { fwd.fwd_host }),
            ntohs(fwd.fwd_port));
-#ifdef DW_DEBUG
+    #ifdef DW_DEBUG
     msg_log(m_dst, "  f: ");
-#endif
+    #endif
 
-    if (conn_start_send(fwd_conn, addr) < 0)
+    // URING: conn_start_send() returns -1 when a send is already in flight on this connection
+    //        conn_send will auto re-arm, so ignore this
+    if (conn_start_send(fwd_conn, addr, p_poll) < 0 && fwd_conn->uring_send_state != SS_IN_FLIGHT)
         return NULL;
 
+    #ifdef IOURING_ENABLED
+    dw_log("FORWARD continuing without waiting for conn_start_send completion+ret_value\n");
+    #endif
     if (req->fwd_timeout) {
         insert_timeout(infos, req->req_id, p_poll, req->fwd_timeout);
     }
@@ -514,10 +502,11 @@ command_t *start_forward(req_info_t *req, message_t *m, command_t *cmd, dw_poll_
         req->fwd_retries = cmd_get_opts(fwd_opts_t, cmd)->retries;
         req->fwd_on_fail_skip = cmd_get_opts(fwd_opts_t, cmd)->on_fail_skip;
 
-        dw_log("Starting FORWARD context for req:%d with nack:%d, timeout:%d, retry:%d\n", req->req_id, req->fwd_replies_left, req->fwd_timeout, req->fwd_retries);
+        dw_log("Starting FORWARD context for req:%d with nack:%d, timeout:%d, retry:%d\n", req->req_id, req->fwd_replies_left, req->fwd_timeout,
+               req->fwd_retries);
     }
 
-    command_t* itr = cmd;
+    command_t *itr = cmd;
     void* msg_end = message_end(m);
     while (itr) {
         if (!single_start_forward(req, m, itr, p_poll, infos))
@@ -527,8 +516,11 @@ command_t *start_forward(req_info_t *req, message_t *m, command_t *cmd, dw_poll_
     return cmd;
 }
 
-int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t* infos);
-int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t* infos);
+// TODO: is this really the best way?
+
+int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *infos);
+
+int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t *infos);
 
 // return 0-based id if found, or -1 if not found
 // match_addr is 6 bytes: either fwd_host(4)+fwd_port(2) or fwd_addr[6],
@@ -543,7 +535,8 @@ int find_forward_reply_id(command_t *cmd, const uint8_t match_addr[6], void* msg
 }
 
 // Call this once we received a REPLY from a connection matching a req_id we forwarded
-int handle_forward_reply(int req_id, dw_poll_t *p_poll, conn_worker_info_t* infos, msg_status_t fwd_m_status, const uint8_t match_addr[6], proto_t proto) {
+int handle_forward_reply(int req_id, dw_poll_t *p_poll, conn_worker_info_t *infos, msg_status_t fwd_m_status, const uint8_t match_addr[6],
+                         proto_t proto) {
     req_info_t *req = req_get_by_id(req_id);
 
     if (!req) {
@@ -565,6 +558,12 @@ int handle_forward_reply(int req_id, dw_poll_t *p_poll, conn_worker_info_t* info
         snprintf(addr_str, sizeof(addr_str), "%s:%d", inet_ntoa(addr), ntohs(port));
     }
 
+
+    if (req->fwd_replies_left == -1) {
+        // TODO: why does this even happen?
+        dw_log("Got a late/stray REPLY to FORWARD from %s, req_id:%d, with no forward currently pending - dropped\n", addr_str, req_id);
+        return -1;
+    }
 
     message_t *req_m = req_get_message(req);
     void *req_msg_end = message_end(req_m);
@@ -603,11 +602,12 @@ int handle_forward_reply(int req_id, dw_poll_t *p_poll, conn_worker_info_t* info
 }
 
 // returns 1 if reply sent correctly, 0 otherwise
-int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t* infos) {
+int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t *infos, dw_poll_t *p_poll) {
+    dw_log("reply: just entered !!! --- !!! --- !!!\n");
     conn_info_t *conn = conn_get_by_id(req->conn_id);
     reply_opts_t *opts = cmd_get_opts(reply_opts_t, cmd);
 
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     if (conn->proto == DPDK) {
         if (conn->tx_count >= TX_BURST_SIZE)
             dpdk_flush_tx(conn->tx_mbufs, &conn->tx_count, infos->queue_id);
@@ -627,14 +627,17 @@ int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t* inf
 
         conn->tx_mbufs[conn->tx_count++] = tx_mbuf;
 
+        dw_log("reply-DPDK: calling conn_req_remove()\n");
         conn_req_remove(conn, req);
         infos->active_reqs--;
         return 1;
     }
-#endif
+    #endif
 
+    dw_log("reply: calling conn_prepare_send_message()\n");
     message_t *m_dst = conn_prepare_send_message(conn);
     assert(m_dst->req_size >= opts->resp_size);
+    dw_log("reply: done the conn_prepare_send_message()\n");
 
 
     m_dst->req_id = m->req_id;
@@ -642,31 +645,44 @@ int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t* inf
     m_dst->cmds[0].cmd = EOM;
     m_dst->status = m->status;
 
+    dw_log("reply : set m_dst->req_size : %d\n",m_dst->req_size );
+
     dw_log("Replying to req %u (conn_id=%d)\n", m->req_id, req->conn_id);
-#ifdef DW_DEBUG
+    #ifdef DW_DEBUG
     msg_log(m_dst, "REPLY ");
 #endif
+
     // added branching here for the two cases
     conns[req->conn_id].reply_mode = opts->mode;
+
     int rv;
-
     switch (opts->mode) {
-
-    case REPLY_MODE_SENDFILE:
-        int dev_id = opts->dev_id; // retrieve device id from reply options
-        req->sendfile_fd = storage_worker_infos[dev_id].storage_info.storage_fd; // note! fd must be copied here since req will be freed after this function returns,but the sendfile operation may not be completed yet
-        req->sendfile_offset = 0;
-        req->sendfile_size = opts->resp_size;
-        dw_log("Reply using sendfile\n");
-        rv =  conn_start_sendfile(&conns[req->conn_id], req->target, req->sendfile_fd, req->sendfile_offset, req->sendfile_size);
-        break;
-
-    case REPLY_MODE_NORMAL:
-    default:
-        rv = conn_start_send(&conns[req->conn_id], req->target);
-        break;
+        case REPLY_MODE_SENDFILE:
+            int dev_id = opts->dev_id; // retrieve device id from reply options
+            req->sendfile_fd = storage_worker_infos[dev_id].storage_info.storage_fd; // note! fd must be copied here since req will be freed after this function returns,but the sendfile operation may not be completed yet
+            req->sendfile_offset = 0;
+            req->sendfile_size = opts->resp_size;
+            dw_log("Reply using sendfile\n");
+            rv =  conn_start_sendfile(&conns[req->conn_id], req->target, req->sendfile_fd, req->sendfile_offset, req->sendfile_size, p_poll);
+            break;
+        case REPLY_MODE_NORMAL:
+        default:
+            rv = conn_start_send(&conns[req->conn_id], req->target, p_poll);
+            break;
     }
+    dw_log("reply: executed conn_start_send OR conn_start_sendfile !!! --- --- ---\n");
+
+    if (rv == 0 && p_poll->poll_type == DW_IOURING){
+        dw_log("reply: IOURING returned 0 after send, meaning we submit but not complete yet, skip removing connection\n");
+        // then we have done the submit but not completed it yet,
+        // we shall not remove the connection!!!
+        // remember which req this was, so exec_request() can remove the right one once the send actually completes
+        conn->uring_deferred_reply_req = req;
+        return rv;
+    }
+
     // cannot access req after conn_req_remove()
+    dw_log("reply: calling conn_req_remove()\n");
     conn_req_remove(conn, req);
     infos->active_reqs--;
     return rv;
@@ -736,8 +752,8 @@ void compute_for(unsigned long usecs) {
 // (Essential, since O_DIRECT bypasses the page caches)
 unsigned long blk_size = 0;
 
-void store(storage_worker_info_t *infos, unsigned char* buf, store_opts_t *store_opts) {
-    storage_info_t* storage_info = &(infos->storage_info);
+void store(storage_worker_info_t *infos, unsigned char *buf, store_opts_t *store_opts) {
+    storage_info_t *storage_info = &(infos->storage_info);
 
     size_t total_bytes = store_opts->store_nbytes;
     uint32_t offset = store_opts->offset;
@@ -780,8 +796,8 @@ void store(storage_worker_info_t *infos, unsigned char* buf, store_opts_t *store
     }
 }
 
-void load(storage_worker_info_t *infos, unsigned char* buf, load_opts_t *load_opts) {
-    storage_info_t* storage_info = &(infos->storage_info);
+void load(storage_worker_info_t *infos, unsigned char *buf, load_opts_t *load_opts) {
+    storage_info_t *storage_info = &(infos->storage_info);
 
     size_t total_bytes = load_opts->load_nbytes;
     uint32_t offset = load_opts->offset;
@@ -810,88 +826,91 @@ void load(storage_worker_info_t *infos, unsigned char* buf, load_opts_t *load_op
 
 // this invalidates the conn_info_t in conns[] referring sock, if any
 void close_and_forget(dw_poll_t *p_poll, int sock) {
-    dw_log("removing sock=%d from dw_poll\n", sock);
+    dw_log("close_and_forget: removing sock=%d from dw_poll\n", sock);
     if (dw_poll_del(p_poll, sock) != 0)
         perror("dw_poll_del() failed while deleting socket");
-    dw_log("removing sock=%d from conns[]\n", sock);
+    dw_log("close_and_forget: removing sock=%d from conns[] by calling conn_del_sock\n", sock);
     conn_del_sock(sock);
     close(sock);
 }
 
 // returns 1 if the message has been completely executed, 0 if the message need more time, -1 if some error occured
 int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *infos) {
+    dw_log("process_single_message: just entered\n");
     message_t *m = req_get_message(req);
     int conn_id = req->conn_id;
     void *msg_end = message_end(m);
 
     for (command_t *cmd = req->curr_cmd; cmd && cmd->cmd != EOM; cmd = cmd_bounded_skip(cmd, 1, msg_end)) {
         dw_log("PROCESS conn_id: %d, req_id: %d,  command: %s\n", req->conn_id, req->req_id, get_command_name(cmd->cmd));
-        switch(cmd->cmd) {
-        case COMPUTE:
-            compute_for(cmd_get_opts(comp_opts_t, cmd)->comp_time_us);
-            break;
-        case FORWARD_BEGIN:
-            // leave req->curr_cmd pointing to the FORWARD_BEGIN cmd, useful in case of retransmissions on timeout
-            req->curr_cmd = cmd;
+        switch (cmd->cmd) {
+            case COMPUTE:
+                compute_for(cmd_get_opts(comp_opts_t, cmd)->comp_time_us);
+                break;
+            case FORWARD_BEGIN:
+                // leave req->curr_cmd pointing to the FORWARD_BEGIN cmd, useful in case of retransmissions on timeout
+                req->curr_cmd = cmd;
             // fall-through on purpose
-        case FORWARD_CONTINUE:
-            if (start_forward(req, m, cmd, p_poll, infos) == NULL) {
-                fprintf(stderr, "Error: could not execute FORWARD\n");
-                return -1;
-            }
-            return 0;
-        case REPLY:
-            dw_log("Handling REPLY: req_id=%d\n", m->req_id);
-            if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply(req, m, cmd, infos)) {
-                dw_log("reply() returned, conn_id: %d\n", conn_id);
-
-                if (conn_get_status_by_id(req->conn_id) == SENDING) {
-                    dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
-                    sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
-                    return 1;
-                } else {
-                    dw_log("Closing connection conn_id: %d after failed REPLY\n", conn_id);
-                    close_and_forget(p_poll, conns[conn_id].sock);
+            case FORWARD_CONTINUE:
+                if (start_forward(req, m, cmd, p_poll, infos) == NULL) {
+                    fprintf(stderr, "Error: could not execute FORWARD\n");
                     return -1;
                 }
+                return 0;
+            case REPLY:
+                dw_log("process_single_message: Handling REPLY: req_id=%d --- ---\n", m->req_id);
+                int reply_result = reply(req, m, cmd, infos, p_poll);
+                dw_log("process_single_message: Handling REPLY: req_id=%d, we got reply_result:%d .--- ---\n", m->req_id, reply_result);
+                if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply_result) {
+                    dw_log("process_single_message: reply() returned, conn_id: %d --- ---\n", conn_id);
+
+                    if (conn_get_status_by_id(req->conn_id) == SENDING) {
+                        dw_log("process_single_message: Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                        sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
+                        return 1;
+                    } else {
+                        dw_log("process_single_message: Closing connection conn_id: %d after failed REPLY\n", conn_id);
+                        close_and_forget(p_poll, conns[conn_id].sock);
+                        return -1;
+                    }
+                }
+                if (conn_get_status_by_id(req->conn_id) == SENDING) {
+                    dw_log("process_single_message:Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                    sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
+                }
+                // any further cmds[] for replied-to hop, not me
+                printf("process_single_message: case REPLY completed, with reply result: %d, will now return 1\n", reply_result);
+                return 1;
+            case STORE:
+            case LOAD: {
+                storage_req_t w = {.worker_id = infos->worker_id, .req_id = req->req_id};
+                int cmds_len = cmd_type_size(cmd-> cmd);
+                memcpy(&w.cmd, cmd, cmds_len);
+
+                // determine which storage worker to use based on store/load option device id, and send the request to it
+                int storage_device_id = (cmd->cmd == STORE)
+                                            ? cmd_get_opts(store_opts_t, cmd)->dev_id
+                                            : cmd_get_opts(load_opts_t, cmd)->dev_id;
+
+                if (storage_device_id < 0 || storage_device_id >= storage_devices) {
+                    fprintf(stderr, "Invalid storage device id: %d\n", storage_device_id);
+                    return -1;
+                }
+
+                if (safe_write(infos->storefd[storage_device_id], (unsigned char *) &w, sizeof(w)) < 0) {
+                    perror("storage worker write() failed");
+                    return -1;
+                }
+
+                if (cmd->cmd == STORE && !cmd_get_opts(store_opts_t, cmd)->wait_sync)
+                    break;
+
+                req->curr_cmd = cmd_bounded_next(cmd, msg_end);
+                return 0;
             }
-            if (conn_get_status_by_id(req->conn_id) == SENDING) {
-
-                dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
-                sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
-            }
-            // any further cmds[] for replied-to hop, not me
-            return 1;
-        case STORE:
-        case LOAD: {
-            storage_req_t w = { .worker_id = infos->worker_id, .req_id = req->req_id };
-            int cmds_len = cmd_type_size(cmd->cmd);
-            memcpy(&w.cmd, cmd, cmds_len);
-
-            // determine which storage worker to use based on store/load option device id, and send the request to it
-            int storage_device_id = (cmd->cmd == STORE)
-                                    ? cmd_get_opts(store_opts_t, cmd)->dev_id
-                                    : cmd_get_opts(load_opts_t, cmd)->dev_id;
-
-            if (storage_device_id < 0 || storage_device_id >= storage_devices) {
-                fprintf(stderr, "Invalid storage device id: %d\n", storage_device_id);
-                return -1;
-            }
-
-            if (safe_write(infos->storefd[storage_device_id], (unsigned char*) &w, sizeof(w)) < 0) {
-                perror("storage worker write() failed");
-                return -1;
-            }
-
-            if (cmd->cmd == STORE && !cmd_get_opts(store_opts_t, cmd)->wait_sync)
-                break;
-
-            req->curr_cmd = cmd_bounded_next(cmd, msg_end);
-            return 0;
-        }
-        default:
-            fprintf(stderr, "Error: Unknown cmd: %d\n", m->cmds[0].cmd);
-            return 0;
+            default:
+                fprintf(stderr, "Error: Unknown cmd: %d\n", m->cmds[0].cmd);
+                return 0;
         }
     }
 
@@ -899,6 +918,7 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
 }
 
 int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *infos) {
+    dw_log("process_messages: just started, it will call process_single_message and, maybe, obtain_messages\n");
     // process_single_message() may call reply() -> conn_req_remove() -> req_unlink() + defrag -> req and m invalid
     int conn_id = req->conn_id;
     int executed = process_single_message(req, p_poll, infos);
@@ -907,24 +927,33 @@ int process_messages(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_t *inf
     return executed;
 }
 
-int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t* infos) {
+int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t *infos) {
+    dw_log("obtain_messages: just entered\n");
     conn_info_t *conn = conn_get_by_id(conn_id);
 
+    if (conn->req_list){
+        dw_log("obtain_messages just entered: --- currently, conn.req_list is not null\n");
+    }else{
+        dw_log("obtain_messages just entered: --- currently, conn.req_list is NULL\n");
+    }
+
     // batch processing of multiple messages, if received more than 1
-    if (conn->serialize_request && conn->req_list != NULL)
+    if (conn->serialize_request && conn->req_list != NULL){
+        dw_log("obtain_messages: batch processing is required -> returning 1\n");
         return 1;
+    }
 
     for (message_t *m = conn_prepare_recv_message(conn); m != NULL; m = conn_prepare_recv_message(conn)) {
         // FORWARD finished
         if (message_first_cmd(m)->cmd == EOM) {
             dw_log("Handling response to FORWARD from %s:%d, req_id=%d\n", inet_ntoa((struct in_addr) {conns[conn_id].target.sin_addr.s_addr}),
-                                                                           ntohs(conns[conn_id].target.sin_port), m->req_id);
+                   ntohs(conns[conn_id].target.sin_port), m->req_id);
             uint8_t fwd_match[6];
             memcpy(fwd_match, &conn->target.sin_addr.s_addr, 4);
             memcpy(fwd_match + 4, &conn->target.sin_port, 2);
             if (!handle_forward_reply(m->req_id, p_poll, infos, m->status, fwd_match, conn->proto)) {
-                    dw_log("handle_forward_reply() failed\n");
-                    return 0;
+                dw_log("handle_forward_reply() failed\n");
+                return 0;
             }
         } else {
             req_info_t *req = conn_req_add(conn);
@@ -934,7 +963,7 @@ int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t* infos) {
             }
             infos->active_reqs++;
 
-            req->message_ptr = (unsigned char*) m;
+            req->message_ptr = (unsigned char *) m;
             req->curr_cmd = message_first_cmd(m);
             // process_single_message() may call reply() -> conn_req_remove() -> req_unlink() + defrag -> req and m invalid
             int req_size = m->req_size;
@@ -949,6 +978,10 @@ int obtain_messages(int conn_id, dw_poll_t *p_poll, conn_worker_info_t* infos) {
                 conns[conn_id].curr_proc_buf += req_size;
                 return 1;
             }
+        }
+
+        if (conn->uring_send_state == SS_IN_FLIGHT) {
+            break;
         }
     }
 
@@ -1024,16 +1057,17 @@ void handle_timeout(dw_poll_t *p_poll, conn_worker_info_t *infos) {
         dw_log("TIMEOUT expired, req_id: %d, failed\n", req->req_id);
 
         m->status = TIMEOUT;
+        dw_log("handle_timeout: calling conn_req_remove()\n");
         conn_req_remove(conn, req);
         infos->active_reqs--;
     }
 }
 
-void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t type, conn_worker_info_t* infos) {
+void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t type, conn_worker_info_t *infos) {
     conn_info_t *conn = conn_get_by_id(conn_id);
-    dw_log("event_type=%s, conn_id=%d\n", get_event_str(type), conn_id);
+    dw_log("exec_request: event_type=%s, conn_id=%d\n", get_event_str(type), conn_id);
 
-
+    
     if (conn->status == SSL_HANDSHAKE) {
         int hs = conn_do_ssl_handshake(conn_id);
         if (hs < 0)
@@ -1049,58 +1083,97 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         handle_timeout(p_poll, infos);
         return;
     }
-
+    
     if ((type == SOCKET || type == CONNECT) && (conn->sock == -1 || conn->recv_buf == NULL))
         return;
 
     if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
-        dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id);
+        dw_log("Connection to remote peer refused, conn_id=%d\n\n\n---\n", conn_id);    // possibly needed to pass a test: TODO: check this
+        dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
         goto err;
     }
-
+    
     if (pflags & DW_POLLIN) {
-        dw_log("calling recv_mesg()\n");
-        if (conn_recv(conn) == 0)
+        if (conn->req_list){
+            dw_log("exec_request before conn_recv: --- currently, conn.req_list is not null\n");
+        }else{
+            dw_log("exec_request before conn_recv: --- currently, conn.req_list is NULL\n");
+        }
+
+        dw_log("calling conn_recv\n");
+        if (conn_recv(conn, p_poll) == 0)
             goto err;
+        dw_log("exec_request: returned != 0 from conn_recv\n");
+        
+        if (conn->req_list){
+            dw_log("exec_request after conn_recv: --- currently, conn.req_list is not null\n");
+        }else{
+            dw_log("exec_request after conn_recv: --- currently, conn.req_list is NULL\n");
+        }
     }
+
     if ((pflags & DW_POLLOUT) && (type == CONNECT)) {
-        dw_log("calling establish_conn()\n");
-        if (!establish_conn(p_poll, conn_id))
+        dw_log("exec_request: calling establish_conn()\n");
+        if (!establish_conn(p_poll, conn_id)){
             goto err;
+        }
         infos->active_conns++;
         // we need the send_messages() below to still be tried afterwards
     }
 
     if (pflags & DW_POLLOUT) {
-        int r = conn_flush(conn);
+        dw_log("exec_request: <<pflags & DW_POLLOUT>> is TRUE -> calling conn_flush\n");
+        int r = conn_flush(conn, p_poll);
 
-        if (r < 0)
-            goto err;
+        if (r < 0) {
+            if (errno == EAGAIN) {
+                dw_log("SEND: returned EAGAIN (if URING waiting CQE)\n");
+            } else {
+                goto err;
+            }
+        }
 
         if (r == 0) {
-            // still pending
-            dw_log("conn_id=%d, still pending after flush, adding EPOLLOUT\n", conn_id);
+            // still pending (does not happen in uring as MSG_WAITALL is set in dw_sendto)
+            dw_log("exec_request: conn_id=%d, still pending after flush, adding EPOLLOUT\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
         } else {
             // finished
-            dw_log("conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
+            dw_log("exec_request: conn_id=%d, flush finished, adding EPOLLIN\n", conn_id);
             sys_check(dw_poll_mod(p_poll, conn->sock, DW_POLLIN | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
+
+            // handle deferred removal if it exists
+            if (p_poll && p_poll->poll_type == DW_IOURING && conn->uring_deferred_reply_req){
+                dw_log("exec_request: after flush, calling conn_req_remove() on the deferred-reply req.\n");
+                conn_req_remove(conn, conn->uring_deferred_reply_req);
+                conn->uring_deferred_reply_req = NULL;
+                infos->active_reqs--;
+            }
+            dw_log("exec_request: conn_flush has returned != 0\n");
         }
     }
 
+    dw_log("exec_request: conns[%d].status=%d (%s)\n", conn_id, conn_get_status(conn), conn_status_str(conn_get_status(conn)));
 
-    dw_log("conns[%d].status=%d (%s)\n", conn_id, conn_get_status(conn), conn_status_str(conn_get_status(conn)));
+    // skip the check if send in flight
+    dw_log("exec_request: uring_send_state=%d\n", conn->uring_send_state);
+    if (conn->uring_send_state == SS_IN_FLIGHT) {
+        dw_log("skipped checking messages\n");
+        return;
+    }
 
     // check whether we have new or leftover messages to process
-    dw_log("calling obtain_messages() from conn_id=%d's recv buffer\n", conn_id)
-    if (!obtain_messages(conn_id, p_poll, infos))
+    dw_log("exec_request: calling obtain_messages() from conn_id=%d's recv buffer\n", conn_id);
+    if (!obtain_messages(conn_id, p_poll, infos)){
         goto err;
-
+    }
+    dw_log("exec_request: obtain_messages returned != 0\n");
 
     return;
 
- err:
-    if (conns->proto == TCP && conn_get_status(conn) == READY) {
+err:
+    dw_log("exec_request: started goto err\n");
+    if (conn->proto == TCP && conn_get_status(conn) == READY) {
         infos->active_conns--;
     }
     close_and_forget(p_poll, conn->sock);
@@ -1108,32 +1181,37 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     // Close associated connections
     for (int i = 0; i < MAX_CONNS; i++) {
         conn_info_t *pending_conn = conn_get_by_id(i);
-        if (pending_conn->sock == -1)
+        if (pending_conn->sock == -1){
             continue;
+        }
 
-        req_info_t* req_list_head = pending_conn->req_list;
-        req_info_t* tmp = req_list_head;
+        req_info_t *req_list_head = pending_conn->req_list;
+        req_info_t *tmp = req_list_head;
         while (tmp != NULL) {
-            message_t* m = req_get_message(tmp);
+            message_t *m = req_get_message(tmp);
             if (tmp->curr_cmd->cmd == FORWARD_BEGIN) {
                 fwd_opts_t fwd = *cmd_get_opts(fwd_opts_t, tmp->curr_cmd);
-                if (fwd.fwd_host == conn->target.sin_addr.s_addr &&
-                        fwd.fwd_port == conn->target.sin_port) {
-
-                    if (fwd.retries > 0)
+                if (fwd.fwd_host == conn->target.sin_addr.s_addr 
+                                && fwd.fwd_port == conn->target.sin_port) {
+                    if (fwd.retries > 0){
                         break;
-                    else
+                    }
+                    else{
                         remove_timeout(infos, m->req_id, p_poll);
+                    }
 
                     // Go to last REPLY
                     command_t *itr = tmp->curr_cmd;
                     void *msg_end = message_end(m);
-                    while (itr && itr->cmd != EOM && itr->cmd != REPLY)
+                    while (itr && itr->cmd != EOM && itr->cmd != REPLY){
                         itr = cmd_bounded_skip(itr, 1, msg_end);
+                    }
 
-                    if (!itr || !cmd_in_bounds(itr, msg_end) || itr->cmd == EOM) { // brutal
+                    if (!itr || !cmd_in_bounds(itr, msg_end) || itr->cmd == EOM) {
+                        // brutal
                         close_and_forget(p_poll, pending_conn->sock);
-                    } else { // graceful
+                    } else {
+                        // graceful
                         tmp->curr_cmd = itr;
                         m->status = ERR;
                         process_messages(tmp, p_poll, infos);
@@ -1149,8 +1227,8 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     }
 }
 
-void* storage_worker(void* args) {
-    storage_worker_info_t *infos = (storage_worker_info_t *)args;
+void *storage_worker(void *args) {
+    storage_worker_info_t *infos = (storage_worker_info_t *) args;
     infos->sync_waiting_queue = pqueue_alloc(MAX_REQS);
 
     sprintf(thread_name, STOR_THREAD_FMT, infos->worker_id);
@@ -1164,15 +1242,23 @@ void* storage_worker(void* args) {
     dw_poll_t poll, *p_poll = &poll;
 
     check(dw_poll_init(p_poll, poll_mode, infos->use_wait_spin) == 0);
+    #ifdef IOURING_ENABLED
+    if (poll_mode == DW_IOURING) {
+        // must happen from this thread, see the comment in conn_worker()
+        sys_check(dw_poll_iouring_create(p_poll));
+        p_poll->u.iouring_fds.cqe_batch_limit = uring_cqe_batch;
+    }
+    #endif
+    // TODO: in general, ensure that if iouring is not enable, pollmode is not iouring
 
     // Add conn_worker(s) -> storage_worker communication pipe
     for (int i = 0; i < conn_threads; i++) {
-        if (dw_poll_add(p_poll, infos->storefd[i], DW_POLLIN, i2l(STORAGE, infos->storefd[i])) != 0)
+        if (dw_poll_add(p_poll, infos->storefd[i], DW_POLLIN, i2l(STORAGE, infos->storefd[i]), -1) != 0)
             perror("dw_epoll_add(): storefd failed");
     }
 
     // Add termination handler
-    if (dw_poll_add(p_poll, terminationfd, DW_POLLIN, i2l(TERMINATION, terminationfd)) < 0)
+    if (dw_poll_add(p_poll, terminationfd, DW_POLLIN, i2l(TERMINATION, terminationfd), -1) < 0)
         perror("dw_poll_add(): terminationfd failed");
 
     // Add periodic sync timerfd
@@ -1186,7 +1272,7 @@ void* storage_worker(void* args) {
         memset(&its, 0, sizeof(its));
 
         struct timespec ts_template;
-        ts_template.tv_sec =  infos->periodic_sync_msec / 1000;
+        ts_template.tv_sec = infos->periodic_sync_msec / 1000;
         ts_template.tv_nsec = (infos->periodic_sync_msec % 1000) * 1000000;
 
         //both interval and value have been set
@@ -1198,7 +1284,7 @@ void* storage_worker(void* args) {
             exit(EXIT_FAILURE);
         }
 
-        if (dw_poll_add(p_poll, infos->timerfd, DW_POLLIN, i2l(TIMER, infos->timerfd)) < 0)
+        if (dw_poll_add(p_poll, infos->timerfd, DW_POLLIN, i2l(TIMER, infos->timerfd), -1) < 0)
             perror("dw_poll_add(): timerfd failed");
     }
 
@@ -1218,7 +1304,7 @@ void* storage_worker(void* args) {
         event_t type;
         dw_poll_flags pflags;
         while ((dw_poll_next(p_poll, &pflags, &aux)) != 0) {
-            l2i(aux, (uint32_t*)&type, (uint32_t*) &fd);
+            l2i(aux, (uint32_t *) &type, (uint32_t *) &fd);
 
             if (type == TERMINATION) {
                 dw_log("TERMINATION\n");
@@ -1240,7 +1326,7 @@ void* storage_worker(void* args) {
                     int req_id = pqueue_node_data(pqueue_top(infos->sync_waiting_queue)).value;
 
                     pqueue_pop(infos->sync_waiting_queue);
-                    safe_write(infos->store_replyfd[worker_id], (unsigned char*) &req_id, sizeof(req_id));
+                    safe_write(infos->store_replyfd[worker_id], (unsigned char *) &req_id, sizeof(req_id));
                 }
 
                 // Too expensive??
@@ -1250,7 +1336,7 @@ void* storage_worker(void* args) {
                 int worker_id;
                 int req_id;
 
-                if (safe_read(fd, (unsigned char*) &w, sizeof(w)) < 0) {
+                if (safe_read(fd, (unsigned char *) &w, sizeof(w)) < 0) {
                     perror("storage worker safe_read()");
                     running = 0;
                     break;
@@ -1265,16 +1351,17 @@ void* storage_worker(void* args) {
                     store(infos, infos->store_buf, cmd_get_opts(store_opts_t, &w.cmd));
                     if (cmd_get_opts(store_opts_t, &w.cmd)->wait_sync) {
                         if (infos->periodic_sync_msec <= 0) {
-                            safe_write(infos->store_replyfd[worker_id], (unsigned char*) &req_id, sizeof(req_id));
+                            safe_write(infos->store_replyfd[worker_id], (unsigned char *) &req_id, sizeof(req_id));
                         } else {
-                            data_t data = {.value=req_id};
+                            data_t data = {.value = req_id};
                             pqueue_insert(infos->sync_waiting_queue, worker_id, data);
                         }
                     }
                 } else if (w.cmd.cmd == LOAD) {
                     load(infos, infos->store_buf, cmd_get_opts(load_opts_t, &w.cmd));
-                    safe_write(infos->store_replyfd[worker_id], (unsigned char*) &req_id, sizeof(req_id));
-                } else { // error
+                    safe_write(infos->store_replyfd[worker_id], (unsigned char *) &req_id, sizeof(req_id));
+                } else {
+                    // error
                     fprintf(stderr, "Unknown command sent to storage server - skipping");
                 }
             } else {
@@ -1283,10 +1370,10 @@ void* storage_worker(void* args) {
         }
     }
 
-    return (void*)1;
+    return (void *) 1;
 }
 
-void* conn_worker(void* args);
+void *conn_worker(void *args);
 
 #ifdef DPDK_ENABLED
 static int conn_worker_lcore(void *arg) {
@@ -1295,15 +1382,15 @@ static int conn_worker_lcore(void *arg) {
 }
 #endif
 
-void* conn_worker(void* args) {
-    conn_worker_info_t *infos = (conn_worker_info_t *)args;
+void *conn_worker(void *args) {
+    conn_worker_info_t *infos = (conn_worker_info_t *) args;
 
     sprintf(thread_name, CONN_THREAD_FMT, infos->worker_id);
     sys_check(prctl(PR_SET_NAME, thread_name, NULL, NULL, NULL));
 
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     if (!use_dpdk)
-#endif
+    #endif
     {
         if (infos->core_id >= 0) {
             sys_check(aff_pin_to(infos->core_id));
@@ -1313,7 +1400,13 @@ void* conn_worker(void* args) {
 
     sys_check(sched_setattr(0, &infos->sched_attrs, 0));
 
-#ifdef DPDK_ENABLED
+    #ifdef IOURING_ENABLED
+    // ORING_SETUP_SINGLE_ISSUER binds the ring to io_uring_setup() caller
+    if (infos->dw_poll.poll_type == DW_IOURING)
+        sys_check(dw_poll_iouring_create(&infos->dw_poll));
+    #endif
+
+    #ifdef DPDK_ENABLED
     if (use_dpdk) {
         struct sockaddr_in dummy = {0};
         int dpdk_conn_id = conn_alloc(-1, dummy, DPDK);
@@ -1321,42 +1414,47 @@ void* conn_worker(void* args) {
         conn_set_status_by_id(dpdk_conn_id, READY);
         conn_get_by_id(dpdk_conn_id)->enable_defrag = enable_defrag;
     }
-#endif
+    #endif
 
     if (accept_mode != AM_PARENT || infos == &conn_worker_infos[0]) {
         for (int i = 0; i < infos->n_listen_socks; i++) {
             int s = infos->listen_socks[i];
-            if (s < 0) continue;
-            int conn_id = conn_find_sock(s);
+            if (s < 0)
+                continue;
+            const int conn_id = conn_find_sock(s);
+            conn_info_t *conn = conn_get_by_id(conn_id);
+            assert(conn);
 
             uint64_t aux;
-            if(conn_id == -1) // TCP/TLS
+            if (conn->proto == TCP || conn->proto == TLS)
                 aux = i2l(LISTEN, s);
             else // UDP
                 aux = i2l(SOCKET, conn_id);
-            check(dw_poll_add(&infos->dw_poll, s, DW_POLLIN, aux) == 0);
+
+            check(dw_poll_add(&infos->dw_poll, s, DW_POLLIN | DW_ACCEPT, aux, conn_id) == 0);
         }
-    }
-
-    // Add termination fd
-    check(dw_poll_add(&infos->dw_poll, terminationfd, DW_POLLIN, i2l(TERMINATION, terminationfd)) == 0);
-
-    // Add timer fd
-    check(dw_poll_add(&infos->dw_poll, infos->timerfd, DW_POLLIN, i2l(TIMER, infos->timerfd)) == 0);
-
-    // Add stat fd
-    if (infos->statfd != -1)
-        check(dw_poll_add(&infos->dw_poll, infos->statfd, DW_POLLIN, i2l(STATS, infos->statfd)) == 0);
-
-    // Add storage reply fd
-    for (int i = 0; i < storage_devices; i++) {
-         if (infos->storefd[i] != -1)
-            check(dw_poll_add(&infos->dw_poll, infos->store_replyfd[i], DW_POLLIN, i2l(STORAGE, infos->store_replyfd[i])) == 0);
     }
 
     // Add parent communication fd
     if (accept_mode == AM_PARENT) {
-        check(dw_poll_add(&infos->dw_poll, infos->dispatchfd[1], DW_POLLIN, i2l(DISPATCH, infos->dispatchfd[1])) == 0);
+        check(dw_poll_add(&infos->dw_poll, infos->dispatchfd[1], DW_POLLIN, i2l(DISPATCH, infos->dispatchfd[1]), -1) == 0);
+    }
+
+    // Add termination fd
+    check(dw_poll_add(&infos->dw_poll, terminationfd, DW_POLLIN, i2l(TERMINATION, terminationfd), -1) == 0);
+
+    // Add timer fd
+    check(dw_poll_add(&infos->dw_poll, infos->timerfd, DW_POLLIN, i2l(TIMER, infos->timerfd), -1) == 0);
+
+    // Add stat fd
+    if (infos->statfd != -1)
+        check(dw_poll_add(&infos->dw_poll, infos->statfd, DW_POLLIN, i2l(STATS, infos->statfd), -1) == 0);
+
+    // Add storage reply fd
+    for (int i = 0; i < storage_devices; i++) {
+        if (infos->storefd[i] != -1)
+            // TODO: consider a pre-allocated buffer
+            check(dw_poll_add(&infos->dw_poll, infos->store_replyfd[i], DW_POLLIN, i2l(STORAGE, infos->store_replyfd[i]), -1) == 0);
     }
 
     while (running) {
@@ -1370,7 +1468,7 @@ void* conn_worker(void* args) {
             }
         }
 
-#ifdef DPDK_ENABLED
+        #ifdef DPDK_ENABLED
         if (use_dpdk) {
             struct sockaddr_in dummy = {0};
             int my_dpdk_conn_id = conn_find_existing(dummy, DPDK);
@@ -1405,16 +1503,16 @@ void* conn_worker(void* args) {
                     memcpy(req->reply_mac, src_mac, 6);
                     infos->active_reqs++;
 
-                    req->message_ptr = (unsigned char *)msg;
+                    req->message_ptr = (unsigned char *) msg;
                     req->curr_cmd = message_first_cmd(msg);
 
                     int executed = process_single_message(req, &infos->dw_poll, infos);
 
                     if (executed == 0) {
-                        int cmd_offset = (unsigned char *)req->curr_cmd - (unsigned char *)msg;
+                        int cmd_offset = (unsigned char *) req->curr_cmd - (unsigned char *) msg;
                         memcpy(conn->curr_recv_buf, msg, msg->req_size);
                         req->message_ptr = conn->curr_recv_buf;
-                        req->curr_cmd = (command_t *)(conn->curr_recv_buf + cmd_offset);
+                        req->curr_cmd = (command_t *) (conn->curr_recv_buf + cmd_offset);
                         conn->curr_recv_buf += msg->req_size;
                         conn->curr_recv_size -= msg->req_size;
                     }
@@ -1425,27 +1523,30 @@ void* conn_worker(void* args) {
 
             dpdk_flush_tx(conn->tx_mbufs, &conn->tx_count, infos->queue_id);
         }
-#endif
+        #endif
 
         uint64_t aux;
         dw_poll_flags pflags;
         while (dw_poll_next(&infos->dw_poll, &pflags, &aux)) {
             int event_data;
             event_t event_type;
-            l2i(aux, &event_type, (uint32_t*) &event_data);
-            dw_log("event_type=%s, event_data=%d (conn_id if event_type==SOCKET, polled fd otherwise)\n", get_event_str(event_type), event_data);
+            l2i(aux, &event_type, (uint32_t *) &event_data);
+            dw_log("event_type=%s, event_data=%d (conn_id if event_type==SOCKET, polled fd otherwise)\n",
+                    get_event_str(event_type), event_data);
 
-            if (event_type == LISTEN) { // New connection (TCP or TLS)
-                struct sockaddr_in addr;
-                socklen_t addr_size = sizeof(addr);
+            if (event_type == LISTEN) {
+                // New connection (TCP or TLS)
                 int conn_sock;
-                sys_check(conn_sock = accept(event_data, (struct sockaddr *)&addr, &addr_size));
+                struct sockaddr_in addr;
+                socklen_t addrlen = sizeof(addr);
+                int listen_conn_id = conn_find_sock(event_data);
+                sys_check(conn_sock = dw_accept(&infos->dw_poll, listen_conn_id, &addr, &addrlen));
 
                 dw_log("Accepted connection from: %s:%d\n",
                        inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
                 setnonblocking(conn_sock);
                 sys_check(setsockopt(conn_sock, IPPROTO_TCP, TCP_NODELAY,
-                                     (void *)&no_delay, sizeof(no_delay)));
+                        (void *)&no_delay, sizeof(no_delay)));
 
                 // find the index of the listening socket to read the protocol
                 int sock_index = -1;
@@ -1473,7 +1574,6 @@ void* conn_worker(void* args) {
                     if (conn_enable_ssl(conn_id, server_ssl_ctx, 1) < 0) {
                         fprintf(stderr, "SSL_accept() failed on incoming connection\n");
                         close_and_forget(&infos->dw_poll, conn_sock);
-                        conn_free(conn_id);
                         continue;
                     }
                 } else
@@ -1483,14 +1583,15 @@ void* conn_worker(void* args) {
                 infos->active_conns++;
 
                 int next_thread_id = accept_mode == AM_PARENT ? (atomic_fetch_add(&next_thread_cnt, 1) % conn_threads) : (infos - conn_worker_infos);
-                if (accept_mode == AM_PARENT && infos->dw_poll.poll_type != DW_EPOLL) { // NOTE: in AM_PARENT mode, only the parent worker thread will reach here
-                    int rv = write(conn_worker_infos[next_thread_id].dispatchfd[0], (unsigned char*) &conn_id, sizeof(conn_id));
+                if (accept_mode == AM_PARENT && infos->dw_poll.poll_type != DW_EPOLL) {
+                    // NOTE: in AM_PARENT mode, only the parent worker thread will reach here
+                    int rv = write(conn_worker_infos[next_thread_id].dispatchfd[0], (unsigned char *) &conn_id, sizeof(conn_id));
                     if (rv == -1)
                         perror("sock dispatch write():");
                     if (rv < sizeof(conn_id))
                         fprintf(stderr, "sock dispatch write(): message too long\n");
                 } else {
-                    if (dw_poll_add(&conn_worker_infos[next_thread_id].dw_poll, conn_sock, DW_POLLIN, i2l(SOCKET, conn_id)) != 0)
+                    if (dw_poll_add(&conn_worker_infos[next_thread_id].dw_poll, conn_sock, DW_POLLIN, i2l(SOCKET, conn_id), conn_id) != 0)
                         perror("dw_poll() failed");
                 }
                 dw_log("conn_id: %d assigned to " CONN_THREAD_FMT "\n", conn_id, next_thread_id);
@@ -1498,7 +1599,7 @@ void* conn_worker(void* args) {
                 int store_replyfd = event_data;
 
                 int req_id_ACK;
-                if (safe_read(store_replyfd, (unsigned char*) &req_id_ACK, sizeof(req_id_ACK)) < 0) {
+                if (safe_read(store_replyfd, (unsigned char *) &req_id_ACK, sizeof(req_id_ACK)) < 0) {
                     perror("storage worker read() failed");
                     continue;
                 }
@@ -1512,7 +1613,7 @@ void* conn_worker(void* args) {
                 check(event_data == infos->dispatchfd[1]);
 
                 int conn_id;
-                int rv = read(event_data, (unsigned char*) &conn_id, sizeof(conn_id));
+                int rv = read(event_data, (unsigned char *) &conn_id, sizeof(conn_id));
                 if (rv == -1) {
                     perror("sock dispatch read():");
                     continue;
@@ -1523,7 +1624,7 @@ void* conn_worker(void* args) {
                 }
 
                 conn_info_t *conn = conn_get_by_id(conn_id);
-                if (dw_poll_add(&infos->dw_poll, conn->sock, DW_POLLIN, i2l(SOCKET, conn_id)) != 0)
+                if (dw_poll_add(&infos->dw_poll, conn->sock, DW_POLLIN, i2l(SOCKET, conn_id), conn_id) != 0)
                     perror("dw_poll() failed");
             } else if (event_type == TERMINATION) {
                 // no need to disarm signal, since we are killing the node anyway
@@ -1546,13 +1647,17 @@ void* conn_worker(void* args) {
                 int total_active_reqs = 0;
                 for (int i = 0; i < conn_threads; i++) {
                     total_active_conns += conn_worker_infos[i].active_conns;
-                    total_active_reqs  += conn_worker_infos[i].active_reqs;
-                    printf("[%ld.%09ld][%s] STATS worker-id: %d, active-conns: %d, active-reqs: %d\n", ts.tv_sec, ts.tv_nsec,
-                                                                                            thread_name, conn_worker_infos[i].worker_id,
-                                                                                            conn_worker_infos[i].active_conns, conn_worker_infos[i].active_reqs);
+                    total_active_reqs += conn_worker_infos[i].active_reqs;
+                    printf("[%ld.%09ld][%s] STATS worker-id: %d, active-conns: %d, active-reqs: %d\n",
+                            ts.tv_sec, ts.tv_nsec,
+                            thread_name, conn_worker_infos[i].worker_id,
+                            conn_worker_infos[i].active_conns, conn_worker_infos[i].active_reqs);
                 }
-                printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n", ts.tv_sec, ts.tv_nsec, thread_name,
-                                                                                            total_active_conns, total_active_reqs);
+                printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n",
+                        ts.tv_sec, ts.tv_nsec, thread_name,
+                        total_active_conns, total_active_reqs);
+                // make sure to flusb the stats
+                fflush(stdout);
 
                 break;
             } else {
@@ -1561,7 +1666,8 @@ void* conn_worker(void* args) {
         }
     }
 
-    return (void *)1;
+    // TODO: is returning this really the best way to return error ..??
+    return (void *) 1;
 }
 
 enum argp_node_option_keys {
@@ -1580,6 +1686,7 @@ enum argp_node_option_keys {
     ODIRECT,
     NO_DEFRAG,
     NO_DELAY,
+    URING_CQE_BATCH,
     WAIT_SPIN,
     WAIT_SPIN_STORAGE,
     LOOPS_PER_USEC,
@@ -1599,49 +1706,106 @@ struct argp_node_arguments {
     int use_wait_spin_storage;
 
     int use_thread_affinity;
-    char* thread_affinity_list;
+    char *thread_affinity_list;
     int num_threads;
     struct sched_attr sched_attrs;
-    char* ssl_cert;
-    char* ssl_key;
-    char* ssl_ca;
-    char* ssl_ciphers;
-    char* ssl_ca_path;
+    char *ssl_cert;
+    char *ssl_key;
+    char *ssl_ca;
+    char *ssl_ciphers;
+    char *ssl_ca_path;
     int ssl_verify;
 };
 
 static struct argp_option argp_node_options[] = {
     // long name, short name, value name, flag, description
-    {"bind-addr",         BIND_ADDR,        "[tcp|udp|ssl:[//]][host][:port] | dpdk://[iface|pci]",0,  "DistWalk node bind address, and communication protocol (can be specified multiple times)"},
-    {"accept-mode",       ACCEPT_MODE,      "child|shared|parent",            0,  "Accept mode (per-worker thread, shared or parent-only listening queue)"},
-    {"poll-mode",         POLL_MODE,        "epoll|poll|select",              0,  "Poll mode (defaults to epoll)"},
-    {"backlog-length",    BACKLOG_LENGTH,   "n",                              0,  "Maximum pending connections queue length"},
-    {"bl",                BACKLOG_LENGTH,   "n", OPTION_ALIAS},
-    {"storage",           STORAGE_OPT_ARG,  "[file=path/to/file][,size=nbytes][,sync=msecs][,odirect][,wait-spin][,count=n]",           0,  "Path to the file used for storage"},
-    {"max-storage-size",  MAX_STORAGE_SIZE, "nbytes",                         0,  "Max size for the storage size"},
-    {"nt",                NUM_THREADS,      "n",                              0,  "Number of threads dedicated to communication" },
-    {"num-threads",       NUM_THREADS,      "n", OPTION_ALIAS },
-    {"sync",              SYNC,             "msec",                           0,  "Periodically sync the written data on disk" },
-    {"odirect",           ODIRECT,           0,                               0,  "Enable direct disk access (bypass read/write OS caches)"},
-    {"thread-affinity",   THREAD_AFFINITY,  "auto|cX,cZ[,cA-cD[:step]]",      0,  "Thread-to-core pinning (automatic or user-defined list using taskset syntax)"},
-    {"sched-policy",      SCHED_POLICY,     "other[:nice]|rr:rtprio|fifo:rtprio|dl:runtime_us,dline_us", 0,  "Scheduling policy (defaults to other)"},
-    {"no-delay",          NO_DELAY,         "0|1",                            0,  "Set value of TCP_NODELAY socket option"},
-    {"nd",                NO_DELAY,         "0|1", OPTION_ALIAS },
-    {"no-defrag",         NO_DEFRAG,         0,                               0,  "Disable defragmentation of connection buffers for incoming messages (defaults to defrag enabled)"},
-    {"wait-spin",         WAIT_SPIN,         0,                               0,  "Spin-wait instead of sleeping till next received packet"},
-    {"ws",                WAIT_SPIN,         0, OPTION_ALIAS },
-    {"wait-spin-storage", WAIT_SPIN_STORAGE, 0,                               0,  "Spin-wait for storage thread (default: storage thread blocks)"},
-    {"wss",               WAIT_SPIN_STORAGE, 0, OPTION_ALIAS },
-    {"loops-per-usec",    LOOPS_PER_USEC,    "value",                         0,  "Set loops_per_usec calibration parameter (0: handle it automatically in ~/.dw_loops_per_usec; -1: use frequency-invariant mode)"},
-    {"help",              HELP,              0,                               0,  "Show this help message", 1 },
-    {"usage",             USAGE,             0,                               0,  "Show a short usage message", 1 },
-    {"ssl-cert",          SSL_CERT_FILE,     "FILE",                          0,  "Server SSL certificate file" },
-    {"ssl-key",           SSL_KEY_FILE,      "FILE",                          0,  "Server SSL key file" },
-    {"ssl-ca",            SSL_CA_FILE,       "FILE",                          0,  "Server SSL CA file" },
-    {"ssl-ciphers",       SSL_CIPHERS,       "CIPHERS",                       0,  "Allowed SSL ciphers" },
-    {"ssl-ca-path",       SSL_CA_PATH,       "DIR",                           0,  "Server SSL CA path" },
-    {"ssl-verify",        SSL_VERIFY,        0,                               0,  "Enable peer certificate verification"},
-    { 0 }
+    {
+        "bind-addr", BIND_ADDR, "[tcp|udp|ssl:[//]][host][:port] | dpdk://[iface|pci]", 0,
+        "DistWalk node bind address, and communication protocol (can be specified multiple times)"
+    },
+    {"accept-mode", ACCEPT_MODE, "child|shared|parent", 0,
+        "Accept mode (per-worker thread, shared or parent-only listening queue)"},
+    {
+        "poll-mode", POLL_MODE, "epoll|poll|select|uring", 0,
+        "Poll mode (defaults to epoll)"
+    },
+    {
+        "uring-cqe-batch", URING_CQE_BATCH, "N", 0,
+        "Re-submit io_uring SQEs after N consumed CQEs (default 4). Requires --poll-mode=uring."
+    },
+    {"backlog-length", BACKLOG_LENGTH, "n", 0,
+        "Maximum pending connections queue length"},
+    {"bl", BACKLOG_LENGTH, "n", OPTION_ALIAS},
+    {
+        "storage", STORAGE_OPT_ARG, "[file=path/to/file][,size=nbytes][,sync=msecs][,odirect][,wait-spin][,count=n]", 0,
+        "Path to the file used for storage"
+    },
+    {"max-storage-size", MAX_STORAGE_SIZE, "nbytes", 0,
+        "Max size for the storage size"
+    },
+    {"nt", NUM_THREADS, "n", 0,
+        "Number of threads dedicated to communication"
+    },
+    {"num-threads", NUM_THREADS, "n", OPTION_ALIAS},
+    {"sync", SYNC, "msec", 0,
+        "Periodically sync the written data on disk"
+    },
+    {"odirect", ODIRECT, 0, 0,
+        "Enable direct disk access (bypass read/write OS caches)"
+    },
+    {
+        "thread-affinity", THREAD_AFFINITY, "auto|cX,cZ[,cA-cD[:step]]", 0,
+        "Thread-to-core pinning (automatic or user-defined list using taskset syntax)"
+    },
+    {"sched-policy", SCHED_POLICY, "other[:nice]|rr:rtprio|fifo:rtprio|dl:runtime_us,dline_us", 0,
+        "Scheduling policy (defaults to other)"
+    },
+    {"no-delay", NO_DELAY, "0|1", 0,
+        "Set value of TCP_NODELAY socket option"
+    },
+    {"nd", NO_DELAY, "0|1", OPTION_ALIAS
+    },
+    {"no-defrag", NO_DEFRAG, 0, 0,
+        "Disable defragmentation of connection buffers for incoming messages (defaults to defrag enabled)"
+    },
+    {"wait-spin", WAIT_SPIN, 0, 0,
+        "Spin-wait instead of sleeping till next received packet"
+    },
+    {"ws", WAIT_SPIN, 0, OPTION_ALIAS
+    },
+    {"wait-spin-storage", WAIT_SPIN_STORAGE, 0, 0,
+        "Spin-wait for storage thread (default: storage thread blocks)"
+    },
+    {"wss", WAIT_SPIN_STORAGE, 0, OPTION_ALIAS},
+    {
+        "loops-per-usec", LOOPS_PER_USEC, "value", 0,
+        "Set loops_per_usec calibration parameter (0: handle it automatically in ~/.dw_loops_per_usec; -1: use frequency-invariant mode)"
+    },
+    {"help", HELP, 0, 0,
+        "Show this help message", 1
+    },
+    {"usage", USAGE, 0, 0,
+        "Show a short usage message", 1
+    },
+    {"ssl-cert", SSL_CERT_FILE, "FILE", 0,
+        "Server SSL certificate file"
+    },
+    {"ssl-key", SSL_KEY_FILE, "FILE", 0,
+        "Server SSL key file"
+    },
+    {"ssl-ca", SSL_CA_FILE, "FILE", 0,
+        "Server SSL CA file"
+    },
+    {"ssl-ciphers", SSL_CIPHERS, "CIPHERS", 0,
+        "Allowed SSL ciphers"
+    },
+    {"ssl-ca-path", SSL_CA_PATH, "DIR", 0,
+        "Server SSL CA path"
+    },
+    {"ssl-verify", SSL_VERIFY, 0, 0,
+        "Enable peer certificate verification"
+    },
+    {0}
 };
 
 static error_t argp_node_parse_opt(int key, char *arg, struct argp_state *state) {
@@ -1649,177 +1813,190 @@ static error_t argp_node_parse_opt(int key, char *arg, struct argp_state *state)
         know is a pointer to our arguments structure. */
     struct argp_node_arguments *arguments = state->input;
 
-    switch(key) {
-    case HELP:
-        argp_state_help(state, state->out_stream, ARGP_HELP_STD_HELP);
-        break;
-    case USAGE:
-        argp_state_help(state, state->out_stream, ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
-        break;
-    case BIND_ADDR:
-        if (n_bind_addrs >= MAX_LISTEN_SOCKETS) {
-            fprintf(stderr, "Too many --bind-addr options\n");
-            exit(EXIT_FAILURE);
-        }
-        addr_proto_parse(arg, bind_addrs[n_bind_addrs].nodehostport, &bind_addrs[n_bind_addrs].protocol);
-        n_bind_addrs++;
-        break;
-    case ACCEPT_MODE:
-        if (strcmp(arg, "child") == 0)
-            accept_mode = AM_CHILD;
-        else if (strcmp(arg, "shared") == 0)
-            accept_mode = AM_SHARED;
-        else if (strcmp(arg, "parent") == 0)
-            accept_mode = AM_PARENT;
-        else {
-            printf("Invalid accept mode parameter: %s\n", arg);
-            exit(EXIT_FAILURE);
-        }
-        break;
-    case POLL_MODE:
-        if (strcmp(arg, "epoll") == 0)
-            poll_mode = DW_EPOLL;
-        else if (strcmp(arg, "poll") == 0)
-            poll_mode = DW_POLL;
-        else if (strcmp(arg, "select") == 0)
-            poll_mode = DW_SELECT;
-        else {
-            printf("Invalid poll mode parameter: %s\n", arg);
-            exit(EXIT_FAILURE);
-        }
-        break;
-    case BACKLOG_LENGTH:
-        listen_backlog = atoi(arg);
-        break;
-    case NO_DELAY:
-        no_delay = atoi(arg);
-        check(no_delay == 0 || no_delay == 1);
-        break;
-    case NO_DEFRAG:
-        enable_defrag = 0;
-        break;
-    case WAIT_SPIN:
-        use_wait_spinning = 1;
-        break;
-    case LOOPS_PER_USEC:
-        loops_per_usec = atof(arg);
-        check(loops_per_usec == -1 || loops_per_usec >= 0);
-        break;
-    case MAX_STORAGE_SIZE:
-        arguments->max_storage_size = atol(arg);
-        break;
-    case SYNC:
-        arguments->periodic_sync_msec = atoi(arg);
-        break;
-    case ODIRECT:
-        arguments->use_odirect = 1;
-        break;
-    case WAIT_SPIN_STORAGE:
-        arguments->use_wait_spin_storage = 1;
-        break;
-    case STORAGE_OPT_ARG:
-        if (storage_devices >= MAX_STORAGE_DEVICES) {
-            printf("Too many --storage options\n");
-            exit(EXIT_FAILURE);
-        }
-
-        storage_worker_info_t *sw_info = &storage_worker_infos[storage_devices];
-
-        do { // iterate through comma-separated fields of --storage argument
-            char *tok = strsep(&arg, ",");
-
-            if (strncmp(tok, "file=", 5) == 0) {
-                strncpy(sw_info->storage_info.storage_path, tok + 5, MAX_STORAGE_PATH_STR);
+    switch (key) {
+        case HELP:
+            argp_state_help(state, state->out_stream, ARGP_HELP_STD_HELP);
+            break;
+        case USAGE:
+            argp_state_help(state, state->out_stream, ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
+            break;
+        case BIND_ADDR:
+            if (n_bind_addrs >= MAX_LISTEN_SOCKETS) {
+                fprintf(stderr, "Too many --bind-addr options\n");
+                exit(EXIT_FAILURE);
             }
-            else if (strncmp(tok, "size=", 5) == 0) {
-                sw_info->storage_info.max_storage_size = atol(tok + 5);
-            }
-            else if (strncmp(tok, "count=", 6) == 0) {
-                sw_info->count = atoi(tok + 6);
-                if (storage_devices + sw_info->count > MAX_STORAGE_DEVICES) {
-                    printf("Total count across --storage options exceeds maximum number of storage devices (%d)\n", MAX_STORAGE_DEVICES);
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else if (strncmp(tok, "sync=", 5) == 0) {
-                sw_info->periodic_sync_msec = atoi(tok + 5);
-            }
-            else if (strncmp(tok, "odirect", 7) == 0) {
-                sw_info->storage_info.use_odirect = 1;
-            }
-            else if (strncmp(tok, "wait-spin", 9) == 0) {
-                sw_info->use_wait_spin = 1;
-            }
+            addr_proto_parse(arg, bind_addrs[n_bind_addrs].nodehostport, &bind_addrs[n_bind_addrs].protocol);
+            n_bind_addrs++;
+            break;
+        case ACCEPT_MODE:
+            if (strcmp(arg, "child") == 0)
+                accept_mode = AM_CHILD;
+            else if (strcmp(arg, "shared") == 0)
+                accept_mode = AM_SHARED;
+            else if (strcmp(arg, "parent") == 0)
+                accept_mode = AM_PARENT;
             else {
-                strncpy(sw_info->storage_info.storage_path, tok, MAX_STORAGE_PATH_STR);
+                printf("Invalid accept mode parameter: %s\n", arg);
+                exit(EXIT_FAILURE);
             }
-        } while (arg != NULL && *arg != '\0');
-
-        storage_devices += sw_info->count;
-        break;
-
-    case NUM_THREADS:
-        arguments->num_threads = atoi(arg);
-        break;
-    case THREAD_AFFINITY:
-        arguments->use_thread_affinity = 1;
-        if (strcmp(arg, "auto") != 0) {
-            arguments->thread_affinity_list = arg;
+            break;
+        case POLL_MODE:
+            if (strcmp(arg, "epoll") == 0)
+                poll_mode = DW_EPOLL;
+            else if (strcmp(arg, "poll") == 0)
+                poll_mode = DW_POLL;
+            else if (strcmp(arg, "select") == 0)
+                poll_mode = DW_SELECT;
+            else if (strcmp(arg, "uring") == 0 || strcmp(arg, "io_uring") == 0) {
+                #ifdef IOURING_ENABLED
+                poll_mode = DW_IOURING;
+                #else
+                fprintf(stderr,
+                        "io_uring poll mode requested but binary was built without IOURING_ENABLED\n");
+                exit(EXIT_FAILURE);
+                #endif
+            } else {
+                printf("Invalid poll mode parameter: %s\n", arg);
+                exit(EXIT_FAILURE);
+            }
+            break;
+        case URING_CQE_BATCH: {
+            char *endp = NULL;
+            long v = strtol(arg, &endp, 10);
+            if (!endp || *endp != '\0' || v <= 0 || v > 4096) {
+                fprintf(stderr, "Invalid --uring-cqe-batch=%s (expected 1..4096)\n", arg);
+                exit(EXIT_FAILURE);
+            }
+            uring_cqe_batch = (int) v;
+            break;
         }
-        break;
-    case SCHED_POLICY:
-        if (strncmp(arg, "other", 5) == 0) {
-            arguments->sched_attrs.sched_policy = SCHED_OTHER;
-            int val;
-            if (sscanf(arg + 5, ":%d", &val) == 1)
-                arguments->sched_attrs.sched_nice = val;
-            else
-                check(arg[5] == 0, "Wrong syntax to --sched-policy=other");
-        } else if (strncmp(arg, "rr", 2) == 0) {
-            arguments->sched_attrs.sched_policy = SCHED_RR;
-            int val;
-            int rv = sscanf(arg + 2, ":%d", &val);
-            check(rv == 1, "Wrong syntax for --sched-policy=rr");
-            arguments->sched_attrs.sched_priority = val;
-        } else if (strncmp(arg, "fifo", 4) == 0) {
-            arguments->sched_attrs.sched_policy = SCHED_FIFO;
-            int val;
-            int rv = sscanf(arg + 4, ":%d", &val);
-            check(rv == 1, "Wrong syntax for --sched-policy=fifo");
-            arguments->sched_attrs.sched_priority = val;
-        } else if (strncmp(arg, "dl", 2) == 0) {
-            arguments->sched_attrs.sched_policy = SCHED_DEADLINE;
-            unsigned long val, val2;
-            int rv = sscanf(arg + 2, ":%lu,%lu", &val,&val2);
-            check(rv == 2, "Wrong syntax for --sched-policy=dl");
-            arguments->sched_attrs.sched_runtime = val * 1000;
-            arguments->sched_attrs.sched_deadline = val2 * 1000;
-            arguments->sched_attrs.sched_period = val2 * 1000;
-        } else {
-            fprintf(stderr, "Wrong argument to --sched-policy option\n");
-            exit(EXIT_FAILURE);
-        }
-        break;
-    case SSL_CERT_FILE:
-        arguments->ssl_cert = arg;
-        break;
-    case SSL_KEY_FILE:
-        arguments->ssl_key = arg;
-        break;
-    case SSL_CA_FILE:
-        arguments->ssl_ca = arg;
-        break;
-    case SSL_CIPHERS:
-        arguments->ssl_ciphers = arg;
-        break;
-    case SSL_CA_PATH:
-        arguments->ssl_ca_path = arg;
-        break;
-    case SSL_VERIFY:
-        arguments->ssl_verify = 1;
-        break;
-    default:
-        return ARGP_ERR_UNKNOWN;
+        case BACKLOG_LENGTH:
+            listen_backlog = atoi(arg);
+            break;
+        case NO_DELAY:
+            no_delay = atoi(arg);
+            check(no_delay == 0 || no_delay == 1);
+            break;
+        case NO_DEFRAG:
+            enable_defrag = 0;
+            break;
+        case WAIT_SPIN:
+            use_wait_spinning = 1;
+            break;
+        case LOOPS_PER_USEC:
+            loops_per_usec = atof(arg);
+            check(loops_per_usec == -1 || loops_per_usec >= 0);
+            break;
+        case MAX_STORAGE_SIZE:
+            arguments->max_storage_size = atol(arg);
+            break;
+        case SYNC:
+            arguments->periodic_sync_msec = atoi(arg);
+            break;
+        case ODIRECT:
+            arguments->use_odirect = 1;
+            break;
+        case WAIT_SPIN_STORAGE:
+            arguments->use_wait_spin_storage = 1;
+            break;
+        case STORAGE_OPT_ARG:
+            if (storage_devices >= MAX_STORAGE_DEVICES) {
+                printf("Too many --storage options\n");
+                exit(EXIT_FAILURE);
+            }
+
+            storage_worker_info_t *sw_info = &storage_worker_infos[storage_devices];
+
+            do {
+                // iterate through comma-separated fields of --storage argument
+                char *tok = strsep(&arg, ",");
+
+                if (strncmp(tok, "file=", 5) == 0) {
+                    strncpy(sw_info->storage_info.storage_path, tok + 5, MAX_STORAGE_PATH_STR);
+                } else if (strncmp(tok, "size=", 5) == 0) {
+                    sw_info->storage_info.max_storage_size = atol(tok + 5);
+                } else if (strncmp(tok, "count=", 6) == 0) {
+                    sw_info->count = atoi(tok + 6);
+                    if (storage_devices + sw_info->count > MAX_STORAGE_DEVICES) {
+                        printf("Total count across --storage options exceeds maximum number of storage devices (%d)\n", MAX_STORAGE_DEVICES);
+                        exit(EXIT_FAILURE);
+                    }
+                } else if (strncmp(tok, "sync=", 5) == 0) {
+                    sw_info->periodic_sync_msec = atoi(tok + 5);
+                } else if (strncmp(tok, "odirect", 7) == 0) {
+                    sw_info->storage_info.use_odirect = 1;
+                } else if (strncmp(tok, "wait-spin", 9) == 0) {
+                    sw_info->use_wait_spin = 1;
+                } else {
+                    strncpy(sw_info->storage_info.storage_path, tok, MAX_STORAGE_PATH_STR);
+                }
+            } while (arg != NULL && *arg != '\0');
+
+            storage_devices += sw_info->count;
+            break;
+
+        case NUM_THREADS:
+            arguments->num_threads = atoi(arg);
+            break;
+        case THREAD_AFFINITY:
+            arguments->use_thread_affinity = 1;
+            if (strcmp(arg, "auto") != 0) {
+                arguments->thread_affinity_list = arg;
+            }
+            break;
+        case SCHED_POLICY:
+            if (strncmp(arg, "other", 5) == 0) {
+                arguments->sched_attrs.sched_policy = SCHED_OTHER;
+                int val;
+                if (sscanf(arg + 5, ":%d", &val) == 1)
+                    arguments->sched_attrs.sched_nice = val;
+                else
+                    check(arg[5] == 0, "Wrong syntax to --sched-policy=other");
+            } else if (strncmp(arg, "rr", 2) == 0) {
+                arguments->sched_attrs.sched_policy = SCHED_RR;
+                int val;
+                int rv = sscanf(arg + 2, ":%d", &val);
+                check(rv == 1, "Wrong syntax for --sched-policy=rr");
+                arguments->sched_attrs.sched_priority = val;
+            } else if (strncmp(arg, "fifo", 4) == 0) {
+                arguments->sched_attrs.sched_policy = SCHED_FIFO;
+                int val;
+                int rv = sscanf(arg + 4, ":%d", &val);
+                check(rv == 1, "Wrong syntax for --sched-policy=fifo");
+                arguments->sched_attrs.sched_priority = val;
+            } else if (strncmp(arg, "dl", 2) == 0) {
+                arguments->sched_attrs.sched_policy = SCHED_DEADLINE;
+                unsigned long val, val2;
+                int rv = sscanf(arg + 2, ":%lu,%lu", &val, &val2);
+                check(rv == 2, "Wrong syntax for --sched-policy=dl");
+                arguments->sched_attrs.sched_runtime = val * 1000;
+                arguments->sched_attrs.sched_deadline = val2 * 1000;
+                arguments->sched_attrs.sched_period = val2 * 1000;
+            } else {
+                fprintf(stderr, "Wrong argument to --sched-policy option\n");
+                exit(EXIT_FAILURE);
+            }
+            break;
+        case SSL_CERT_FILE:
+            arguments->ssl_cert = arg;
+            break;
+        case SSL_KEY_FILE:
+            arguments->ssl_key = arg;
+            break;
+        case SSL_CA_FILE:
+            arguments->ssl_ca = arg;
+            break;
+        case SSL_CIPHERS:
+            arguments->ssl_ciphers = arg;
+            break;
+        case SSL_CA_PATH:
+            arguments->ssl_ca_path = arg;
+            break;
+        case SSL_VERIFY:
+            arguments->ssl_verify = 1;
+            break;
+        default:
+            return ARGP_ERR_UNKNOWN;
     }
     return 0;
 }
@@ -1831,11 +2008,15 @@ void init_listen_sock(int i, accept_mode_t accept_mode, proto_t proto, struct so
             sys_check(lsock = socket(AF_INET, SOCK_STREAM, 0));
         } else {
             sys_check(lsock = socket(AF_INET, SOCK_DGRAM, 0));
-            int conn_id = conn_alloc(lsock, serverAddr, UDP);
-            check(conn_id != -1, "conn_alloc() failed, terminating!");
-            conn_set_status_by_id(conn_id, READY);
-            conn_get_by_id(conn_id)->enable_defrag = enable_defrag;
         }
+        int conn_id = conn_alloc(lsock, serverAddr, proto);
+        check(conn_id != -1, "conn_alloc() failed, terminating!");
+        conn_set_status_by_id(conn_id, READY);
+        conn_get_by_id(conn_id)->enable_defrag = enable_defrag;
+        // TCP/TLS listen sockets must be excluded from conn_find_existing(), a UDP socket is shared
+        if (proto == TCP || proto == TLS)
+            conn_get_by_id(conn_id)->is_listen = 1;
+
         int val = 1;
         sys_check(setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(val)));
         if (accept_mode == AM_CHILD)
@@ -1866,7 +2047,7 @@ void init_listen_sock(int i, accept_mode_t accept_mode, proto_t proto, struct so
 }
 
 int main(int argc, char *argv[]) {
-    static struct argp argp = { argp_node_options, argp_node_parse_opt, 0, "Distwalk Node -- the server program" };
+    static struct argp argp = {argp_node_options, argp_node_parse_opt, 0, "Distwalk Node -- the server program"};
     struct argp_node_arguments input_args;
 
     // Default argp values
@@ -1877,7 +2058,7 @@ int main(int argc, char *argv[]) {
     input_args.use_thread_affinity = 0;
     input_args.thread_affinity_list = NULL;
     input_args.num_threads = 1;
-    input_args.sched_attrs = (struct sched_attr) { .size = sizeof(struct sched_attr), .sched_policy = SCHED_OTHER, .sched_flags = 0 };
+    input_args.sched_attrs = (struct sched_attr){.size = sizeof(struct sched_attr), .sched_policy = SCHED_OTHER, .sched_flags = 0};
     input_args.ssl_cert = NULL;
     input_args.ssl_key = NULL;
     input_args.ssl_ca = NULL;
@@ -1904,14 +2085,13 @@ int main(int argc, char *argv[]) {
     // Set defaults for storage
     // storage_devices has already been set while parsing --storage options, no need to update it
     for (int i = 0; i < storage_devices; i++) {
-
         storage_worker_info_t *sw_info = &storage_worker_infos[i];
-        if (sw_info->periodic_sync_msec == -1) {sw_info->periodic_sync_msec = input_args.periodic_sync_msec;}
-        if (sw_info->use_wait_spin == -1) {sw_info->use_wait_spin = input_args.use_wait_spin_storage;}
+        if (sw_info->periodic_sync_msec == -1) { sw_info->periodic_sync_msec = input_args.periodic_sync_msec; }
+        if (sw_info->use_wait_spin == -1) { sw_info->use_wait_spin = input_args.use_wait_spin_storage; }
 
         storage_info_t *s_info = &sw_info->storage_info;
-        if (s_info->use_odirect == -1) {s_info->use_odirect = input_args.use_odirect;}
-        if (s_info->max_storage_size == -1) {s_info->max_storage_size = input_args.max_storage_size;}
+        if (s_info->use_odirect == -1) { s_info->use_odirect = input_args.use_odirect; }
+        if (s_info->max_storage_size == -1) { s_info->max_storage_size = input_args.max_storage_size; }
         s_info->storage_offset = 0;
         s_info->storage_eof = 0;
 
@@ -1927,7 +2107,7 @@ int main(int argc, char *argv[]) {
                 if (strstr(s_info->storage_path, "%d") == NULL) {
                     snprintf(path_template, sizeof(path_template), "%s_%%d", s_info->storage_path);
                 } else {
-                    strncpy(path_template, s_info->storage_path, sizeof(path_template)-1);
+                    strncpy(path_template, s_info->storage_path, sizeof(path_template) - 1);
                 }
                 snprintf(s_info->storage_path, sizeof(s_info->storage_path), path_template, i);
             }
@@ -1935,8 +2115,7 @@ int main(int argc, char *argv[]) {
 
         // Replicate the same storage info to the next [count-1] storage_worker_info entries
         for (int j = 1; j < sw_info->count; j++) {
-
-            storage_worker_info_t *sw_info2 = &storage_worker_infos[i+j];
+            storage_worker_info_t *sw_info2 = &storage_worker_infos[i + j];
             sw_info2->periodic_sync_msec = sw_info->periodic_sync_msec;
             sw_info2->use_wait_spin = sw_info->use_wait_spin;
 
@@ -1946,7 +2125,7 @@ int main(int argc, char *argv[]) {
             s_info2->storage_offset = 0;
             s_info2->storage_eof = 0;
 
-            snprintf(s_info2->storage_path, sizeof(s_info2->storage_path), path_template, i+j);
+            snprintf(s_info2->storage_path, sizeof(s_info2->storage_path), path_template, i + j);
         }
 
         // Populate path of first thread in group
@@ -1996,7 +2175,7 @@ int main(int argc, char *argv[]) {
         core_it = aff_it_init(&mask, nproc);
     }
 
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     for (int i = 0; i < n_bind_addrs; i++) {
         if (bind_addrs[i].protocol == DPDK) {
             const char *spec = bind_addrs[i].nodehostport;
@@ -2032,7 +2211,7 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-#endif
+    #endif
 
     conn_init();
     req_init();
@@ -2043,6 +2222,14 @@ int main(int argc, char *argv[]) {
             ssl_enable = 1;
             break;
         }
+    }
+
+    // SSL over io_uring is out of scope
+    if (poll_mode == DW_IOURING && ssl_enable) {
+        fprintf(stderr,
+                "Error: --poll-mode=uring is incompatible with TLS bind addresses. "
+                "Use TCP/UDP only when running on io_uring, or pick a different poll-mode.\n");
+        exit(EXIT_FAILURE);
     }
 
     // if we have TLS, create an SSL_CTX
@@ -2094,7 +2281,6 @@ int main(int argc, char *argv[]) {
 
     // Initialize storage_worker_infos and pipes between connection and storage workers
     for (int i = 0; i < storage_devices; i++) {
-
         storage_worker_info_t *sw_info = &storage_worker_infos[i];
         sw_info->worker_id = i;
 
@@ -2110,14 +2296,14 @@ int main(int argc, char *argv[]) {
             blk_size = s.st_blksize;
             dw_log("blk_size = %lu\n", blk_size);
 
-            if (sw_info->storage_info.use_odirect) { // block-aligned buffer
+            if (sw_info->storage_info.use_odirect) {
+                // block-aligned buffer
                 sys_check(posix_memalign((void**) &sw_info->store_buf, blk_size, BUF_SIZE));
             } else {
                 sw_info->store_buf = calloc(1, BUF_SIZE);
             }
 
             for (int j = 0; j < conn_threads; j++) {
-
                 conn_worker_info_t *cw_info = &conn_worker_infos[j];
                 int temp_pipe_fds[2];
 
@@ -2137,7 +2323,6 @@ int main(int argc, char *argv[]) {
                 sw_info->store_replyfd[j] = temp_pipe_fds[1]; // write
                 cw_info->store_replyfd[i] = temp_pipe_fds[0]; // read
             }
-
         } else {
             for (int j = 0; j < conn_threads; j++) {
                 conn_worker_info_t *cw_info = &conn_worker_infos[j];
@@ -2151,11 +2336,11 @@ int main(int argc, char *argv[]) {
         char *dirname = getenv("HOME");
         if (!dirname)
             dirname = ".";
-#ifdef DW_DEBUG
+        #ifdef DW_DEBUG
         char *lps_fname = ".dw_loops_per_usec_dbg";
-#else
+        #else
         char *lps_fname = ".dw_loops_per_usec";
-#endif
+        #endif
         char *fname = malloc(strlen(dirname) + 2 + strlen(lps_fname));
         sprintf(fname, "%s/%s", dirname, lps_fname);
         FILE *f = fopen(fname, "r");
@@ -2184,7 +2369,11 @@ int main(int argc, char *argv[]) {
         conn_worker_infos[i].n_listen_socks = 0;
 
         check(dw_poll_init(&conn_worker_infos[i].dw_poll, poll_mode, use_wait_spinning) == 0);
-        conn_worker_infos[i].timerfd =  timerfd_create(CLOCK_BOOTTIME, TFD_NONBLOCK);
+        #ifdef IOURING_ENABLED
+        if (poll_mode == DW_IOURING)
+            conn_worker_infos[i].dw_poll.u.iouring_fds.cqe_batch_limit = uring_cqe_batch;
+        #endif
+        conn_worker_infos[i].timerfd = timerfd_create(CLOCK_BOOTTIME, TFD_NONBLOCK);
         conn_worker_infos[i].timeout_queue = pqueue_alloc(MAX_REQS);
         conn_worker_infos[i].sched_attrs = input_args.sched_attrs;
 
@@ -2211,11 +2400,11 @@ int main(int argc, char *argv[]) {
         conn_worker_infos[i].active_conns = 0;
         conn_worker_infos[i].active_reqs = 0;
 
-#ifdef DPDK_ENABLED
+        #ifdef DPDK_ENABLED
         if (use_dpdk) {
             conn_worker_infos[i].queue_id = i;
         }
-#endif
+        #endif
 
         // Auxiliary communication medium
         if (accept_mode == AM_PARENT) {
@@ -2242,15 +2431,15 @@ int main(int argc, char *argv[]) {
 
     // For each requested bind-addr, init the listen socket(s)
     for (int l = 0; l < n_bind_addrs; l++) {
-#ifdef DPDK_ENABLED
+        #ifdef DPDK_ENABLED
         if (bind_addrs[l].protocol == DPDK)
             continue;
-#else
+        #else
         if (bind_addrs[l].protocol == DPDK) {
             fprintf(stderr, "Error: DPDK requested but binary compiled without USE_DPDK=1\n");
             exit(EXIT_FAILURE);
         }
-#endif
+        #endif
         addr_parse(bind_addrs[l].nodehostport, &serverAddr);
         for (int i = 0; i < conn_threads; i++) {
             init_listen_sock(i, accept_mode, bind_addrs[l].protocol, serverAddr);
@@ -2273,24 +2462,25 @@ int main(int argc, char *argv[]) {
     }
 
     // Run
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     if (use_dpdk) {
         // launch workers 1..N-1 on remote lcores
         unsigned lcore_id;
         int w = 1;
-        RTE_LCORE_FOREACH_WORKER(lcore_id) {
+        RTE_LCORE_FOREACH_WORKER(lcore_id)
+        {
             if (w >= input_args.num_threads)
                 break;
             rte_eal_remote_launch(conn_worker_lcore, &conn_worker_infos[w], lcore_id);
             w++;
         }
         // worker 0 runs on the main lcore (the current one)
-        conn_worker((void *)&conn_worker_infos[0]);
+        conn_worker((void *) &conn_worker_infos[0]);
         rte_eal_mp_wait_lcore(); // wait until all lcores terminate
     } else
-#endif
+    #endif
     if (input_args.num_threads == 1) {
-        conn_worker((void*) &conn_worker_infos[0]);
+        conn_worker((void *) &conn_worker_infos[0]);
     } else {
         // Init worker threads
         for (int i = 0; i < input_args.num_threads; i++) {
@@ -2350,11 +2540,11 @@ int main(int argc, char *argv[]) {
         server_ssl_ctx = NULL;
     }
 
-#ifdef DPDK_ENABLED
+    #ifdef DPDK_ENABLED
     if (use_dpdk) {
         dpdk_cleanup();
     }
-#endif
+    #endif
 
     return 0;
 }

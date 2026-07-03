@@ -39,3 +39,5 @@ sudo ../script/cpu-teardown.sh > /dev/null
 
 echo "Results in:"
 printf "\t$rampup_log\n"
+
+## remove this temp ?

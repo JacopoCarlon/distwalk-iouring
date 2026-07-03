@@ -43,6 +43,9 @@ kill_all SIGINT
 node_bg -b :7891
 node_bg -b :7892
 
+rm $tmp
+
+
 tmp=$(mktemp /tmp/test_forward_timeout-XXX.txt)
 client --to :7891 -C 100 -F :7892,:7893 -C 200 &> $tmp 
 attempt=1
@@ -65,6 +68,8 @@ node_bg -b :7892
 node_bg -b :7893
 
 client -F :7892,branch,nack=2 -C 1000 -F :7893,:7894,branch -C 2000 -R | grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: SUCCESS)"
+
+rm $tmp
 
 
 tmp=$(mktemp /tmp/test_multi_forward_timeout-XXX.txt)
