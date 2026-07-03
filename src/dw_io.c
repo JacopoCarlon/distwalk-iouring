@@ -178,7 +178,7 @@ ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struc
             conn->defer_defrag = 0;
         }
 
-        if (res != 0) {
+        if (res > 0) {
             conn->curr_recv_buf += res;
             conn->curr_recv_size -= res;
             uring_rearm_recv(p_poll, conn, flags);
@@ -192,8 +192,10 @@ ssize_t dw_recvfrom(dw_poll_t *p_poll, const int conn_id, const int flags, struc
     }
 
     const ssize_t res = recvfrom(conn->sock, conn->curr_recv_buf, conn->curr_recv_size, flags, (struct sockaddr *) from, from_len);
-    conn->curr_recv_buf += res;
-    conn->curr_recv_size -= res;
+    if (res > 0) {
+        conn->curr_recv_buf += res;
+        conn->curr_recv_size -= res;
+    }
     return res;
 }
 
