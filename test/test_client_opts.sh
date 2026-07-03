@@ -7,18 +7,18 @@ node_bg
 client -C 500 -n 10 -p 1000
 client -C 500 -n 10 -r 1000
 
-t1=$(date +%s)
+t1=$(date +%s%3N)
 client -C 500 -n 10 -p 100000
-t2=$(date +%s)
-echo $t2-$t1=$[$t2-$t1]
-[ $[ $t2 - $t1 ] -ge 1 -a $[ $t2 - $t1 ] -lt 2 ]
+t2=$(date +%s%3N)
+echo elapsed_ms=$[$t2-$t1]
+[ $[ $t2 - $t1 ] -ge 850 -a $[ $t2 - $t1 ] -lt 1500 ]
 
 
-t1=$(date +%s)
+t1=$(date +%s%3N)
 client -C 500 -n 10 -r 10
-t2=$(date +%s)
-echo $t2-$t1=$[$t2-$t1]
-[ $[ $t2 - $t1 ] -ge 1 -a $[ $t2 - $t1 ] -lt 2 ]
+t2=$(date +%s%3N)
+echo elapsed_ms=$[$t2-$t1]
+[ $[ $t2 - $t1 ] -ge 850 -a $[ $t2 - $t1 ] -lt 1500 ]
 
 client --ps=1024
 client --rs=1024
