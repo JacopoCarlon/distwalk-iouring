@@ -22,8 +22,8 @@ echo "Before filtering:"
 printf '  - %s\n' "${TESTS[@]}"
 
 EXCLUDE_PATTERNS=(
-    "*proxy*"
-    "*ramp*"
+#    "*proxy*"
+#    "*ramp*"
 )
 
 is_excluded() {
