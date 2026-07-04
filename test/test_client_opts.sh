@@ -7,18 +7,22 @@ node_bg
 client -C 500 -n 10 -p 1000
 client -C 500 -n 10 -r 1000
 
-t1=$(date +%s%3N)
+# check period 100k ns, using -p
+t1=$(date +%s%N)
 client -C 500 -n 10 -p 100000
-t2=$(date +%s%3N)
-echo elapsed_ms=$[$t2-$t1]
-[ $[ $t2 - $t1 ] -ge 850 -a $[ $t2 - $t1 ] -lt 1500 ]
+t2=$(date +%s%N)
+elapsed_ns=$(( t2 - t1 ))
+echo "elapsed_ns=$elapsed_ns"
 
+[ $elapsed_ns -gt 850000000 -a $elapsed_ns -lt 1350000000 ]
 
-t1=$(date +%s%3N)
+# check frequency 10/second (i.e. period 100k ns), using -r
+t1=$(date +%s%N)
 client -C 500 -n 10 -r 10
-t2=$(date +%s%3N)
-echo elapsed_ms=$[$t2-$t1]
-[ $[ $t2 - $t1 ] -ge 850 -a $[ $t2 - $t1 ] -lt 1500 ]
+t2=$(date +%s%N)
+elapsed_ns=$(( t2 - t1 ))
+echo "elapsed_ms=$elapsed_ns"
+[ $elapsed_ns -gt 850000000 -a $elapsed_ns -lt 1350000000 ]
 
 client --ps=1024
 client --rs=1024
