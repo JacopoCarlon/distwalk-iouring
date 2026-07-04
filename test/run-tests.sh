@@ -64,9 +64,9 @@ run_test() {
     fi
 }
 
+SKIP_EPOLL_RE='test_poll_mode\.sh$|test_ssl\.sh$'
 SKIP_URING_RE='test_poll_mode\.sh$|test_ssl\.sh$'
 SKIP_POLL_RE='test_poll_mode\.sh$|test_ssl\.sh$'
-SKIP_EPOLL_RE='test_poll_mode\.sh$|test_ssl\.sh$'
 SKIP_SELECT_RE='test_poll_mode\.sh$|test_ssl\.sh$'
 
 for test in "${TESTS[@]}"; do
@@ -75,12 +75,14 @@ for test in "${TESTS[@]}"; do
             DPDK_MODE=$mode run_test "$test" "$test (dpdk=$mode)"
         done
     else
-        run_test "$test" "$test"
+        if [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
+            run_test "$test" "$test"
+        else
+            POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
+        fi
+
         if ! [[ "$test" =~ $SKIP_URING_RE ]]; then
             POLL_MODE=uring run_test "$test" "$test (poll-mode=uring)"
-        fi
-        if ! [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
-            POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
         fi
         if ! [[ "$test" =~ $SKIP_POLL_RE ]]; then
             POLL_MODE=poll run_test "$test" "$test (poll-mode=poll)"
