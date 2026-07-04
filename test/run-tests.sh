@@ -22,8 +22,8 @@ fi
 ##  printf '  - %s\n' "${TESTS[@]}"
 
 EXCLUDE_PATTERNS=(
-    "*proxy*"
-    "*ramp*"    ## skip ramp because it is slow.
+    "*proxy*"   ##  skip because it never works.
+    "*ramp*"    ##  skip ramp because it is slow. It works.
 )
 
 is_excluded() {
