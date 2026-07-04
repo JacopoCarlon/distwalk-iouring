@@ -1,0 +1,78 @@
+[3359.071981043][dw_client_debug][address_utils.c:27] port_str: :7895
+[3359.072074109][dw_client_debug][address_utils.c:40] hostport_str: localhost
+[3359.072078160][dw_client_debug][address_utils.c:43] Resolving localhost...
+[3359.072494312][dw_client_debug][address_utils.c:46] Host localhost resolved to 4 bytes: 127.0.0.1
+[3359.072507913][dw_client_debug][address_utils.c:27] port_str: :0
+[3359.072510593][dw_client_debug][address_utils.c:40] hostport_str: 0.0.0.0
+[3359.072511867][dw_client_debug][address_utils.c:43] Resolving 0.0.0.0...
+[3359.072519457][dw_client_debug][address_utils.c:46] Host 0.0.0.0 resolved to 4 bytes: 0.0.0.0
+[3359.072522230][dw_client_debug][address_utils.c:27] port_str: :7891
+[3359.072523526][dw_client_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[3359.072524695][dw_client_debug][address_utils.c:43] Resolving 127.0.0.1...
+[3359.072530502][dw_client_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+Configuration:
+  clienthost=0.0.0.0:0
+  serverhost=127.0.0.1:7891
+  num_threads: 1
+  num_pkts=1
+  period=100000us
+  waitspin=0
+  rate=10
+  rate_step_secs=0
+  pkt_size=1024 (+66 for headers)
+  resp_size=512 (+66 with headers)
+  min packet size due to header: send=20, reply=12
+  max packet size: 16777216
+  no_delay: 1
+  num_sessions: 1
+  use_per_session_output: 0
+  num_conn_retries: 0 (retry_period: 200 ms)
+  seed: 1783177058
+  request template: COMPUTE(1000us)->FORWARD_BEGIN(tcp://127.0.0.1:7895,512b,retries=0,timeout=10000000,branched=0,nack=1)->COMPUTE(2000us)->REPLY(512b, mode=normal, dev=0)->REPLY(512b, mode=normal, dev=0)
+[3359.076594583][dwc_recv_0][dw_client.c:379] Connecting to 127.0.0.1:7891 (sess_id=0) ...
+[3359.076688562][dwc_recv_0][dw_client.c:384] CONNECTED after 1 attempts
+[3359.076726087][dwc_recv_0][connection.c:350] CONN allocated, conn_id: 0, proto=1
+[3359.076730530][dwc_recv_0][dw_client.c:458] Spawning sender thread for sess_id=0, first_pkt_id=0
+[3359.076815869][dwc_recv_0][dw_client.c:501] client__ thread_receiver: --- currently, conn.req_list is NULL
+[3359.076823965][dwc_recv_0][connection.c:667] conn_recv: just entered
+[3359.076826818][dwc_recv_0][connection.c:682] conn_recv just entered: --- currently, conn.req_list is NULL
+[3359.076828490][dwc_recv_0][connection.c:688] conn_recv: going to recvfrom
+COMPUTE(1000us)->FORWARD_BEGIN(tcp://127.0.0.1:7895,512b,retries=0,timeout=10000000,branched=0,nack=1)->COMPUTE(2000us)->REPLY(512b, mode=normal, dev=0)->REPLY(512b, mode=normal, dev=0)
+[3359.076981551][dwc_send_0][dw_client.c:282] sending 1024 bytes...
+Sending msg: message (req_id: 0, req_size: 1024, num: 5, status: SUCCESS): COMPUTE(1000us)->FORWARD_BEGIN(tcp://127.0.0.1:7895,512,retries=0,timeout=10000000,branched=0,nack=1)->COMPUTE(2000us)->REPLY(512b)->REPLY(512b)->EOM [76 bytes]
+[3359.076996754][dwc_send_0][connection.c:458] conn_start_send: just entered --- 
+[3359.076999381][dwc_send_0][connection.c:462] SEND starting, conn_id: 0, status: READY, msg_size: 1024
+[3359.077006480][dwc_send_0][connection.c:481] conn_start_send: calling conn_send --- 
+[3359.077008317][dwc_send_0][connection.c:560] SEND conn_id=0, status=1 (READY), curr_send_size=1024, sock=3, send_state=0
+[3359.077011292][dwc_send_0][dw_io.c:88] dw_sendto: just entered
+[3359.077013361][dwc_send_0][dw_io.c:141] dw_sendto: standard path-> calling sendto
+[3359.077041110][dwc_send_0][connection.c:581] conn_send: dw_sendto returned something different from 0 : 1024.
+[3359.077044414][dwc_send_0][connection.c:604] conn_send: SEND returned: 1024
+[3359.077046673][dwc_send_0][dw_client.c:317] period_ns=100000000
+[3359.080094734][dwc_recv_0][connection.c:703] conn_recv after recvfrom: --- currently, conn.req_list is NULL
+[3359.080101884][dwc_recv_0][connection.c:706] RECV returned: 512
+[3359.080104099][dwc_recv_0][connection.c:722] conn_recv finished, returning 1
+[3359.080105610][dwc_recv_0][dw_client.c:506] dw_client: thread_receiver: conn_recv returned: 1 ---- ----
+[3359.080108086][dwc_recv_0][connection.c:384] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[3359.080114053][dwc_recv_0][connection.c:398] --- --- --- conn_prepare_recv_message: Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 0, req_size: 512, num: 0, status: ERROR): EOM [0 bytes]
+[3359.080118746][dwc_recv_0][dw_client.c:541] thread_id: 0
+received message: message (req_id: 0, req_size: 512, num: 0, status: ERROR): EOM [0 bytes]
+[3359.080121469][dwc_recv_0][dw_client.c:187] REPLY reported an error - ERROR
+[3359.080123026][dwc_recv_0][connection.c:384] conn_prepare_recv_message: just entered -> Check whether we have new or leftover messages to process...
+[3359.080124249][dwc_recv_0][connection.c:389] conn_prepare_recv_message: Got incomplete header [recv size:0, header size:12], need to recv() more...
+[3359.080125801][dwc_recv_0][dw_client.c:554] dw_client: thread_receiver went to <goto skip>
+[3359.080126987][dwc_recv_0][dw_client.c:557] Session 0 is over (after receive/skip of pkt 0), closing socket
+[3359.080128490][dwc_recv_0][dw_client.c:575] Joining sender thread
+[3359.177084536][dwc_send_0][dw_client.c:333] dw_client: thread_sender: Sender thread terminating --- --- --- ---
+
+[3359.177547963][dwc_recv_0][connection.c:278] conn_free: just entered
+[3359.177584500][dwc_recv_0][connection.c:291] Freeing conn 0
+[3359.177596096][dwc_recv_0][connection.c:125] conn_reset: just entered
+conn_reset: done first for block, starting second
+conn_reset: returning
+[3359.185235468][dwc_recv_0][dw_client.c:591] end of while loop for Sent pkts - success: 0, error: 1, timeout: 0, thr_id: 0
+t: 4363 us, elapsed: 0 us, req_id: 0, thr_id: 0, sess_id: 0
+Sent pkts - success: 0, error: 1, timeout: 0, thr_id: 0
+[3359.185286859][dwc_recv_0][dw_client.c:603] dw_client: thread_receiver: Receiver thread terminating --- --- --- ---
+[3359.185298950][dwc_recv_0][dw_client.c:1546] dw_client: main: joined all threads, closing
