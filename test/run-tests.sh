@@ -94,6 +94,8 @@ for test in "${TESTS[@]}"; do
 done
 sleep 1
 
+
+## TODO: need warning to say that this needs <sudo apt install gcovr>
 for d in gcov/*; do
     cp ../src/*.gcno $d
 done

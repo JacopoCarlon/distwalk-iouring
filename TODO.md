@@ -21,6 +21,7 @@
     - [x] fix run-tests to be able to skip tests, 
     - [x] properly name all test-produced tmp files for easier logging/debugging
     - [x] kill-all as executable for comodity 
+    - [ ] add warning that <gcovr> is needed for run-tests
     - [ ] files in /test/ should be callable from outside that folder  
         (i.e. wrap common.sh properly)
 
@@ -45,16 +46,20 @@
 
 - [ ] need DOUBLE-CHECK : recvfrom (UDP) (passes tests but is sus)
 
+- [ ] dw_log on every function, with consistent spacing and naming.
+
 - [x] double-check logic around <consumed_since_submit>
 - [x] conns are not freeing nor anything (busy stays at 1)
 
+- test URING  with/without SSL, and DPDK.
+
 
 ---
 ---
 ---
 
 
-## Flavour URING
+## Flavour URING expansions
 - [ ] maybe remove all syscalls from uring path 
 
 - [ ] we will need another way to differentiate if we ever need to support disk IO

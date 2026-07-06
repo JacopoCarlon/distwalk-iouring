@@ -1,0 +1,40 @@
+the problem is that ONLY poll mode, 
+on the second (actual connection) test, 
+at some point reads the incoming connect request as if coming with conn_id == 0
+and thus refuses it.
+
+
+ALL the other modes, in that instance, read it as conn_id=2 and proceed properly.
+
+!!! 
+tftpoll.txt
+and tftpoll2.txt
+are 2 runs of the same input, with a few more dw_logs, behavior seems consistent at the least.
+
+
+
+
+ALSO, 
+i have no idea why the grep passes (for any mode), considering that the test has the code as:
+
+
+node_bg -b :7891
+client -C 1000 -F :7892 -C 2000 | grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: ERROR)"
+
+
+while the epoll output at that line is:
+[7401.116746546][dwn_conn_0][dw_node.c:650] Replying to req 0 (conn_id=1)
+REPLY message (req_id: 0, req_size: 512, num: 0, status: ERROR): EOM [0 bytes]
+
+
+
+why does that work? idk yet
+
+
+
+> btw, 
+the poll test crashes / stops, 
+but it does not leave any tmp file behind...
+that is because the grep is executed on the terminal output (which i manually put on tftpoll.txt). 
+
+
