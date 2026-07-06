@@ -7,17 +7,34 @@ set -x
 node_bg -b :7891
 client -C 1000 -F :7892 -C 2000 | grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: ERROR)"
 
+echo "yyy"
+echo $?
+echo "yyy"
+
 node_bg -b :7892
 client -C 1000 -F :7892 -C 2000 | grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: SUCCESS)"
+
+echo "aaa"
+echo $?
+echo "aaa"
+
 kill_all SIGINT
+
+echo "www www www www"
 
 #
 tmp=$(mktemp /tmp/dw-test_forward_timeout-0-XXX.txt)
 node_bg -b :7891
 client_bg -C 1000 -F timeout=500000,retry=50,:7892 -C 2000 &> $tmp
 
+echo "bbb"
+echo "bbb"
+
 sleep 2
 node_bg -b :7892
+
+echo "ccc"
+echo "ccc"
 
 attempt=1
 while ! grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: SUCCESS)" $tmp; do
@@ -32,6 +49,8 @@ done
 
 kill_all SIGINT
 
+echo "ddd"
+
 #
 node_bg -b :7891
 node_bg -b :7892
@@ -39,12 +58,15 @@ node_bg -b :7892
 client --to :7891 -C 100 -F :7892 -C 200 -F :7893 -C 300 | grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: ERROR)"
 kill_all SIGINT
 
+echo "eee"
+
 #
 node_bg -b :7891
 node_bg -b :7892
 
 rm $tmp
 
+echo "fff"
 
 tmp=$(mktemp /tmp/dw-test_forward_timeout-1-XXX.txt)
 client --to :7891 -C 100 -F :7892,:7893 -C 200 &> $tmp 
@@ -59,8 +81,12 @@ while ! grep -q "received message: message (req_id: 0, req_size: 512, num: 0, st
     ((attempt++))
 done
 
+echo "ggg"
+
 client --to :7891 -C 100 -F :7892,:7893,nack=1 -C 200 --rs=1000 | grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: SUCCESS)"
 kill_all SIGINT
+
+echo "hhh"
 
 #
 node_bg -b :7891
@@ -71,12 +97,15 @@ client -F :7892,branch,nack=2 -C 1000 -F :7893,:7894,branch -C 2000 -R | grep -q
 
 rm $tmp
 
+echo "iii"
 
 tmp=$(mktemp /tmp/dw-test_multi_forward_timeout-XXX.txt)
 client_bg -F :7892,branch,timeout=500ms,retry=50 -C 1000 -F :7893,:7894,branch -C 2000 -R &> $tmp
 
 sleep 2
 node_bg -b :7894
+
+echo "jjj"
 
 attempt=1
 while ! grep -q "received message: message (req_id: 0, req_size: 512, num: 0, status: SUCCESS)" $tmp; do
@@ -90,3 +119,5 @@ while ! grep -q "received message: message (req_id: 0, req_size: 512, num: 0, st
 done
 
 rm $tmp
+
+echo "kk"

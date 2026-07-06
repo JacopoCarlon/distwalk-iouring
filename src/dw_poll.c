@@ -452,11 +452,14 @@ int dw_poll_next(dw_poll_t *p_poll, dw_poll_flags *flags, uint64_t *aux) {
                 *flags |= (p_poll->u.poll_fds.pollfds[p_poll->u.poll_fds.iter].revents & POLLERR) ? DW_POLLERR : 0;
                 *flags |= (p_poll->u.poll_fds.pollfds[p_poll->u.poll_fds.iter].revents & POLLHUP) ? DW_POLLHUP : 0;
                 *aux = p_poll->u.poll_fds.aux[p_poll->u.poll_fds.iter];
-                if (p_poll->u.poll_fds.flags[p_poll->u.poll_fds.iter] & DW_POLLONESHOT)
+                if (p_poll->u.poll_fds.flags[p_poll->u.poll_fds.iter] & DW_POLLONESHOT){
                     // item i replaced with last, so we need to check i again
+                    dw_log("dw_poll_next: case DW_POLL: calling dw_poll_del_pos\n");
                     dw_poll_del_pos(p_poll, p_poll->u.poll_fds.iter);
-                else
+                }
+                else{
                     p_poll->u.poll_fds.iter++;
+                }
                 return 1;
             }
             break;
