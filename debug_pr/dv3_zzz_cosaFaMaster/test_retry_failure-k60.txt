@@ -1,0 +1,35 @@
+[12948.566525268][dw_client_debug][address_utils.c:27] port_str: :0
+[12948.566614743][dw_client_debug][address_utils.c:40] hostport_str: 0.0.0.0
+[12948.566620415][dw_client_debug][address_utils.c:43] Resolving 0.0.0.0...
+[12948.567112140][dw_client_debug][address_utils.c:46] Host 0.0.0.0 resolved to 4 bytes: 0.0.0.0
+[12948.567123259][dw_client_debug][address_utils.c:27] port_str: :7894
+[12948.567126268][dw_client_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[12948.567128514][dw_client_debug][address_utils.c:43] Resolving 127.0.0.1...
+[12948.567141834][dw_client_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+Configuration:
+  clienthost=0.0.0.0:0
+  serverhost=127.0.0.1:7894
+  num_threads: 1
+  num_pkts=1
+  period=100000us
+  waitspin=0
+  rate=10
+  rate_step_secs=0
+  pkt_size=1024 (+66 for headers)
+  resp_size=512 (+66 with headers)
+  min packet size due to header: send=20, reply=12
+  max packet size: 16777216
+  no_delay: 1
+  num_sessions: 1
+  use_per_session_output: 0
+  num_conn_retries: 2 (retry_period: 200 ms)
+  seed: 1783524599
+  request template: REPLY(512b, mode=normal, dev=0)
+[12948.575700778][dwc_recv_0][dw_client.c:379] Connecting to 127.0.0.1:7894 (sess_id=0) ...
+Connection to 127.0.0.1:7894 failed: Connection refused
+Fast-forwarding i by 1 pkts
+[12949.176299441][dwc_recv_0][dw_client.c:542] Session 0 is over (after receive/skip of pkt 0), closing socket
+[12949.176306003][dwc_recv_0][dw_client.c:576] end of while loop for Sent pkts - success: 0, error: 1, timeout: 0, thr_id: 0
+t: 0 us, elapsed: 0 us, req_id: 0, thr_id: 0, sess_id: 0
+Sent pkts - success: 0, error: 1, timeout: 0, thr_id: 0
+[12949.176313080][dwc_recv_0][dw_client.c:588] Receiver thread terminating

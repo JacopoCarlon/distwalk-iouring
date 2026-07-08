@@ -15,9 +15,9 @@
         - [~] ifdef DPDK (could use a double-check) and its includes .h
         - [ ] ifdef SSL
 
-- [x] (SOLVED, to PR) test_client_opts: date %s ha rounding che può farlo fallire a caso
 
 - [ ] all_tests - involving fixes: 
+    - [x] (SOLVED, to PR) test_client_opts: date %s ha rounding che può farlo fallire a caso
     - [x] fix run-tests to be able to skip tests, 
     - [x] properly name all test-produced tmp files for easier logging/debugging
     - [x] kill-all as executable for comodity 
@@ -26,7 +26,7 @@
         (i.e. wrap common.sh properly)
 
 - [ ] all tests- standardize:
-  - [ ] wrap tests for SSL and uring (e.g. on kernel version) like they are already for DPDK  
+    - [ ] wrap tests for SSL and uring (e.g. on kernel version) like they are already for DPDK  
         (i.e. SKIPPED because not compiled/supported/..)
 
 - [x] (PR under review:) Debug all uses of queue.h to account for data_prt freeing (vs allocation)
