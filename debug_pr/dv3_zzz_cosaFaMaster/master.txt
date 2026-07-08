@@ -1,0 +1,162 @@
+jacopo@jacopocarlonMuletto:~/Desktop/distwalk$ make run-tests 
+cd src && make all
+make[1]: Entering directory '/home/jacopo/Desktop/distwalk/src'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/jacopo/Desktop/distwalk/src'
+cd test && ./run-tests.sh
+  [EXCLUDED] ../src/test_pqueue
+  [EXCLUDED] ../src/test_queue
+  [EXCLUDED] ../src/test_queue_debug
+  [EXCLUDED] ../src/test_pqueue_debug
+  [EXCLUDED] test_client_ramp.sh
+  [EXCLUDED] test_forward_skip_proxy.sh
+  [EXCLUDED] test_proxy.sh
+  [EXCLUDED] test_proxy_threads.sh
+TEST ../src/test_ccmd (poll-mode=epoll): SUCCESS
+TEST ../src/test_ccmd (poll-mode=poll): SUCCESS
+TEST ../src/test_ccmd (poll-mode=select): SUCCESS
+TEST ../src/test_distrib (poll-mode=epoll): SUCCESS
+TEST ../src/test_distrib (poll-mode=poll): SUCCESS
+TEST ../src/test_distrib (poll-mode=select): SUCCESS
+TEST ../src/test_timespec (poll-mode=epoll): SUCCESS
+TEST ../src/test_timespec (poll-mode=poll): SUCCESS
+TEST ../src/test_timespec (poll-mode=select): SUCCESS
+TEST ../src/test_ccmd_debug (poll-mode=epoll): SUCCESS
+TEST ../src/test_ccmd_debug (poll-mode=poll): SUCCESS
+TEST ../src/test_ccmd_debug (poll-mode=select): SUCCESS
+TEST ../src/test_message (poll-mode=epoll): SUCCESS
+TEST ../src/test_message (poll-mode=poll): SUCCESS
+TEST ../src/test_message (poll-mode=select): SUCCESS
+TEST ../src/test_distrib_debug (poll-mode=epoll): SUCCESS
+TEST ../src/test_distrib_debug (poll-mode=poll): SUCCESS
+TEST ../src/test_distrib_debug (poll-mode=select): SUCCESS
+TEST ../src/test_timespec_debug (poll-mode=epoll): SUCCESS
+TEST ../src/test_timespec_debug (poll-mode=poll): SUCCESS
+TEST ../src/test_timespec_debug (poll-mode=select): SUCCESS
+TEST ../src/test_message_debug (poll-mode=epoll): SUCCESS
+TEST ../src/test_message_debug (poll-mode=poll): SUCCESS
+TEST ../src/test_message_debug (poll-mode=select): SUCCESS
+TEST test_accept_mode.sh (poll-mode=epoll): SUCCESS
+TEST test_accept_mode.sh (poll-mode=poll): SUCCESS
+TEST test_accept_mode.sh (poll-mode=select): SUCCESS
+TEST test_accept_mode_parent.sh (poll-mode=epoll): SUCCESS
+TEST test_accept_mode_parent.sh (poll-mode=poll): SUCCESS
+TEST test_accept_mode_parent.sh (poll-mode=select): SUCCESS
+TEST test_client_opts.sh (poll-mode=epoll): SUCCESS
+TEST test_client_opts.sh (poll-mode=poll): SUCCESS
+TEST test_client_opts.sh (poll-mode=select): SUCCESS
+TEST test_client_output.sh (poll-mode=epoll): SUCCESS
+TEST test_client_output.sh (poll-mode=poll): SUCCESS
+TEST test_client_output.sh (poll-mode=select): SUCCESS
+TEST test_compute.sh (poll-mode=epoll): SUCCESS
+TEST test_compute.sh (poll-mode=poll): SUCCESS
+TEST test_compute.sh (poll-mode=select): SUCCESS
+TEST test_conn_drop.sh (poll-mode=epoll): SUCCESS
+TEST test_conn_drop.sh (poll-mode=poll): SUCCESS
+TEST test_conn_drop.sh (poll-mode=select): SUCCESS
+TEST test_distrib.sh (poll-mode=epoll): ERROR
+TEST test_distrib.sh (poll-mode=poll): ERROR
+TEST test_distrib.sh (poll-mode=select): ERROR
+TEST test_dpdk.sh (dpdk=veth): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk.sh (dpdk=vf): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk_async.sh (dpdk=veth): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk_async.sh (dpdk=vf): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk_hybrid.sh (dpdk=veth): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk_hybrid.sh (dpdk=vf): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk_stress.sh (dpdk=veth): SKIPPED (non-root or missing USE_DPDK)
+TEST test_dpdk_stress.sh (dpdk=vf): SKIPPED (non-root or missing USE_DPDK)
+TEST test_forward.sh (poll-mode=epoll): ERROR
+TEST test_forward.sh (poll-mode=poll): ERROR
+TEST test_forward.sh (poll-mode=select): ERROR
+TEST test_forward_self.sh (poll-mode=epoll): SUCCESS
+TEST test_forward_self.sh (poll-mode=poll): SUCCESS
+TEST test_forward_self.sh (poll-mode=select): SUCCESS
+TEST test_forward_skip.sh (poll-mode=epoll): SUCCESS
+TEST test_forward_skip.sh (poll-mode=poll): SUCCESS
+TEST test_forward_skip.sh (poll-mode=select): SUCCESS
+TEST test_forward_timeout.sh (poll-mode=epoll): SUCCESS
+TEST test_forward_timeout.sh (poll-mode=poll): ERROR
+TEST test_forward_timeout.sh (poll-mode=select): SUCCESS
+TEST test_loadstore.sh (poll-mode=epoll): SUCCESS
+TEST test_loadstore.sh (poll-mode=poll): SUCCESS
+TEST test_loadstore.sh (poll-mode=select): SUCCESS
+TEST test_loadstore_odirect.sh (poll-mode=epoll): SUCCESS
+TEST test_loadstore_odirect.sh (poll-mode=poll): SUCCESS
+TEST test_loadstore_odirect.sh (poll-mode=select): SUCCESS
+TEST test_multi_forward.sh (poll-mode=epoll): SUCCESS
+TEST test_multi_forward.sh (poll-mode=poll): SUCCESS
+TEST test_multi_forward.sh (poll-mode=select): SUCCESS
+TEST test_node_affinity.sh (poll-mode=epoll): SUCCESS
+TEST test_node_affinity.sh (poll-mode=poll): SUCCESS
+TEST test_node_affinity.sh (poll-mode=select): SUCCESS
+TEST test_node_opts.sh (poll-mode=epoll): SUCCESS
+TEST test_node_opts.sh (poll-mode=poll): SUCCESS
+TEST test_node_opts.sh (poll-mode=select): SUCCESS
+TEST test_poll_mode.sh: SUCCESS
+TEST test_retry_failure.sh (poll-mode=epoll): SUCCESS
+TEST test_retry_failure.sh (poll-mode=poll): SUCCESS
+TEST test_retry_failure.sh (poll-mode=select): SUCCESS
+TEST test_retry_success.sh (poll-mode=epoll): SUCCESS
+TEST test_retry_success.sh (poll-mode=poll): SUCCESS
+TEST test_retry_success.sh (poll-mode=select): SUCCESS
+TEST test_sched.sh (poll-mode=epoll): SUCCESS
+TEST test_sched.sh (poll-mode=poll): SUCCESS
+TEST test_sched.sh (poll-mode=select): SUCCESS
+TEST test_script.sh (poll-mode=epoll): ERROR
+TEST test_script.sh (poll-mode=poll): ERROR
+TEST test_script.sh (poll-mode=select): ERROR
+TEST test_simple.sh (poll-mode=epoll): SUCCESS
+TEST test_simple.sh (poll-mode=poll): SUCCESS
+TEST test_simple.sh (poll-mode=select): SUCCESS
+TEST test_simple_ports.sh (poll-mode=epoll): SUCCESS
+TEST test_simple_ports.sh (poll-mode=poll): SUCCESS
+TEST test_simple_ports.sh (poll-mode=select): SUCCESS
+TEST test_simple_udp.sh (poll-mode=epoll): SUCCESS
+TEST test_simple_udp.sh (poll-mode=poll): SUCCESS
+TEST test_simple_udp.sh (poll-mode=select): SUCCESS
+TEST test_skip.sh (poll-mode=epoll): SUCCESS
+TEST test_skip.sh (poll-mode=poll): SUCCESS
+TEST test_skip.sh (poll-mode=select): SUCCESS
+TEST test_ssl.sh: SUCCESS
+TEST test_stats.sh (poll-mode=epoll): SUCCESS
+TEST test_stats.sh (poll-mode=poll): SUCCESS
+TEST test_stats.sh (poll-mode=select): SUCCESS
+(INFO) Reading coverage data...
+(INFO) Writing coverage report...
+------------------------------------------------------------------------------
+                           GCC Code Coverage Report
+Directory: ..
+------------------------------------------------------------------------------
+File                                       Lines    Exec  Cover   Missing
+------------------------------------------------------------------------------
+src/address_utils.c                           82      65    79%   76-78,80-82,84-86,88-90,94-95,123-125
+src/ccmd.c                                   145     127    87%   14-15,75,110-112,118,170-174,183-185,195-197
+src/ccmd.h                                     2       2   100%
+src/connection.c                             390     276    70%   24,101,124,127,129,131,134,176-177,182-183,243,275,285,312,314-317,319,322-324,360,362-363,365,368-369,372,376-378,381,385-386,388,415-419,421-425,427-430,448-450,466-469,487-488,493-494,503-504,517-519,522,524,527-529,532-533,537,540,542-546,548-551,553-554,556,559,561-562,564,566,572-573,576-579,583,619-620,622,627,631-632,635-636,641-642,645-648
+src/distrib.c                                332     229    69%   74-76,93,96,98,101,103-105,107,123,157,177-178,199-201,203-216,218-219,224-225,274,284-285,315,323,329-331,346-348,355-369,371-378,381,389,391-403,405,408,410-424,426
+src/distrib.h                                  3       3   100%
+src/dw_client.c                              802     666    83%   273-274,278-279,299-303,305-311,346-347,367,397,403,411-413,423-426,437-440,503,516-521,544-546,549-551,556-557,732,735,746,750-751,771-773,808-810,841-844,871-872,928-929,931-933,994-995,1004,1032-1033,1035-1037,1039,1069-1083,1151-1162,1170-1171,1175-1178,1180-1181,1187-1188,1232,1313-1314,1381-1382,1396-1397,1401-1402,1406-1408,1413-1414,1419-1420,1425-1426,1430-1431,1484
+src/dw_node.c                               1171     879    75%   219-220,234-235,240,259,304-305,348,352-355,357-358,412,418-420,432-436,443-444,450,455-457,459-460,480-481,495,519,537,552-554,566-567,572,644-651,673-675,677-678,681-693,695,704-705,707-718,743-744,749-750,780-782,784,793,804,827-828,834,836-839,841-843,848-849,865-866,870-871,880-882,886,894,903,914-915,920-921,934,937-938,951-952,975-977,983-985,1012,1014-1016,1042,1057,1066,1070-1071,1085,1122,1133,1158,1163,1168-1169,1184-1185,1189,1195,1197-1199,1218-1220,1226-1227,1229-1230,1241-1243,1257-1258,1265,1268,1352,1354-1356,1446-1448,1454-1456,1461-1464,1476,1478,1481,1489-1490,1497,1504-1505,1508-1509,1514,1524-1526,1642,1645,1648-1649,1678-1680,1685-1687,1691-1697,1709-1710,1719,1722,1725-1728,1732,1735,1738,1762,1770,1776,1782-1784,1802-1807,1914-1915,1917,1919,1926-1928,1930-1934,1936,2043-2044,2048-2049,2053-2055,2060-2061,2066-2067,2072-2073,2077-2078,2113-2114,2121-2122,2129-2132,2138-2140,2142,2146-2153,2155-2160,2237-2238
+src/dw_poll.c                                222     200    90%   21-22,81-82,91-92,111,113-114,135,143,158,170-171,194,217-218,235,248,266,284-285
+src/dw_poll.h                                  2       2   100%
+src/dw_proxy.c                               116       0     0%   35-37,39,41-43,46-49,52-58,60-64,66-69,71,74-76,78-82,85-92,94-98,100-105,107,110-112,114-139,141-142,144,147,150,152-155,157-160,162-164,166,168-170,172-178,181-184
+src/message.c                                122     113    92%   41-44,66,135,180-182
+src/message.h                                  7       7   100%
+src/priority_queue.c                          84      58    69%   27-28,30-32,34-36,51-52,54-56,70-71,82-83,114-118,120,122-124
+src/priority_queue.h                           4       4   100%
+src/queue.c                                   51      35    68%   20-21,23-25,27-28,32,44-46,48-49,54,69,75
+src/queue.h                                    9       8    88%   30
+src/request.c                                 29      27    93%   22,38
+src/request.h                                  6       6   100%
+src/test_ccmd.c                              311     300    96%   11,15,372-373,378-379,384-385,390-391,446
+src/test_distrib.c                            26      26   100%
+src/test_message.c                           146     116    79%   27,32,38-40,62,64,68,73,75,79,85-88,114,116,121,128-131,178,180,186,189,195-198
+src/test_pqueue.c                             55       0     0%   9-10,12-13,15-19,23-26,28,31-34,37,40-44,46,48-49,51,53-57,59-64,66-69,73-75,77-81,84-87
+src/test_queue.c                             169       0     0%   12-13,15-16,18-19,21-23,25-27,29-30,32-33,35-37,40-41,43-44,46-47,49-50,52-53,55-56,58-59,61-63,66-67,69-70,72-73,76-78,80-84,86-89,91-92,94-96,98-99,101-103,106-107,109-111,113-114,116-117,120-123,125-130,132-133,135-137,140-141,144-146,150-152,155-161,164-165,167-169,172-173,176-178,181,183-184,186-187,189-191,194-198,201-203,205-206,209-210,212-213,215-217,220-224,227-228,230-232,234-236,239-240,242-243,245-247,250-260
+src/test_timespec.c                           43      37    86%   15,23,37,45,63,71
+src/thread_affinity.c                         38      33    86%   26,28-29,44-45
+src/timespec.h                                31      31   100%
+------------------------------------------------------------------------------
+TOTAL                                       4398    3250    73%
+------------------------------------------------------------------------------
+jacopo@jacopocarlonMuletto:~/Desktop/distwalk$ 

@@ -1,0 +1,85 @@
+[12828.305929231][dw_node_debug][dw_node.c:1972] nproc=12 (system capacity)
+dw_node_debug showing up 0 times, not 1 ones up on netstat, waiting...
+[12828.315992130][dw_node_debug][dw_node.c:2098] blk_size = 4096
+[12828.316081834][dw_node_debug][dw_node.c:2163] Using loops_per_usec: -1
+[12828.318290008][dw_node_debug][address_utils.c:27] port_str: :7891
+[12828.318297724][dw_node_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[12828.318300184][dw_node_debug][address_utils.c:43] Resolving 127.0.0.1...
+[12828.318728362][dw_node_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+[12828.318757878][dw_node_debug][dw_node.c:1834] Node bound to 127.0.0.1:7891 (with protocol: TCP)
+[12828.318766142][dw_node_debug][dw_node.c:1840] Accepting new connections (max backlog: 5)...
+[12828.319165280][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=11, p_poll=0x640172079f10, flags=00000001, aux=11
+[12828.319193737][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=3, p_poll=0x640172079f10, flags=00000001, aux=30064771075
+[12828.319199303][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=9, p_poll=0x640172079f10, flags=00000001, aux=8589934601
+[12828.319203572][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=10, p_poll=0x640172079f10, flags=00000001, aux=25769803786
+[12828.319206670][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=7, p_poll=0x640172079f10, flags=00000001, aux=4294967303
+[12828.319209771][dwn_conn_0][dw_poll.c:203] poll()ing: n_pollfds=5
+[12828.321386437][dwn_stor_0][dw_poll.c:75] dw_poll_add(): fd=5, p_poll=0x6ef55efbc9f0, flags=00000001, aux=4294967301
+[12828.321400067][dwn_stor_0][dw_poll.c:75] dw_poll_add(): fd=3, p_poll=0x6ef55efbc9f0, flags=00000001, aux=30064771075
+[12828.321404274][dwn_stor_0][dw_poll.c:203] poll()ing: n_pollfds=2
+[12828.554581608][dwn_conn_0][dw_node.c:1423] event_type=LISTEN, event_data=11 (conn_id if event_type==SOCKET, polled fd otherwise)
+[12828.554615447][dwn_conn_0][dw_node.c:1431] Accepted connection from: 127.0.0.1:59455
+[12828.554687488][dwn_conn_0][connection.c:299] CONN allocated, conn_id: 0
+[12828.554698764][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=12, p_poll=0x640172079f10, flags=00000001, aux=17179869184
+[12828.554704029][dwn_conn_0][dw_node.c:1483] conn_id: 0 assigned to dwn_conn_0
+[12828.554708141][dwn_conn_0][dw_poll.c:203] poll()ing: n_pollfds=6
+[12828.554980656][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[12828.555010855][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[12828.555016663][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[12828.555033329][dwn_conn_0][connection.c:596] RECV returned: 1024
+[12828.555036700][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[12828.555039995][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[12828.555042928][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[12828.555045467][dwn_conn_0][connection.c:349] Got complete message of recv size:1024 (expected 1024), ready to process
+message (req_id: 0, req_size: 1024, num: 5, status: SUCCESS): COMPUTE(1000us)->FORWARD_BEGIN(tcp://127.0.0.1:7895,512,retries=0,timeout=10000000,branched=0,nack=1)->COMPUTE(2000us)->REPLY(512b)->REPLY(512b)->EOM [76 bytes]
+[12828.555062272][dwn_conn_0][connection.c:110] REQUEST create req_id:0, conn_id: 0
+[12828.555065512][dwn_conn_0][dw_node.c:929] Received message req_id=0, size=1024, from 127.0.0.1:59455
+[12828.555069297][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 0,  command: COMPUTE
+[12828.555074249][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 1000 usecs
+[12828.556079337][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 0,  command: FORWARD_BEGIN
+[12828.556084091][dwn_conn_0][dw_node.c:513] Starting FORWARD context for req:0 with nack:1, timeout:10000000, retry:0
+[12828.556473131][dwn_conn_0][connection.c:299] CONN allocated, conn_id: 1
+[12828.556480465][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=13, p_poll=0x640172079f10, flags=00000005, aux=12884901889
+[12828.556485121][dwn_conn_0][dw_node.c:428] connecting to: 127.0.0.1:7895
+[12828.556518517][dwn_conn_0][dw_node.c:447] connect(): Operation now in progress
+[12828.556546905][dwn_conn_0][dw_node.c:487] Forwarding req 0 to 127.0.0.1:7895
+  f: message (req_id: 0, req_size: 512, num: 2, status: SUCCESS): COMPUTE(2000us)->REPLY(512b)->EOM [24 bytes]
+[12828.556555040][dwn_conn_0][connection.c:396] SEND starting, conn_id: 1, status: CONNECTING, msg_size: 512
+[12828.556569685][dwn_conn_0][dw_node.c:282] TIMEOUT inserted, req_id: 0, timeout: 10000000us
+[12828.556573560][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[12828.556575788][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[12828.556579566][dwn_conn_0][dw_poll.c:203] poll()ing: n_pollfds=7
+[12828.556586186][dwn_conn_0][dw_node.c:1423] event_type=CONNECT, event_data=1 (conn_id if event_type==SOCKET, polled fd otherwise)
+[12828.556589313][dwn_conn_0][dw_node.c:1022] event_type=CONNECT, conn_id=1
+[12828.556591689][dwn_conn_0][dw_node.c:1045] Connection to remote peer refused, conn_id=1
+[12828.556594489][dwn_conn_0][dw_node.c:802] removing sock=13 from dw_poll
+[12828.556596803][dwn_conn_0][dw_poll.c:124] dw_poll_mod(): fd=13, p_poll=0x640172079f10, flags=00000000, aux=0
+[12828.556601072][dwn_conn_0][dw_poll.c:151] dw_poll_mod(): pev->events=0000
+[12828.556603976][dwn_conn_0][dw_node.c:805] removing sock=13 from conns[]
+[12828.556606542][dwn_conn_0][connection.c:220] marking conns[1] invalid
+[12828.556609159][dwn_conn_0][connection.c:117] conn_reset(1): conn: 0, req_id: 0, .conn_id: 0 -> message (req_id: 0, req_size: 1024, num: 5, status: SUCCESS): COMPUTE(1000us)->FORWARD_BEGIN(tcp://127.0.0.1:7895,512,retries=0,timeout=10000000,branched=0,nack=1)->COMPUTE(2000us)->REPLY(512b)->REPLY(512b)->EOM [76 bytes]
+[12828.556954892][dwn_conn_0][dw_node.c:319] TIMEOUT removed, req_id: 0, timer disarmed.
+[12828.556960779][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 0,  command: REPLY
+[12828.556963553][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=0
+[12828.556966660][dwn_conn_0][dw_node.c:634] Replying to req 0 (conn_id=0)
+REPLY message (req_id: 0, req_size: 512, num: 0, status: ERROR): EOM [0 bytes]
+[12828.556974236][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[12828.556977481][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=12
+[12828.557010068][dwn_conn_0][connection.c:506] SEND returned: 512
+[12828.557015221][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:0, conn_id:0 [0x6ef55cce3800, 0x6ef55cce3c00[
+[12828.557019336][dwn_conn_0][request.c:18] REQUEST remove req_id:0
+[12828.557518254][dwn_conn_0][dw_poll.c:203] poll()ing: n_pollfds=6
+[12828.655241936][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[12828.655257842][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[12828.655263402][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[12828.655271098][dwn_conn_0][connection.c:596] RECV returned: 0
+[12828.655275225][dwn_conn_0][connection.c:598] RECV connection closed by remote end
+[12828.655278934][dwn_conn_0][dw_node.c:802] removing sock=12 from dw_poll
+[12828.655281406][dwn_conn_0][dw_poll.c:124] dw_poll_mod(): fd=12, p_poll=0x640172079f10, flags=00000000, aux=0
+[12828.655285792][dwn_conn_0][dw_poll.c:151] dw_poll_mod(): pev->events=0000
+[12828.655288582][dwn_conn_0][dw_node.c:805] removing sock=12 from conns[]
+[12828.655291093][dwn_conn_0][connection.c:220] marking conns[0] invalid
+[12828.656133444][dwn_conn_0][dw_poll.c:203] poll()ing: n_pollfds=5
+[12829.557698290][dwn_stor_0][dw_node.c:1211] TERMINATION
+[12829.557732345][dwn_conn_0][dw_node.c:1423] event_type=TERMINATION, event_data=3 (conn_id if event_type==SOCKET, polled fd otherwise)
+[12829.557749705][dwn_conn_0][dw_node.c:1517] TERMINATION

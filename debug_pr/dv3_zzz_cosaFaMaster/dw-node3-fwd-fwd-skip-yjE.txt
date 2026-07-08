@@ -1,0 +1,1144 @@
+[13003.221711747][dw_node_debug][dw_node.c:1972] nproc=12 (system capacity)
+dw_node_debug showing up 2 times, not 3 ones up on netstat, waiting...
+[13003.232125096][dw_node_debug][dw_node.c:2098] blk_size = 4096
+[13003.232192522][dw_node_debug][dw_node.c:2163] Using loops_per_usec: -1
+[13003.234423525][dw_node_debug][address_utils.c:27] port_str: :7893
+[13003.234432549][dw_node_debug][address_utils.c:40] hostport_str: 127.0.0.1
+[13003.234435325][dw_node_debug][address_utils.c:43] Resolving 127.0.0.1...
+[13003.234886744][dw_node_debug][address_utils.c:46] Host 127.0.0.1 resolved to 4 bytes: 127.0.0.1
+[13003.234917294][dw_node_debug][dw_node.c:1834] Node bound to 127.0.0.1:7893 (with protocol: TCP)
+[13003.234925827][dw_node_debug][dw_node.c:1840] Accepting new connections (max backlog: 5)...
+[13003.235338238][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=12, p_poll=0x6373d805df10, flags=00000001, aux=12
+[13003.235353646][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=3, p_poll=0x6373d805df10, flags=00000001, aux=30064771075
+[13003.235359490][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=10, p_poll=0x6373d805df10, flags=00000001, aux=8589934602
+[13003.235363997][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=11, p_poll=0x6373d805df10, flags=00000001, aux=25769803787
+[13003.235368533][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=7, p_poll=0x6373d805df10, flags=00000001, aux=4294967303
+[13003.235373219][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.237550208][dwn_stor_0][dw_poll.c:75] dw_poll_add(): fd=5, p_poll=0x73aae81bc9f0, flags=00000001, aux=4294967301
+[13003.237565762][dwn_stor_0][dw_poll.c:75] dw_poll_add(): fd=3, p_poll=0x73aae81bc9f0, flags=00000001, aux=30064771075
+[13003.237570911][dwn_stor_0][dw_poll.c:210] epoll_wait()ing: epollfd=13
+[13003.472274886][dwn_conn_0][dw_node.c:1423] event_type=LISTEN, event_data=12 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.472303838][dwn_conn_0][dw_node.c:1431] Accepted connection from: 127.0.0.1:37524
+[13003.472377107][dwn_conn_0][connection.c:299] CONN allocated, conn_id: 0
+[13003.472385430][dwn_conn_0][dw_poll.c:75] dw_poll_add(): fd=14, p_poll=0x6373d805df10, flags=00000001, aux=17179869184
+[13003.472392924][dwn_conn_0][dw_node.c:1483] conn_id: 0 assigned to dwn_conn_0
+[13003.472398320][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.472428199][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.472439791][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.472443241][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.472451054][dwn_conn_0][connection.c:596] RECV returned: 1024
+[13003.472454327][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.472457496][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.472460751][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.472463300][dwn_conn_0][connection.c:349] Got complete message of recv size:1024 (expected 512), ready to process
+message (req_id: 0, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.472473647][dwn_conn_0][connection.c:110] REQUEST create req_id:0, conn_id: 0
+[13003.472476531][dwn_conn_0][dw_node.c:929] Received message req_id=0, size=512, from 127.0.0.1:37524
+[13003.472480102][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 0,  command: COMPUTE
+[13003.472484831][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.472520393][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 0,  command: REPLY
+[13003.472522973][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=0
+[13003.472526098][dwn_conn_0][dw_node.c:634] Replying to req 0 (conn_id=0)
+REPLY message (req_id: 0, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.472531036][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.472534405][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.472560409][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.472569515][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:0, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.472574204][dwn_conn_0][request.c:18] REQUEST remove req_id:0
+[13003.472577809][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.472580154][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 1, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.472587127][dwn_conn_0][connection.c:110] REQUEST create req_id:1, conn_id: 0
+[13003.472589613][dwn_conn_0][dw_node.c:929] Received message req_id=1, size=512, from 127.0.0.1:37524
+[13003.472592715][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 1,  command: COMPUTE
+[13003.472595406][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.472630140][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 1,  command: REPLY
+[13003.472632917][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=1
+[13003.472635856][dwn_conn_0][dw_node.c:634] Replying to req 1 (conn_id=0)
+REPLY message (req_id: 1, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.472640337][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.472643151][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.472655780][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.472659351][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:1, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.472662925][dwn_conn_0][request.c:18] REQUEST remove req_id:1
+[13003.472665632][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.472667870][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.472671265][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.473281903][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.473297692][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.473301316][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.473308007][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.473310867][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.473313759][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.473316458][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.473318945][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 2, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.473333406][dwn_conn_0][connection.c:110] REQUEST create req_id:2, conn_id: 0
+[13003.473336358][dwn_conn_0][dw_node.c:929] Received message req_id=2, size=512, from 127.0.0.1:37524
+[13003.473340036][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 2,  command: COMPUTE
+[13003.473343187][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.473377712][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 2,  command: REPLY
+[13003.473380242][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=2
+[13003.473383452][dwn_conn_0][dw_node.c:634] Replying to req 2 (conn_id=0)
+REPLY message (req_id: 2, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.473388265][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.473391566][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.473410550][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.473414524][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:2, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.473418442][dwn_conn_0][request.c:18] REQUEST remove req_id:2
+[13003.473421612][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.473426904][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.473430485][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.474293905][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.474308886][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.474312611][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.474319269][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.474322060][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.474324929][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.474332265][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.474334894][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 3, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.474344572][dwn_conn_0][connection.c:110] REQUEST create req_id:3, conn_id: 0
+[13003.474347525][dwn_conn_0][dw_node.c:929] Received message req_id=3, size=512, from 127.0.0.1:37524
+[13003.474351224][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 3,  command: COMPUTE
+[13003.474354352][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.474388642][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 3,  command: REPLY
+[13003.474391134][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=3
+[13003.474394326][dwn_conn_0][dw_node.c:634] Replying to req 3 (conn_id=0)
+REPLY message (req_id: 3, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.474399241][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.474402532][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.474421258][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.474425220][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:3, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.474431212][dwn_conn_0][request.c:18] REQUEST remove req_id:3
+[13003.474434422][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.474436585][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.474439875][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.478303203][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.478318047][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.478321687][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.478328435][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.478331244][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.478334123][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.478336869][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.478339364][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 7, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.478353733][dwn_conn_0][connection.c:110] REQUEST create req_id:4, conn_id: 0
+[13003.478356808][dwn_conn_0][dw_node.c:929] Received message req_id=7, size=512, from 127.0.0.1:37524
+[13003.478360521][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 4,  command: COMPUTE
+[13003.478363707][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.478399049][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 4,  command: REPLY
+[13003.478401559][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=7
+[13003.478404691][dwn_conn_0][dw_node.c:634] Replying to req 7 (conn_id=0)
+REPLY message (req_id: 7, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.478409522][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.478415937][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.478434991][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.478438993][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:4, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.478442949][dwn_conn_0][request.c:18] REQUEST remove req_id:4
+[13003.478446210][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.478448425][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.478451703][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.479275164][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.479290063][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.479293806][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.479300588][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.479303348][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.479306169][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.479308867][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.479311402][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 8, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.479320958][dwn_conn_0][connection.c:110] REQUEST create req_id:5, conn_id: 0
+[13003.479323830][dwn_conn_0][dw_node.c:929] Received message req_id=8, size=512, from 127.0.0.1:37524
+[13003.479327488][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 5,  command: COMPUTE
+[13003.479330607][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.479365415][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 5,  command: REPLY
+[13003.479367905][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=8
+[13003.479371085][dwn_conn_0][dw_node.c:634] Replying to req 8 (conn_id=0)
+REPLY message (req_id: 8, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.479375967][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.479379299][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.479397986][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.479401898][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:5, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.479405783][dwn_conn_0][request.c:18] REQUEST remove req_id:5
+[13003.479408954][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.479411096][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.479416328][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.481251286][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.481266297][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.481269922][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.481276720][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.481279573][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.481282434][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.481285163][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.481287659][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 10, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.481302156][dwn_conn_0][connection.c:110] REQUEST create req_id:6, conn_id: 0
+[13003.481305189][dwn_conn_0][dw_node.c:929] Received message req_id=10, size=512, from 127.0.0.1:37524
+[13003.481308878][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 6,  command: COMPUTE
+[13003.481315137][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.481353272][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 6,  command: REPLY
+[13003.481355863][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=10
+[13003.481359062][dwn_conn_0][dw_node.c:634] Replying to req 10 (conn_id=0)
+REPLY message (req_id: 10, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.481363884][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.481367242][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.481386239][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.481390134][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:6, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.481393934][dwn_conn_0][request.c:18] REQUEST remove req_id:6
+[13003.481397113][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.481400026][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.481403391][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.483179953][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.483195041][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.483198860][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.483205527][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.483208364][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.483211233][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.483213972][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.483216442][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 12, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.483225978][dwn_conn_0][connection.c:110] REQUEST create req_id:7, conn_id: 0
+[13003.483228853][dwn_conn_0][dw_node.c:929] Received message req_id=12, size=512, from 127.0.0.1:37524
+[13003.483232509][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 7,  command: COMPUTE
+[13003.483235636][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.483269648][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 7,  command: REPLY
+[13003.483272214][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=12
+[13003.483275391][dwn_conn_0][dw_node.c:634] Replying to req 12 (conn_id=0)
+REPLY message (req_id: 12, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.483280279][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.483283639][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.483302769][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.483306826][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:7, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.483311880][dwn_conn_0][request.c:18] REQUEST remove req_id:7
+[13003.483315241][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.483317805][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.483321533][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.484099296][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.484104711][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.484108143][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.484114603][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.484117596][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.484120169][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.484122607][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.484128320][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 13, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.484138117][dwn_conn_0][connection.c:110] REQUEST create req_id:8, conn_id: 0
+[13003.484140674][dwn_conn_0][dw_node.c:929] Received message req_id=13, size=512, from 127.0.0.1:37524
+[13003.484143896][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 8,  command: COMPUTE
+[13003.484149535][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.484183023][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 8,  command: REPLY
+[13003.484185508][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=13
+[13003.484188138][dwn_conn_0][dw_node.c:634] Replying to req 13 (conn_id=0)
+REPLY message (req_id: 13, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.484192167][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.484196247][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.484210265][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.484215002][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:8, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.484218664][dwn_conn_0][request.c:18] REQUEST remove req_id:8
+[13003.484222209][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.484224662][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.484228003][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.485109527][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.485114473][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.485117492][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.485121976][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.485124363][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.485126786][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.485129131][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.485131258][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 14, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.485137407][dwn_conn_0][connection.c:110] REQUEST create req_id:9, conn_id: 0
+[13003.485139722][dwn_conn_0][dw_node.c:929] Received message req_id=14, size=512, from 127.0.0.1:37524
+[13003.485142636][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 9,  command: COMPUTE
+[13003.485145271][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.485179920][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 9,  command: REPLY
+[13003.485182382][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=14
+[13003.485184854][dwn_conn_0][dw_node.c:634] Replying to req 14 (conn_id=0)
+REPLY message (req_id: 14, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.485188690][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.485191433][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.485203307][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.485206179][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:9, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.485209205][dwn_conn_0][request.c:18] REQUEST remove req_id:9
+[13003.485212033][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.485215053][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.485218009][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.492172375][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.492180031][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.492183652][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.492188461][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.492191365][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.492193995][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.492196309][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.492198456][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 21, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.492206965][dwn_conn_0][connection.c:110] REQUEST create req_id:10, conn_id: 0
+[13003.492209344][dwn_conn_0][dw_node.c:929] Received message req_id=21, size=512, from 127.0.0.1:37524
+[13003.492212254][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 10,  command: COMPUTE
+[13003.492214934][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.492248030][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 10,  command: REPLY
+[13003.492250377][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=21
+[13003.492252873][dwn_conn_0][dw_node.c:634] Replying to req 21 (conn_id=0)
+REPLY message (req_id: 21, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.492256639][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.492259340][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.492271924][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.492274717][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:10, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.492277777][dwn_conn_0][request.c:18] REQUEST remove req_id:10
+[13003.492280900][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.492284179][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.492288008][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.495096699][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.495101877][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.495104554][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.495108643][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.495111384][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.495114433][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.495119377][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.495121630][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 24, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.495127408][dwn_conn_0][connection.c:110] REQUEST create req_id:11, conn_id: 0
+[13003.495129702][dwn_conn_0][dw_node.c:929] Received message req_id=24, size=512, from 127.0.0.1:37524
+[13003.495132510][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 11,  command: COMPUTE
+[13003.495135086][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.495169086][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 11,  command: REPLY
+[13003.495171492][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=24
+[13003.495173907][dwn_conn_0][dw_node.c:634] Replying to req 24 (conn_id=0)
+REPLY message (req_id: 24, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.495177584][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.495180216][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.495192200][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.495194973][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:11, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.495200474][dwn_conn_0][request.c:18] REQUEST remove req_id:11
+[13003.495203152][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.495205599][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.495208942][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.502095622][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.502100563][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.502104789][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.502109782][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.502112514][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.502115394][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.502117720][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.502119877][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 31, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.502128199][dwn_conn_0][connection.c:110] REQUEST create req_id:12, conn_id: 0
+[13003.502130551][dwn_conn_0][dw_node.c:929] Received message req_id=31, size=512, from 127.0.0.1:37524
+[13003.502133342][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 12,  command: COMPUTE
+[13003.502135958][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.502169075][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 12,  command: REPLY
+[13003.502171482][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=31
+[13003.502173894][dwn_conn_0][dw_node.c:634] Replying to req 31 (conn_id=0)
+REPLY message (req_id: 31, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.502177584][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.502180222][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.502192182][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.502194945][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:12, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.502197915][dwn_conn_0][request.c:18] REQUEST remove req_id:12
+[13003.502200866][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.502203389][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.502206991][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.503089081][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.503093653][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.503097194][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.503102283][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.503104900][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.503107514][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.503109876][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.503111954][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 32, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.503117561][dwn_conn_0][connection.c:110] REQUEST create req_id:13, conn_id: 0
+[13003.503119805][dwn_conn_0][dw_node.c:929] Received message req_id=32, size=512, from 127.0.0.1:37524
+[13003.503122590][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 13,  command: COMPUTE
+[13003.503125122][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.503158047][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 13,  command: REPLY
+[13003.503160409][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=32
+[13003.503162882][dwn_conn_0][dw_node.c:634] Replying to req 32 (conn_id=0)
+REPLY message (req_id: 32, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.503168719][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.503171393][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.503183251][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.503185964][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:13, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.503188947][dwn_conn_0][request.c:18] REQUEST remove req_id:13
+[13003.503191905][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.503194565][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.503199868][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.505180664][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.505185315][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.505188851][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.505194317][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.505196983][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.505199410][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.505201702][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.505203815][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 34, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.505211648][dwn_conn_0][connection.c:110] REQUEST create req_id:14, conn_id: 0
+[13003.505213980][dwn_conn_0][dw_node.c:929] Received message req_id=34, size=512, from 127.0.0.1:37524
+[13003.505216781][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 14,  command: COMPUTE
+[13003.505219356][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.505252350][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 14,  command: REPLY
+[13003.505254788][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=34
+[13003.505257224][dwn_conn_0][dw_node.c:634] Replying to req 34 (conn_id=0)
+REPLY message (req_id: 34, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.505260863][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.505263541][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.505275224][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.505277921][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:14, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.505280888][dwn_conn_0][request.c:18] REQUEST remove req_id:14
+[13003.505284569][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.505288026][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.505291641][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.506208254][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.506212598][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.506215049][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.506218894][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.506221128][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.506223626][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.506226019][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.506228125][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 35, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.506233697][dwn_conn_0][connection.c:110] REQUEST create req_id:15, conn_id: 0
+[13003.506238330][dwn_conn_0][dw_node.c:929] Received message req_id=35, size=512, from 127.0.0.1:37524
+[13003.506241133][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 15,  command: COMPUTE
+[13003.506243729][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.506276878][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 15,  command: REPLY
+[13003.506279264][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=35
+[13003.506281708][dwn_conn_0][dw_node.c:634] Replying to req 35 (conn_id=0)
+REPLY message (req_id: 35, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.506285467][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.506288016][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.506299532][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.506302233][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:15, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.506305268][dwn_conn_0][request.c:18] REQUEST remove req_id:15
+[13003.506308625][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.506311133][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.506314219][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.507090296][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.507095129][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.507097669][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.507101991][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.507104676][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.507111194][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.507113550][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.507115659][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 36, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.507125750][dwn_conn_0][connection.c:110] REQUEST create req_id:16, conn_id: 0
+[13003.507128116][dwn_conn_0][dw_node.c:929] Received message req_id=36, size=512, from 127.0.0.1:37524
+[13003.507130897][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 16,  command: COMPUTE
+[13003.507133542][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.507166761][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 16,  command: REPLY
+[13003.507169156][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=36
+[13003.507171590][dwn_conn_0][dw_node.c:634] Replying to req 36 (conn_id=0)
+REPLY message (req_id: 36, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.507175278][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.507179197][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.507192121][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.507194832][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:16, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.507197869][dwn_conn_0][request.c:18] REQUEST remove req_id:16
+[13003.507200660][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.507203295][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.507206777][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.509103256][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.509107770][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.509110631][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.509114872][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.509117767][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.509122485][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.509124846][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.509126985][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 38, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.509132710][dwn_conn_0][connection.c:110] REQUEST create req_id:17, conn_id: 0
+[13003.509135058][dwn_conn_0][dw_node.c:929] Received message req_id=38, size=512, from 127.0.0.1:37524
+[13003.509137836][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 17,  command: COMPUTE
+[13003.509140384][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.509173485][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 17,  command: REPLY
+[13003.509175855][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=38
+[13003.509178298][dwn_conn_0][dw_node.c:634] Replying to req 38 (conn_id=0)
+REPLY message (req_id: 38, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.509182079][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.509184723][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.509196235][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.509198882][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:17, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.509201971][dwn_conn_0][request.c:18] REQUEST remove req_id:17
+[13003.509204964][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.509207808][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.509210811][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.510101434][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.510106090][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.510108787][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.510113093][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.510115699][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.510118255][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.510120759][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.510123079][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 39, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.510131137][dwn_conn_0][connection.c:110] REQUEST create req_id:18, conn_id: 0
+[13003.510133468][dwn_conn_0][dw_node.c:929] Received message req_id=39, size=512, from 127.0.0.1:37524
+[13003.510136281][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 18,  command: COMPUTE
+[13003.510138828][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.510171850][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 18,  command: REPLY
+[13003.510174186][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=39
+[13003.510176635][dwn_conn_0][dw_node.c:634] Replying to req 39 (conn_id=0)
+REPLY message (req_id: 39, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.510180324][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.510182966][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.510194152][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.510196887][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:18, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.510199843][dwn_conn_0][request.c:18] REQUEST remove req_id:18
+[13003.510202686][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.510205376][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.510210787][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.511099731][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.511104344][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.511106908][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.511111120][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.511113779][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.511117684][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.511123633][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.511125815][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 40, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.511131337][dwn_conn_0][connection.c:110] REQUEST create req_id:19, conn_id: 0
+[13003.511133586][dwn_conn_0][dw_node.c:929] Received message req_id=40, size=512, from 127.0.0.1:37524
+[13003.511136378][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 19,  command: COMPUTE
+[13003.511138951][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.511171849][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 19,  command: REPLY
+[13003.511174260][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=40
+[13003.511176686][dwn_conn_0][dw_node.c:634] Replying to req 40 (conn_id=0)
+REPLY message (req_id: 40, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.511180303][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.511182901][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.511194468][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.511197153][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:19, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.511200102][dwn_conn_0][request.c:18] REQUEST remove req_id:19
+[13003.511203051][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.511205127][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.511208149][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.516166595][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.516171254][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.516175001][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.516180687][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.516183783][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.516186178][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.516188469][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.516190553][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 45, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.516198693][dwn_conn_0][connection.c:110] REQUEST create req_id:20, conn_id: 0
+[13003.516200999][dwn_conn_0][dw_node.c:929] Received message req_id=45, size=512, from 127.0.0.1:37524
+[13003.516203814][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 20,  command: COMPUTE
+[13003.516206373][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.516239569][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 20,  command: REPLY
+[13003.516241962][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=45
+[13003.516244416][dwn_conn_0][dw_node.c:634] Replying to req 45 (conn_id=0)
+REPLY message (req_id: 45, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.516248092][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.516250701][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.516264362][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.516267180][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:20, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.516270163][dwn_conn_0][request.c:18] REQUEST remove req_id:20
+[13003.516273247][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.516276211][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.516280078][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.522176990][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.522181786][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.522185601][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.522190164][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.522192800][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.522195175][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.522197481][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.522199606][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 51, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.522205358][dwn_conn_0][connection.c:110] REQUEST create req_id:21, conn_id: 0
+[13003.522207659][dwn_conn_0][dw_node.c:929] Received message req_id=51, size=512, from 127.0.0.1:37524
+[13003.522210456][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 21,  command: COMPUTE
+[13003.522213020][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.522246139][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 21,  command: REPLY
+[13003.522248513][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=51
+[13003.522250945][dwn_conn_0][dw_node.c:634] Replying to req 51 (conn_id=0)
+REPLY message (req_id: 51, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.522254585][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.522257205][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.522268752][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.522271466][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:21, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.522274481][dwn_conn_0][request.c:18] REQUEST remove req_id:21
+[13003.522277357][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.522279445][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.522284345][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.523101328][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.523105985][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.523109627][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.523114802][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.523117243][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.523119774][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.523122140][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.523124262][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 52, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.523131813][dwn_conn_0][connection.c:110] REQUEST create req_id:22, conn_id: 0
+[13003.523134158][dwn_conn_0][dw_node.c:929] Received message req_id=52, size=512, from 127.0.0.1:37524
+[13003.523136920][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 22,  command: COMPUTE
+[13003.523139453][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.523174391][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 22,  command: REPLY
+[13003.523176830][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=52
+[13003.523179245][dwn_conn_0][dw_node.c:634] Replying to req 52 (conn_id=0)
+REPLY message (req_id: 52, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.523182964][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.523185577][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.523196817][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.523199506][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:22, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.523202433][dwn_conn_0][request.c:18] REQUEST remove req_id:22
+[13003.523205314][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.523208315][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.523211712][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.524106350][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.524111107][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.524113838][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.524118181][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.524121213][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.524123824][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.524126134][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.524128242][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 53, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.524133979][dwn_conn_0][connection.c:110] REQUEST create req_id:23, conn_id: 0
+[13003.524136199][dwn_conn_0][dw_node.c:929] Received message req_id=53, size=512, from 127.0.0.1:37524
+[13003.524138912][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 23,  command: COMPUTE
+[13003.524141434][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.524174269][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 23,  command: REPLY
+[13003.524176641][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=53
+[13003.524179100][dwn_conn_0][dw_node.c:634] Replying to req 53 (conn_id=0)
+REPLY message (req_id: 53, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.524182745][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.524185376][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.524196501][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.524199181][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:23, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.524202106][dwn_conn_0][request.c:18] REQUEST remove req_id:23
+[13003.524204983][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.524207763][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.524211265][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.526108319][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.526112939][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.526115702][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.526123438][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.526125647][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.526127907][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.526130132][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.526132235][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 55, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.526142629][dwn_conn_0][connection.c:110] REQUEST create req_id:24, conn_id: 0
+[13003.526144960][dwn_conn_0][dw_node.c:929] Received message req_id=55, size=512, from 127.0.0.1:37524
+[13003.526147785][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 24,  command: COMPUTE
+[13003.526150330][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.526183560][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 24,  command: REPLY
+[13003.526185957][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=55
+[13003.526188398][dwn_conn_0][dw_node.c:634] Replying to req 55 (conn_id=0)
+REPLY message (req_id: 55, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.526191991][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.526196197][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.526207468][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.526210240][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:24, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.526213249][dwn_conn_0][request.c:18] REQUEST remove req_id:24
+[13003.526216220][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.526219025][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.526222122][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.528098677][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.528103439][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.528106177][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.528110531][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.528113761][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.528116492][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.528119117][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.528121455][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 57, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.528127152][dwn_conn_0][connection.c:110] REQUEST create req_id:25, conn_id: 0
+[13003.528129425][dwn_conn_0][dw_node.c:929] Received message req_id=57, size=512, from 127.0.0.1:37524
+[13003.528132194][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 25,  command: COMPUTE
+[13003.528134735][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.528167960][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 25,  command: REPLY
+[13003.528170392][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=57
+[13003.528172819][dwn_conn_0][dw_node.c:634] Replying to req 57 (conn_id=0)
+REPLY message (req_id: 57, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.528176468][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.528179129][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.528190280][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.528192974][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:25, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.528195874][dwn_conn_0][request.c:18] REQUEST remove req_id:25
+[13003.528199238][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.528201259][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.528203874][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.529105263][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.529115489][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.529118243][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.529122123][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.529124292][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.529126534][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.529128820][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.529130937][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 58, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.529138747][dwn_conn_0][connection.c:110] REQUEST create req_id:26, conn_id: 0
+[13003.529141047][dwn_conn_0][dw_node.c:929] Received message req_id=58, size=512, from 127.0.0.1:37524
+[13003.529143834][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 26,  command: COMPUTE
+[13003.529146369][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.529179360][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 26,  command: REPLY
+[13003.529181754][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=58
+[13003.529184176][dwn_conn_0][dw_node.c:634] Replying to req 58 (conn_id=0)
+REPLY message (req_id: 58, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.529187816][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.529190430][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.529201854][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.529204586][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:26, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.529207575][dwn_conn_0][request.c:18] REQUEST remove req_id:26
+[13003.529210409][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.529213180][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.529217388][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.531162609][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.531167488][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.531170220][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.531174510][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.531177304][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.531179618][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.531184440][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.531186657][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 60, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.531192292][dwn_conn_0][connection.c:110] REQUEST create req_id:27, conn_id: 0
+[13003.531194586][dwn_conn_0][dw_node.c:929] Received message req_id=60, size=512, from 127.0.0.1:37524
+[13003.531197379][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 27,  command: COMPUTE
+[13003.531199928][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.531232899][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 27,  command: REPLY
+[13003.531235234][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=60
+[13003.531237665][dwn_conn_0][dw_node.c:634] Replying to req 60 (conn_id=0)
+REPLY message (req_id: 60, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.531241410][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.531243972][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.531255440][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.531258112][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:27, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.531263375][dwn_conn_0][request.c:18] REQUEST remove req_id:27
+[13003.531265975][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.531268295][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.531271143][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.532091547][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.532096083][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.532099225][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.532103734][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.532107635][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.532110542][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.532112889][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.532115009][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 61, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.532123037][dwn_conn_0][connection.c:110] REQUEST create req_id:28, conn_id: 0
+[13003.532125365][dwn_conn_0][dw_node.c:929] Received message req_id=61, size=512, from 127.0.0.1:37524
+[13003.532128163][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 28,  command: COMPUTE
+[13003.532130715][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.532163818][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 28,  command: REPLY
+[13003.532166220][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=61
+[13003.532168675][dwn_conn_0][dw_node.c:634] Replying to req 61 (conn_id=0)
+REPLY message (req_id: 61, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.532172367][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.532175004][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.532186428][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.532189080][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:28, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.532191996][dwn_conn_0][request.c:18] REQUEST remove req_id:28
+[13003.532194763][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.532197467][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.532201025][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.537112891][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.537117767][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.537120962][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.537125262][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.537128258][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.537130926][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.537133600][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.537135849][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 66, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.537141809][dwn_conn_0][connection.c:110] REQUEST create req_id:29, conn_id: 0
+[13003.537144088][dwn_conn_0][dw_node.c:929] Received message req_id=66, size=512, from 127.0.0.1:37524
+[13003.537146814][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 29,  command: COMPUTE
+[13003.537149333][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.537182531][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 29,  command: REPLY
+[13003.537184898][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=66
+[13003.537187351][dwn_conn_0][dw_node.c:634] Replying to req 66 (conn_id=0)
+REPLY message (req_id: 66, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.537193228][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.537195838][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.537207463][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.537210161][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:29, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.537213116][dwn_conn_0][request.c:18] REQUEST remove req_id:29
+[13003.537215936][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.537218738][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.537223971][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.538152848][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.538157600][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.538160313][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.538164660][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.538167258][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.538169626][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.538172031][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.538174186][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 67, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.538181963][dwn_conn_0][connection.c:110] REQUEST create req_id:30, conn_id: 0
+[13003.538184293][dwn_conn_0][dw_node.c:929] Received message req_id=67, size=512, from 127.0.0.1:37524
+[13003.538187045][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 30,  command: COMPUTE
+[13003.538189629][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.538223280][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 30,  command: REPLY
+[13003.538225634][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=67
+[13003.538228075][dwn_conn_0][dw_node.c:634] Replying to req 67 (conn_id=0)
+REPLY message (req_id: 67, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.538231780][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.538234367][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.538246018][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.538248717][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:30, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.538251848][dwn_conn_0][request.c:18] REQUEST remove req_id:30
+[13003.538254835][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.538257244][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.538260201][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.541108715][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.541121350][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.541124372][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.541130108][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.541132550][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.541134978][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.541137415][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.541139686][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 70, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.541146392][dwn_conn_0][connection.c:110] REQUEST create req_id:31, conn_id: 0
+[13003.541152089][dwn_conn_0][dw_node.c:929] Received message req_id=70, size=512, from 127.0.0.1:37524
+[13003.541155320][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 31,  command: COMPUTE
+[13003.541158152][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.541192181][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 31,  command: REPLY
+[13003.541196900][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=70
+[13003.541201313][dwn_conn_0][dw_node.c:634] Replying to req 70 (conn_id=0)
+REPLY message (req_id: 70, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.541205408][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.541208215][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.541224391][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.541227519][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:31, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.541230759][dwn_conn_0][request.c:18] REQUEST remove req_id:31
+[13003.541233819][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.541235941][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.541239275][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.543091273][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.543096817][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.543099767][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.543104264][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.543106808][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.543109467][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.543112101][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.543114396][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 72, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.543125780][dwn_conn_0][connection.c:110] REQUEST create req_id:32, conn_id: 0
+[13003.543128495][dwn_conn_0][dw_node.c:929] Received message req_id=72, size=512, from 127.0.0.1:37524
+[13003.543131832][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 32,  command: COMPUTE
+[13003.543134633][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.543167848][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 32,  command: REPLY
+[13003.543170198][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=72
+[13003.543172702][dwn_conn_0][dw_node.c:634] Replying to req 72 (conn_id=0)
+REPLY message (req_id: 72, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.543176373][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.543180309][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.543193106][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.543195840][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:32, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.543198963][dwn_conn_0][request.c:18] REQUEST remove req_id:32
+[13003.543201939][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.543204310][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.543207327][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.546102673][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.546107545][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.546110210][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.546114577][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.546116977][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.546121920][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.546124283][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.546126421][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 75, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.546132094][dwn_conn_0][connection.c:110] REQUEST create req_id:33, conn_id: 0
+[13003.546134433][dwn_conn_0][dw_node.c:929] Received message req_id=75, size=512, from 127.0.0.1:37524
+[13003.546137253][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 33,  command: COMPUTE
+[13003.546139840][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.546173008][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 33,  command: REPLY
+[13003.546175354][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=75
+[13003.546177782][dwn_conn_0][dw_node.c:634] Replying to req 75 (conn_id=0)
+REPLY message (req_id: 75, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.546181510][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.546184099][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.546196389][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.546199087][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:33, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.546202135][dwn_conn_0][request.c:18] REQUEST remove req_id:33
+[13003.546205631][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.546207686][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.546210817][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.547084398][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.547089212][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.547091774][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.547096104][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.547098263][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.547100782][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.547104203][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.547106387][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 76, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.547114779][dwn_conn_0][connection.c:110] REQUEST create req_id:34, conn_id: 0
+[13003.547117150][dwn_conn_0][dw_node.c:929] Received message req_id=76, size=512, from 127.0.0.1:37524
+[13003.547120002][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 34,  command: COMPUTE
+[13003.547122612][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.547155678][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 34,  command: REPLY
+[13003.547158097][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=76
+[13003.547160534][dwn_conn_0][dw_node.c:634] Replying to req 76 (conn_id=0)
+REPLY message (req_id: 76, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.547164212][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.547166801][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.547178795][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.547181463][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:34, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.547184430][dwn_conn_0][request.c:18] REQUEST remove req_id:34
+[13003.547187296][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.547190142][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.547196279][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.548087945][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.548092504][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.548096339][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.548101793][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.548104362][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.548106720][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.548111204][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.548113396][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 77, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.548119111][dwn_conn_0][connection.c:110] REQUEST create req_id:35, conn_id: 0
+[13003.548121381][dwn_conn_0][dw_node.c:929] Received message req_id=77, size=512, from 127.0.0.1:37524
+[13003.548124186][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 35,  command: COMPUTE
+[13003.548126770][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.548159807][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 35,  command: REPLY
+[13003.548162201][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=77
+[13003.548164620][dwn_conn_0][dw_node.c:634] Replying to req 77 (conn_id=0)
+REPLY message (req_id: 77, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.548168230][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.548170856][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.548182363][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.548185080][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:35, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.548188030][dwn_conn_0][request.c:18] REQUEST remove req_id:35
+[13003.548190927][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.548193674][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.548197563][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.552102994][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.552107695][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.552111858][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.552116844][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.552119490][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.552122092][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.552124582][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.552126703][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 81, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.552134782][dwn_conn_0][connection.c:110] REQUEST create req_id:36, conn_id: 0
+[13003.552137121][dwn_conn_0][dw_node.c:929] Received message req_id=81, size=512, from 127.0.0.1:37524
+[13003.552139918][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 36,  command: COMPUTE
+[13003.552142523][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.552175709][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 36,  command: REPLY
+[13003.552178101][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=81
+[13003.552180559][dwn_conn_0][dw_node.c:634] Replying to req 81 (conn_id=0)
+REPLY message (req_id: 81, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.552184378][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.552186974][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.552200589][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.552203370][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:36, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.552206361][dwn_conn_0][request.c:18] REQUEST remove req_id:36
+[13003.552209240][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.552211818][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.552215487][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.556095106][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.556100084][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.556103611][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.556109037][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.556111662][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.556114012][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.556116346][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.556118450][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 85, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.556124103][dwn_conn_0][connection.c:110] REQUEST create req_id:37, conn_id: 0
+[13003.556126392][dwn_conn_0][dw_node.c:929] Received message req_id=85, size=512, from 127.0.0.1:37524
+[13003.556129174][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 37,  command: COMPUTE
+[13003.556131731][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.556164755][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 37,  command: REPLY
+[13003.556167145][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=85
+[13003.556169586][dwn_conn_0][dw_node.c:634] Replying to req 85 (conn_id=0)
+REPLY message (req_id: 85, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.556173250][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.556175837][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.556187197][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.556189819][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:37, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.556192722][dwn_conn_0][request.c:18] REQUEST remove req_id:37
+[13003.556195761][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.556197831][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.556203249][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.557107078][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.557111690][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.557115841][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.557121197][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.557123784][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.557126125][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.557128436][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.557130549][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 86, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.557138118][dwn_conn_0][connection.c:110] REQUEST create req_id:38, conn_id: 0
+[13003.557140477][dwn_conn_0][dw_node.c:929] Received message req_id=86, size=512, from 127.0.0.1:37524
+[13003.557143263][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 38,  command: COMPUTE
+[13003.557145831][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.557181271][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 38,  command: REPLY
+[13003.557183723][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=86
+[13003.557186183][dwn_conn_0][dw_node.c:634] Replying to req 86 (conn_id=0)
+REPLY message (req_id: 86, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.557189873][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.557192493][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.557203870][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.557206536][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:38, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.557209541][dwn_conn_0][request.c:18] REQUEST remove req_id:38
+[13003.557212069][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.557214624][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.557218747][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.558104208][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.558108929][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.558112594][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.558118165][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.558120994][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.558123630][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.558126154][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.558128267][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 87, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.558133869][dwn_conn_0][connection.c:110] REQUEST create req_id:39, conn_id: 0
+[13003.558136131][dwn_conn_0][dw_node.c:929] Received message req_id=87, size=512, from 127.0.0.1:37524
+[13003.558138899][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 39,  command: COMPUTE
+[13003.558141430][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.558174387][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 39,  command: REPLY
+[13003.558176809][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=87
+[13003.558180558][dwn_conn_0][dw_node.c:634] Replying to req 87 (conn_id=0)
+REPLY message (req_id: 87, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.558184355][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.558186910][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.558198020][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.558200746][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:39, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.558203741][dwn_conn_0][request.c:18] REQUEST remove req_id:39
+[13003.558206769][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.558210193][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.558213889][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.561086058][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.561090964][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.561093740][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.561097997][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.561100405][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.561102773][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.561105094][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.561107233][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 90, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.561118021][dwn_conn_0][connection.c:110] REQUEST create req_id:40, conn_id: 0
+[13003.561120342][dwn_conn_0][dw_node.c:929] Received message req_id=90, size=512, from 127.0.0.1:37524
+[13003.561123191][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 40,  command: COMPUTE
+[13003.561125825][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.561160786][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 40,  command: REPLY
+[13003.561163160][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=90
+[13003.561165631][dwn_conn_0][dw_node.c:634] Replying to req 90 (conn_id=0)
+REPLY message (req_id: 90, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.561169281][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.561174524][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.561186441][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.561189135][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:40, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.561192107][dwn_conn_0][request.c:18] REQUEST remove req_id:40
+[13003.561194945][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.561197671][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.561201638][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.563087995][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.563092622][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.563099016][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.563103874][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.563106651][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.563109170][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.563111431][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.563113558][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 92, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.563119226][dwn_conn_0][connection.c:110] REQUEST create req_id:41, conn_id: 0
+[13003.563121504][dwn_conn_0][dw_node.c:929] Received message req_id=92, size=512, from 127.0.0.1:37524
+[13003.563124304][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 41,  command: COMPUTE
+[13003.563126933][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.563160171][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 41,  command: REPLY
+[13003.563162559][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=92
+[13003.563166402][dwn_conn_0][dw_node.c:634] Replying to req 92 (conn_id=0)
+REPLY message (req_id: 92, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.563170131][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.563172773][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.563184457][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.563187123][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:41, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.563190150][dwn_conn_0][request.c:18] REQUEST remove req_id:41
+[13003.563193062][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.563195690][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.563199746][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.567172793][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.567180095][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.567183714][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.567189174][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.567191507][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.567193833][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.567196125][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.567198225][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 96, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.567206238][dwn_conn_0][connection.c:110] REQUEST create req_id:42, conn_id: 0
+[13003.567208533][dwn_conn_0][dw_node.c:929] Received message req_id=96, size=512, from 127.0.0.1:37524
+[13003.567211397][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 42,  command: COMPUTE
+[13003.567214004][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.567247434][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 42,  command: REPLY
+[13003.567249790][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=96
+[13003.567252257][dwn_conn_0][dw_node.c:634] Replying to req 96 (conn_id=0)
+REPLY message (req_id: 96, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.567255895][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.567258514][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.567270365][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.567273046][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:42, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.567276014][dwn_conn_0][request.c:18] REQUEST remove req_id:42
+[13003.567279121][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.567282515][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.567285232][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.568171881][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.568176470][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.568180343][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.568185581][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.568188447][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.568191122][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.568195711][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.568197893][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 97, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.568203406][dwn_conn_0][connection.c:110] REQUEST create req_id:43, conn_id: 0
+[13003.568205675][dwn_conn_0][dw_node.c:929] Received message req_id=97, size=512, from 127.0.0.1:37524
+[13003.568208434][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 43,  command: COMPUTE
+[13003.568211025][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.568244086][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 43,  command: REPLY
+[13003.568246430][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=97
+[13003.568248860][dwn_conn_0][dw_node.c:634] Replying to req 97 (conn_id=0)
+REPLY message (req_id: 97, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.568252480][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.568255034][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.568266202][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.568268848][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:43, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.568274221][dwn_conn_0][request.c:18] REQUEST remove req_id:43
+[13003.568277924][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.568281366][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.568284169][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.569197611][dwn_conn_0][dw_node.c:1423] event_type=SOCKET, event_data=0 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.569210563][dwn_conn_0][dw_node.c:1022] event_type=SOCKET, conn_id=0
+[13003.569222577][dwn_conn_0][dw_node.c:1050] calling recv_mesg()
+[13003.569226452][dwn_conn_0][connection.c:596] RECV returned: 512
+[13003.569228571][dwn_conn_0][dw_node.c:1080] conns[0].status=1 (READY)
+[13003.569230830][dwn_conn_0][dw_node.c:1083] calling obtain_messages() from conn_id=0's recv buffer
+[13003.569233069][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.569235226][dwn_conn_0][connection.c:349] Got complete message of recv size:512 (expected 512), ready to process
+message (req_id: 98, req_size: 512, num: 2, status: SUCCESS): COMPUTE(30us)->REPLY(512b)->EOM [24 bytes]
+[13003.569243237][dwn_conn_0][connection.c:110] REQUEST create req_id:44, conn_id: 0
+[13003.569245571][dwn_conn_0][dw_node.c:929] Received message req_id=98, size=512, from 127.0.0.1:37524
+[13003.569248409][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 44,  command: COMPUTE
+[13003.569250958][dwn_conn_0][dw_node.c:666] COMPUTE: computing for 30 usecs
+[13003.569284811][dwn_conn_0][dw_node.c:816] PROCESS conn_id: 0, req_id: 44,  command: REPLY
+[13003.569287167][dwn_conn_0][dw_node.c:832] Handling REPLY: req_id=98
+[13003.569289573][dwn_conn_0][dw_node.c:634] Replying to req 98 (conn_id=0)
+REPLY message (req_id: 98, req_size: 512, num: 0, status: SUCCESS): EOM [0 bytes]
+[13003.569293268][dwn_conn_0][connection.c:396] SEND starting, conn_id: 0, status: READY, msg_size: 512
+[13003.569295753][dwn_conn_0][connection.c:479] SEND conn_id=0, status=1 (READY), curr_send_size=512, sock=14
+[13003.569307041][dwn_conn_0][connection.c:506] SEND returned: 512
+[13003.569309725][dwn_conn_0][connection.c:145] DEFRAGMENT remove req_id:44, conn_id:0 [0x73aae5ee3800, 0x73aae5ee3a00[
+[13003.569312732][dwn_conn_0][request.c:18] REQUEST remove req_id:44
+[13003.569315910][dwn_conn_0][connection.c:334] Check whether we have new or leftover messages to process...
+[13003.569319276][dwn_conn_0][connection.c:339] Got incomplete header [recv size:0, header size:12], need to recv() more...
+[13003.569323001][dwn_conn_0][dw_poll.c:210] epoll_wait()ing: epollfd=9
+[13003.623763429][dwn_stor_0][dw_node.c:1211] TERMINATION
+[13003.623781407][dwn_conn_0][dw_node.c:1423] event_type=TERMINATION, event_data=3 (conn_id if event_type==SOCKET, polled fd otherwise)
+[13003.623799002][dwn_conn_0][dw_node.c:1517] TERMINATION

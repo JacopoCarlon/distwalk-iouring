@@ -4,7 +4,7 @@
 
 . common.sh
 
-tmp=$(mktemp /tmp/dw-test_accept_mode_parent-XXX.txt)
+tmp=$(mktemp /tmp/dw-test_accept_mode_parent-0-XXX.txt)
 
 node_bg -a parent --nt 3 &> $tmp
 
@@ -18,6 +18,10 @@ kill_all SIGINT
 cat $tmp
 
 rm $tmp
+
+echo "fine parte 0 !!! aaaaaaaa"
+
+tmp=$(mktemp /tmp/dw-test_accept_mode_parent-1-XXX.txt)
 
 node_bg -a parent --nt 2
 
