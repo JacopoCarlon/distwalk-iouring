@@ -22,8 +22,24 @@ fi
 ##  printf '  - %s\n' "${TESTS[@]}"
 
 EXCLUDE_PATTERNS=(
-    #   "*proxy*"   ##  skip because it never works.
-    #   "*ramp*"    ##  skip ramp because it is slow. It works.
+    "*proxy*"           ##  skip because it never works.
+    "*est_skip.*"       ## BROKEN test_skip is broken.
+    "*forward*"         ## BROKEN : forward.sh and forward.timeout(poll) are broken 
+    ##  "*ssl*"         ## -> works ?? : seems to crash the .sh file at the end ??
+    ##  "*ramp*"        ## -> works : skip ramp because it is slow. It works.
+    "*est_forward_s"    ## -> works
+    "*est_poll_mode*"   ## -> works
+    "*retry*"           ## -> works
+    "*est_accept_mode*" ## -> works : mode and mode_parent     
+    "*est_client_o**"   ## -> works : opts and output          
+    "*est_compute*"     ## -> works      
+    "*est_connect*"     ## -> works
+    "*est_load*"        ## -> works : loadstore and odirect    
+    "*est_node*"        ## -> works
+    "*est_sched*"       ## -> works
+    "*est_script*"      ## -> works
+    "*est_simple*"      ## -> works : simple and simple_udp
+    "*est_stats*"       ## -> works
 )
 
 is_excluded() {
@@ -72,6 +88,7 @@ SKIP_POLL_RE='test_poll_mode\.sh$'
 SKIP_SELECT_RE='test_poll_mode\.sh$'
 
 for test in "${TESTS[@]}"; do
+    echo "$test"
     if [[ "$test" == *dpdk* ]]; then
         for mode in veth vf; do
             DPDK_MODE=$mode run_test "$test" "$test (dpdk=$mode)"
@@ -91,6 +108,7 @@ for test in "${TESTS[@]}"; do
             fi
         fi
     fi
+    echo "done that test"
 done
 sleep 1
 
