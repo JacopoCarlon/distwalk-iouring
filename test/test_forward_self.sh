@@ -1,9 +1,10 @@
 #!/bin/bash
 
-. common.sh
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/common.sh"
 
-TMP_N0=$(mktemp /tmp/dw-node-fwd-1-XXX.txt)
-TMP_C0=$(mktemp /tmp/dw-client-fwd-XXX.txt)
+TMP_N0=$(mktemp /tmp/dw-node-test_forward_self-XXX.txt)
+TMP_C0=$(mktemp /tmp/dw-client-test_forward_self-XXX.txt)
 
 node_bg -b :7891 &> $TMP_N0
 

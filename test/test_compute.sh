@@ -1,9 +1,10 @@
 #!/bin/bash
 
-. common.sh
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/common.sh"
 
-tmp_node=$(mktemp /tmp/log-node-XXX.txt)
-tmp_client=$(mktemp /tmp/log-client-XXX.txt)
+tmp_node=$(mktemp /tmp/dw-log-node-test_compute-XXX.txt)
+tmp_client=$(mktemp /tmp/dw-log-client-test_compute-XXX.txt)
 
 node_bg > $tmp_node
 

@@ -17,6 +17,38 @@ else
     TESTS=( $(find ../src/ -name 'test_*' -executable | grep -v '~$') $(ls test_*.sh) )
 fi
 
+
+##  echo "Before filtering:"
+##  printf '  - %s\n' "${TESTS[@]}"
+
+EXCLUDE_PATTERNS=(
+    #   "*proxy*"   ##  skip because it never works.
+    #   "*ramp*"    ##  skip ramp because it is slow. It works.
+)
+
+is_excluded() {
+    local name="$1"
+    for pat in "${EXCLUDE_PATTERNS[@]}"; do
+        case "$name" in
+            $pat) return 0 ;;   # 0 = true --> excluded
+        esac
+    done
+    return 1
+}
+
+if [[ ${#EXCLUDE_PATTERNS[@]} -gt 0 ]]; then
+    filtered=()
+    for t in "${TESTS[@]}"; do
+        if is_excluded "$t"; then
+            echo "  [EXCLUDED] $t" >&2
+        else
+            filtered+=("$t")
+        fi
+    done
+    TESTS=("${filtered[@]}")
+fi
+
+
 run_test() {
     local test=$1
     local label=$2
@@ -33,20 +65,40 @@ run_test() {
     fi
 }
 
+
+RUN_ONCE='test_poll_mode\.sh$'          ## test_poll_mode.sh already tests all poll modes, no need to iterate over them.
+SKIP_EPOLL_RE='test_poll_mode\.sh$'
+SKIP_POLL_RE='test_poll_mode\.sh$'
+SKIP_SELECT_RE='test_poll_mode\.sh$'
+
 for test in "${TESTS[@]}"; do
     if [[ "$test" == *dpdk* ]]; then
         for mode in veth vf; do
             DPDK_MODE=$mode run_test "$test" "$test (dpdk=$mode)"
         done
     else
-        run_test "$test" "$test"
+        if [[ "$test" =~ $RUN_ONCE ]]; then
+            run_test "$test" "$test" "(once for all)"
+        else
+            if ! [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
+                POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
+            fi
+            if ! [[ "$test" =~ $SKIP_POLL_RE ]]; then
+                POLL_MODE=poll run_test "$test" "$test (poll-mode=poll)"
+            fi
+            if ! [[ "$test" =~ $SKIP_SELECT_RE ]]; then
+                POLL_MODE=select run_test "$test" "$test (poll-mode=select)"
+            fi
+        fi
     fi
 done
-
 sleep 1
 
+
+## TODO: need warning to say that this needs <sudo apt install gcovr>
 for d in gcov/*; do
     cp ../src/*.gcno $d
 done
 
 gcovr --object-directory ../src --root ../ --gcov-ignore-parse-errors
+

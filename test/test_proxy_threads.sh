@@ -1,9 +1,10 @@
 #!/bin/bash
 
-. common.sh
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/common.sh"
 
-tmp_node=$(mktemp /tmp/dw-node-XXX.txt)
-tmp_client=$(mktemp /tmp/dw-client-XXX.txt)
+tmp_node=$(mktemp /tmp/dw-node-test_proxy_threads-XXX.txt)
+tmp_client=$(mktemp /tmp/dw-client-test_proxy_threads-XXX.txt)
 
 node_bg -b :7892 &> $tmp_node
 proxy_bg -b :7891 --to :7892
@@ -15,3 +16,6 @@ echo "$children"
 [ $(echo $children | grep -c "") -eq 1 ]
 
 kill_all SIGKILL
+
+rm $tmp_node
+rm $tmp_client

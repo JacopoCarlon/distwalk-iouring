@@ -1,22 +1,27 @@
-# Whitelist inside src/
-# 0. Ignore all
-src/*
+# Whitelist specific build files by ignoring <<file*>>
+src/dw_client*
+src/dw_node*
+src/dw_proxy*
+src/test_ccmd*
+src/test_distrib*
+src/test_message*
+src/test_pqueue*
+src/test_queue*
+src/test_timespec*
 
-# 1. Unignore useful extension-less files
-!src/Makefile
-!src/makefile
+# Unignore their sourcefiles <<file.c>> (they don't have <<file.h>>, else that also should be unignored)
+!src/dw_client.c
+!src/dw_node.c
+!src/dw_proxy.c
+!src/test_ccmd.c
+!src/test_distrib.c
+!src/test_message.c
+!src/test_pqueue.c
+!src/test_queue.c
+!src/test_timespec.c
 
-# 2. Unignore all files with extensions
-!src/*.*
 
-# 3. Unignore all dirs
-!src/*/
-
-
-
-# Blacklisting from root 
-
-# Ignore files with extensions `.d`, `.o`, `.data`, `.gcno`, `.gcda`, `.gcov`
+# Ignore all files with extensions `.d`, `.o`, `.data`, `.gcno`, `.gcda`, `.gcov`
 *.d
 *.o
 *.data
@@ -24,6 +29,9 @@ src/*
 *.gcno 
 *.gcda 
 *.gcov
+
+
+# Other files to ignore
 
 test/log_tests.txt
 

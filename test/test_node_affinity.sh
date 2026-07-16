@@ -1,8 +1,9 @@
 #!/bin/bash
 
-. common.sh
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/common.sh"
 
-tmp=$(mktemp /tmp/test_affinity-XXX.txt)
+tmp=$(mktemp /tmp/dw-test_node_affinity-XXX.txt)
 
 strace_node_bg --thread-affinity=auto &> $tmp
 kill_all SIGINT

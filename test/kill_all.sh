@@ -3,9 +3,8 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$DIR/common.sh"
 
-node_bg
-client -f <(echo "
---ps 256
--n 10
--C 10000
---rs=1024")
+kill_all "$@"
+
+sleep 1
+echo "end of kill_all"
+
