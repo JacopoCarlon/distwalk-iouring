@@ -1328,12 +1328,15 @@ void* conn_worker(void* args) {
             int s = infos->listen_socks[i];
             if (s < 0) continue;
             int conn_id = conn_find_sock(s);
+            conn_info_t *conn = conn_get_by_id(conn_id);
+            assert(conn);
 
             uint64_t aux;
-            if(conn_id == -1) // TCP/TLS
+            if (conn->proto == TCP || conn->proto == TLS)
                 aux = i2l(LISTEN, s);
             else // UDP
                 aux = i2l(SOCKET, conn_id);
+
             check(dw_poll_add(&infos->dw_poll, s, DW_POLLIN, aux) == 0);
         }
     }
@@ -1831,11 +1834,15 @@ void init_listen_sock(int i, accept_mode_t accept_mode, proto_t proto, struct so
             sys_check(lsock = socket(AF_INET, SOCK_STREAM, 0));
         } else {
             sys_check(lsock = socket(AF_INET, SOCK_DGRAM, 0));
-            int conn_id = conn_alloc(lsock, serverAddr, UDP);
-            check(conn_id != -1, "conn_alloc() failed, terminating!");
-            conn_set_status_by_id(conn_id, READY);
-            conn_get_by_id(conn_id)->enable_defrag = enable_defrag;
         }
+        int conn_id = conn_alloc(lsock, serverAddr, proto);
+        check(conn_id != -1, "conn_alloc() failed, terminating!");
+        conn_set_status_by_id(conn_id, READY);
+        conn_get_by_id(conn_id)->enable_defrag = enable_defrag;
+        // TCP/TLS listen sockets must be excluded from conn_find_existing(), a UDP socket is shared
+        if (proto == TCP || proto == TLS)
+            conn_get_by_id(conn_id)->is_listen = 1;
+
         int val = 1;
         sys_check(setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(val)));
         if (accept_mode == AM_CHILD)
@@ -1864,6 +1871,7 @@ void init_listen_sock(int i, accept_mode_t accept_mode, proto_t proto, struct so
         conn_worker_infos[i].n_listen_socks = 0;
     }
 }
+
 
 int main(int argc, char *argv[]) {
     static struct argp argp = { argp_node_options, argp_node_parse_opt, 0, "Distwalk Node -- the server program" };

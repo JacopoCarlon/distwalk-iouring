@@ -181,10 +181,15 @@ int conn_find_existing(struct sockaddr_in target, proto_t proto) {
         }
         if (conns[i].sock == -1)
             continue;
+        if (conns[i].is_listen)
+            continue;
         if (proto == UDP && conns[i].parent_thread == curr_thread) {
             rv = i;
             break;
-        } else if (proto == TCP && conns[i].target.sin_port == target.sin_port && conns[i].target.sin_addr.s_addr == target.sin_addr.s_addr && conns[i].proto == proto) {
+        } else if ( proto == TCP &&
+                    conns[i].target.sin_port == target.sin_port &&
+                    conns[i].target.sin_addr.s_addr == target.sin_addr.s_addr &&
+                    conns[i].proto == proto) {
             rv = i;
             break;
         }

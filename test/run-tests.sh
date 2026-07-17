@@ -26,11 +26,11 @@ EXCLUDE_PATTERNS=(
     "*ramp*"            ## -> works : skip ramp because it is slow. It works.
     "*proxy*"           ## BROKEN __ skip because it never works.
     "*est_skip.*"       ## BROKEN + MEGA CRASH ... test_skip is broken.
-    "*est_forward.sh"       ## BROKEN : forward.sh 
-    "*est_forward_self*"            ## -> works, but keep an eye
-    "*est_forward_skip*"            ## -> works, but keep an eye
-    "*est_forward_timeout*"         ## -> works, but keep an eye
-    "*est_multi_forward*"           ## -> works, but keep an eye
+    #   "*est_forward.sh"       ## BROKEN : forward.sh 
+    #   "*est_forward_self*"            ## -> works, but keep an eye
+    #   "*est_forward_skip*"            ## -> works, but keep an eye
+    #   "*est_forward_timeout*"         ## -> works, but keep an eye
+    #   "*est_multi_forward*"           ## -> works, but keep an eye
     "*est_ssl*"                     ## -> works, but keep an eye 
     "*est_accept_mode.s*"           ## -> works, possibly doublecheck
     "*est_accept_mode_parent.s*"    ## -> works, possibly doublecheck     
