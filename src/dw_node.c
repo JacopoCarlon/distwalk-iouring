@@ -840,28 +840,30 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
                 return -1;
             }
             return 0;
-        case REPLY:
-            dw_log("Handling REPLY: req_id=%d\n", m->req_id);
-            if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply(req, m, cmd, infos)) {
-                dw_log("reply() returned, conn_id: %d\n", conn_id);
+            case REPLY:
+                dw_log("process_single_message: Handling REPLY: req_id=%d\n", m->req_id);
+                int reply_result = reply(req, m, cmd, infos);
+                dw_log("process_single_message: Handling REPLY: req_id=%d, we got reply_result:%d\n", m->req_id, reply_result);
+                if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply_result) {
+                    dw_log("process_single_message: reply() returned, conn_id: %d\n", conn_id);
 
-                if (conn_get_status_by_id(req->conn_id) == SENDING) {
-                    dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
-                    sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
-                    return 1;
-                } else {
-                    dw_log("Closing connection conn_id: %d after failed REPLY\n", conn_id);
-                    close_and_forget(p_poll, conns[conn_id].sock);
-                    return -1;
+                    if (conn_get_status_by_id(req->conn_id) == SENDING) {
+                        dw_log("process_single_message: Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                        sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
+                        return 1;
+                    } else {
+                        dw_log("process_single_message: Closing connection conn_id: %d after failed REPLY\n", conn_id);
+                        close_and_forget(p_poll, conns[conn_id].sock);
+                        return -1;
+                    }
                 }
-            }
-            if (conn_get_status_by_id(req->conn_id) == SENDING) {
-
-                dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
-                sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
-            }
-            // any further cmds[] for replied-to hop, not me
-            return 1;
+                if (conn_get_status_by_id(req->conn_id) == SENDING) {
+                    dw_log("process_single_message:Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                    sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
+                }
+                // any further cmds[] for replied-to hop, not me
+                printf("process_single_message: case REPLY completed, with reply result: %d, will now return 1\n", reply_result);
+                return 1;
         case STORE:
         case LOAD: {
             storage_req_t w = { .worker_id = infos->worker_id, .req_id = req->req_id };
@@ -1053,8 +1055,18 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     if ((type == SOCKET || type == CONNECT) && (conn->sock == -1 || conn->recv_buf == NULL))
         return;
 
-    if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
-        dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id);
+    if (type == CONNECT) {
+        dw_log("exec_request: calling establish_conn()\n");
+        if (!establish_conn(p_poll, conn_id)) {
+            dw_log("Connection to remote peer refused, conn_id=%d\n\n\n---\n", conn_id);
+            dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
+            goto err;
+        }
+        infos->active_conns++;
+        // we need the send_messages() below to still be tried afterwards
+    } else if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
+        dw_log("Connection to remote peer refused, conn_id=%d\n\n\n---\n", conn_id);    // possibly needed to pass a test: TODO: check this
+        dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
         goto err;
     }
 
@@ -1549,13 +1561,17 @@ void* conn_worker(void* args) {
                 int total_active_reqs = 0;
                 for (int i = 0; i < conn_threads; i++) {
                     total_active_conns += conn_worker_infos[i].active_conns;
-                    total_active_reqs  += conn_worker_infos[i].active_reqs;
-                    printf("[%ld.%09ld][%s] STATS worker-id: %d, active-conns: %d, active-reqs: %d\n", ts.tv_sec, ts.tv_nsec,
-                                                                                            thread_name, conn_worker_infos[i].worker_id,
-                                                                                            conn_worker_infos[i].active_conns, conn_worker_infos[i].active_reqs);
+                    total_active_reqs += conn_worker_infos[i].active_reqs;
+                    printf("[%ld.%09ld][%s] STATS worker-id: %d, active-conns: %d, active-reqs: %d\n",
+                            ts.tv_sec, ts.tv_nsec,
+                            thread_name, conn_worker_infos[i].worker_id,
+                            conn_worker_infos[i].active_conns, conn_worker_infos[i].active_reqs);
                 }
-                printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n", ts.tv_sec, ts.tv_nsec, thread_name,
-                                                                                            total_active_conns, total_active_reqs);
+                printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n",
+                        ts.tv_sec, ts.tv_nsec, thread_name,
+                        total_active_conns, total_active_reqs);
+                // make sure to flusb the stats, for test-stats.sh
+                fflush(stdout);
 
                 break;
             } else {

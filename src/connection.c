@@ -428,7 +428,7 @@ static int conn_ssl_send(conn_info_t *conn) {
         }
         if (err == SSL_ERROR_ZERO_RETURN) {
             dw_log("SSL connection closed by peer\n");
-            conn->status = CLOSE;
+            conn->status = CLOSING;
             pthread_mutex_unlock(&conn->ssl_mtx);
             return 0;
         }
@@ -490,38 +490,53 @@ int conn_send(conn_info_t *conn) {
         return conn_ssl_send(conn);
 
     ssize_t sent = sendto(sock, conn->curr_send_buf, conn->curr_send_size, MSG_NOSIGNAL, (const struct sockaddr*)&conn->target, sizeof(conn->target));
+    
     if (sent == 0) {
         // TODO: should not even be possible, ignoring
-        dw_log("SEND returned 0\n");
+        dw_log("conn_send: SEND returned 0 (unreachable hopefully) --- --- --- \n");
         return 0;
     }
+    dw_log("conn_send: dw_sendto returned something different from 0 : %ld.\n", sent);
 
     if (sent == -1) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            dw_log("SEND Got EAGAIN or EWOULDBLOCK, ignoring...\n");
-            return 0;
-        } 
+        
+        dw_log("conn_send: dw_sendto returned -1, what does it mean?\n");
 
-        if (errno == EPIPE || errno == ECONNRESET) {
-            dw_log("SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
-            conn->status = CLOSE;
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // should be unreachable
+            dw_log("conn_send: SEND Got EAGAIN or EWOULDBLOCK, setting conn_status to SENDING\n");
+            conn_set_status(conn, SENDING);
             return 0;
         }
 
-        fprintf(stderr, "SEND Unexpected error: %s\n", strerror(errno));
+        if (errno == EPIPE || errno == ECONNRESET) {
+            dw_log("conn_send: SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
+            conn->status = CLOSING;
+            return 0;
+        }
+
+        fprintf(stderr, "conn_send: SEND Unexpected error: %s\n", strerror(errno));
         return -1;
     }
-    dw_log("SEND returned: %d\n", (int)sent);
+    dw_log("conn_send: SEND returned: %d\n", (int)sent);
 
     conn->curr_send_buf += sent;
     conn->curr_send_size -= sent;
-    if (conn->curr_send_size == 0)
+    if (conn->curr_send_size == 0) {
         conn->curr_send_buf = conn->send_buf;
 
+        // reset status as the buffer is now fully empty
+        if (conn->status == SENDING)
+            conn_set_status(conn, READY);
+        return (int) sent;
+    }
+
+    dw_log("conn_send: returning sent:%ld\n", sent);
     return (int)sent;
 }
 
 // this is the main sending loop for sendfile-based sending, called from conn_start_sendfile and also from DW_POLLOUT events when there is remaining data to send
+// TODO: this could use a simpler rewrite.
 int conn_send_v2(conn_info_t *conn) {
     int sock = conn->sock;
     ssize_t released = 0;
@@ -534,7 +549,7 @@ int conn_send_v2(conn_info_t *conn) {
         
         if (sent <= 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) continue; // try again until we can send the header
-            if (errno == EPIPE || errno == ECONNRESET) { conn->status = CLOSE; return -1; }
+            if (errno == EPIPE || errno == ECONNRESET) { conn->status = CLOSING; return -1; }
         }
 
         conn->curr_send_buf += sent;
@@ -555,7 +570,7 @@ int conn_send_v2(conn_info_t *conn) {
             }
             if (errno == EPIPE || errno == ECONNRESET) {
                 dw_log("sendfile failed, connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
-                conn->status = CLOSE;
+                conn->status = CLOSING;
                 return -1;
             }
             fprintf(stderr, "SENDFILE error: %s\n", strerror(errno));
