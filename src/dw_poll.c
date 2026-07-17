@@ -97,7 +97,8 @@ int dw_poll_add(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux) {
         p_poll->u.poll_fds.n_pollfds++;
         pev->fd = fd;
         pev->events = (flags & DW_POLLIN ? POLLIN : 0)
-                      | (flags & DW_POLLOUT ? POLLOUT : 0);
+                        | (flags & DW_POLLOUT ? POLLOUT : 0);
+        pev->revents = 0;
         break;
     case DW_EPOLL: {
         struct epoll_event ev = (struct epoll_event) {

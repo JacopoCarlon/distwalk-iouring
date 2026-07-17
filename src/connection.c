@@ -156,6 +156,9 @@ req_info_t* conn_req_remove(conn_info_t *conn, req_info_t *req) {
                temp->message_ptr - req_size,
                temp->message_ptr - req_size + req_get_message(temp)->req_size);
             temp->message_ptr -= req_size;
+
+            if (temp->curr_cmd != NULL)
+                temp->curr_cmd = (command_t *)((unsigned char *)temp->curr_cmd - req_size);
         }
     }
 

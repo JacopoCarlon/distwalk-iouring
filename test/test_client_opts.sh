@@ -15,7 +15,7 @@ t2=$(date +%s%N)
 elapsed_ns=$(( t2 - t1 ))
 echo "elapsed_ns=$elapsed_ns"
 
-[ $elapsed_ns -gt 850000000 -a $elapsed_ns -lt 1350000000 ]
+[ $elapsed_ns -gt 1000000000 -a $elapsed_ns -lt 1350000000 ]
 
 # check frequency 10/second (i.e. period 100k ns), using -r
 t1=$(date +%s%N)
@@ -23,7 +23,7 @@ client -C 500 -n 10 -r 10
 t2=$(date +%s%N)
 elapsed_ns=$(( t2 - t1 ))
 echo "elapsed_ns=$elapsed_ns"
-[ $elapsed_ns -gt 850000000 -a $elapsed_ns -lt 1350000000 ]
+[ $elapsed_ns -gt 1000000000 -a $elapsed_ns -lt 1350000000 ]
 
 client --ps=1024
 client --rs=1024

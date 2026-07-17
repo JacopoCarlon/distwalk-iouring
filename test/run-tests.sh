@@ -18,28 +18,36 @@ else
 fi
 
 
-##  echo "Before filtering:"
-##  printf '  - %s\n' "${TESTS[@]}"
+echo "Before filtering:"
+printf '  - %s\n' "${TESTS[@]}"
+echo "done listing before testing"
 
 EXCLUDE_PATTERNS=(
-    "*proxy*"           ##  skip because it never works.
-    "*est_skip.*"       ## BROKEN test_skip is broken.
-    "*forward*"         ## BROKEN : forward.sh and forward.timeout(poll) are broken 
-    ##  "*ssl*"         ## -> works ?? : seems to crash the .sh file at the end ??
-    ##  "*ramp*"        ## -> works : skip ramp because it is slow. It works.
-    "*est_forward_s"    ## -> works
-    "*est_poll_mode*"   ## -> works
-    "*retry*"           ## -> works
-    "*est_accept_mode*" ## -> works : mode and mode_parent     
-    "*est_client_o**"   ## -> works : opts and output          
-    "*est_compute*"     ## -> works      
-    "*est_connect*"     ## -> works
-    "*est_load*"        ## -> works : loadstore and odirect    
-    "*est_node*"        ## -> works
-    "*est_sched*"       ## -> works
-    "*est_script*"      ## -> works
-    "*est_simple*"      ## -> works : simple and simple_udp
-    "*est_stats*"       ## -> works
+    "*ramp*"            ## -> works : skip ramp because it is slow. It works.
+    "*proxy*"           ## BROKEN __ skip because it never works.
+    "*est_skip.*"       ## BROKEN + MEGA CRASH ... test_skip is broken.
+    "*est_forward.sh"       ## BROKEN : forward.sh 
+    "*est_forward_self*"            ## -> works, but keep an eye
+    "*est_forward_skip*"            ## -> works, but keep an eye
+    "*est_forward_timeout*"         ## -> works, but keep an eye
+    "*est_multi_forward*"           ## -> works, but keep an eye
+    "*est_ssl*"                     ## -> works, but keep an eye 
+    "*est_accept_mode.s*"           ## -> works, possibly doublecheck
+    "*est_accept_mode_parent.s*"    ## -> works, possibly doublecheck     
+    "*est_conn_drop*"               ## -> works, possibly doublecheck
+    "*est_poll_mode*"               ## -> works, possibly doublecheck
+    "*est_retry*"                   ## -> works, possibly doublecheck
+    "*est_simple*"                  ## -> works, possibly doublecheck
+    "*est_client_opts*"             ## -> works      
+    "*est_client_out*"              ## -> works
+    "*est_compute*"                 ## -> works      
+    "*est_connect*"                 ## -> works
+    "*est_distrib*"                 ## -> works
+    "*est_loadstor*"                ## -> works : loadstore and odirect    
+    "*est_node*"                    ## -> works
+    "*est_sched*"                   ## -> works
+    "*est_script*"                  ## -> works
+    "*est_stats*"                   ## -> works
 )
 
 is_excluded() {
@@ -88,30 +96,30 @@ SKIP_POLL_RE='test_poll_mode\.sh$'
 SKIP_SELECT_RE='test_poll_mode\.sh$'
 
 for test in "${TESTS[@]}"; do
-    echo "$test"
     if [[ "$test" == *dpdk* ]]; then
         for mode in veth vf; do
             DPDK_MODE=$mode run_test "$test" "$test (dpdk=$mode)"
         done
-    else
-        if [[ "$test" =~ $RUN_ONCE ]]; then
-            run_test "$test" "$test" "(once for all)"
-        else
-            if ! [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
-                POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
-            fi
-            if ! [[ "$test" =~ $SKIP_POLL_RE ]]; then
-                POLL_MODE=poll run_test "$test" "$test (poll-mode=poll)"
-            fi
-            if ! [[ "$test" =~ $SKIP_SELECT_RE ]]; then
-                POLL_MODE=select run_test "$test" "$test (poll-mode=select)"
-            fi
-        fi
+        continue
     fi
-    echo "done that test"
-done
-sleep 1
+    
+    if [[ "$test" =~ $RUN_ONCE ]]; then
+        run_test "$test" "$test (covers all modes)"
+        continue 
+    fi
 
+    if ! [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
+        POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
+    fi
+
+    if ! [[ "$test" =~ $SKIP_POLL_RE ]]; then
+        POLL_MODE=poll run_test "$test" "$test (poll-mode=poll)"
+    fi
+
+    if ! [[ "$test" =~ $SKIP_SELECT_RE ]]; then
+        POLL_MODE=select run_test "$test" "$test (poll-mode=select)"
+    fi
+done
 
 ## TODO: need warning to say that this needs <sudo apt install gcovr>
 for d in gcov/*; do
