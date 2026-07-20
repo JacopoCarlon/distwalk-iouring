@@ -59,6 +59,7 @@ node_bg -b :7891 &> $TMP1
 node_bg -b :7892 &> $TMP2
 
 client_bg -C 10ms -F :7892 -C 20ms
+sleep 1
 
 kill -SIGUSR1 `pidof dw_node_debug`
 sleep 0.5

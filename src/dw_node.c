@@ -1075,13 +1075,6 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         if (conn_recv(conn) == 0)
             goto err;
     }
-    if ((pflags & DW_POLLOUT) && (type == CONNECT)) {
-        dw_log("calling establish_conn()\n");
-        if (!establish_conn(p_poll, conn_id))
-            goto err;
-        infos->active_conns++;
-        // we need the send_messages() below to still be tried afterwards
-    }
 
     if (pflags & DW_POLLOUT) {
         int r = conn_flush(conn);
