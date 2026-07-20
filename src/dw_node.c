@@ -1112,7 +1112,8 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     return;
 
  err:
-    if (conns->proto == TCP && conn_get_status(conn) == READY) {
+     dw_log("exec_request: entering goto err from conn_id=%d\n", conn_id);
+    if (conn->proto == TCP && conn_get_status(conn) == READY) {
         infos->active_conns--;
     }
     close_and_forget(p_poll, conn->sock);
@@ -1570,7 +1571,7 @@ void* conn_worker(void* args) {
                 printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n",
                         ts.tv_sec, ts.tv_nsec, thread_name,
                         total_active_conns, total_active_reqs);
-                // make sure to flusb the stats, for test-stats.sh
+                // make sure to flush the stats, for test-stats.sh
                 fflush(stdout);
 
                 break;
