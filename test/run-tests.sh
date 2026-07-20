@@ -25,29 +25,29 @@ echo "done listing before testing"
 EXCLUDE_PATTERNS=(
     "*ramp*"            ## -> works : skip ramp because it is slow. It works.
     "*proxy*"           ## BROKEN __ skip because it never works.
-    #   "*est_skip.*"       ## BROKEN + MEGA CRASH ... test_skip is broken.
-    #   "*est_forward.sh"       ## BROKEN : forward.sh 
-    #   "*est_forward_self*"            ## -> works, but keep an eye
-    #   "*est_forward_skip*"            ## -> works, but keep an eye
-    #   "*est_forward_timeout*"         ## -> works, but keep an eye
-    #   "*est_multi_forward*"           ## -> works, but keep an eye
-    ##  "*est_ssl*"                     ## -> works, but keep an eye 
-    ##  "*est_accept_mode.s*"           ## -> works, possibly doublecheck
-    ##  "*est_accept_mode_parent.s*"    ## -> works, possibly doublecheck     
-    ##  "*est_conn_drop*"               ## -> works, possibly doublecheck
-    ##  "*est_poll_mode*"               ## -> works, possibly doublecheck
-    ##  "*est_retry*"                   ## -> works, possibly doublecheck
-    ##  "*est_simple*"                  ## -> works, possibly doublecheck
-    ##  "*est_client_opts*"             ## -> works      
-    ##  "*est_client_out*"              ## -> works
-    ##  "*est_compute*"                 ## -> works      
-    ##  "*est_connect*"                 ## -> works
-    ##  "*est_distrib*"                 ## -> works
-    ##  "*est_loadstor*"                ## -> works : loadstore and odirect    
-    ##  "*est_node*"                    ## -> works
-    ##  "*est_sched*"                   ## -> works
-    ##  "*est_script*"                  ## -> works
-    ##  "*est_stats*"                   ## -> works
+    "*est_skip.*"       ## BROKEN + MEGA CRASH ... test_skip is broken.
+    "*est_forward.sh"       ## BROKEN : forward.sh 
+    "*est_forward_self*"            ## -> works, but keep an eye
+    "*est_forward_skip*"            ## -> works, but keep an eye
+    "*est_forward_timeout*"         ## -> works, but keep an eye
+    "*est_multi_forward*"           ## -> works, but keep an eye
+    "*est_ssl*"                     ## -> works, but keep an eye 
+    "*est_accept_mode.s*"           ## -> works, possibly doublecheck
+    "*est_accept_mode_parent.s*"    ## -> works, possibly doublecheck     
+    "*est_conn_drop*"               ## -> works, possibly doublecheck
+    "*est_poll_mode*"               ## -> works, possibly doublecheck
+    "*est_retry*"                   ## -> works, possibly doublecheck
+    "*est_simple*"                  ## -> works, possibly doublecheck
+    "*est_client_opts*"             ## -> works      
+    "*est_client_out*"              ## -> works
+    "*est_compute*"                 ## -> works      
+    "*est_connect*"                 ## -> works
+    "*est_distrib*"                 ## -> works
+    "*est_loadstor*"                ## -> works : loadstore and odirect    
+    "*est_node*"                    ## -> works
+    "*est_sched*"                   ## -> works
+    #   "*est_script*"                  ## -> works
+    #   "*est_stats*"                   ## -> works
 )
 
 is_excluded() {
@@ -90,7 +90,8 @@ run_test() {
 }
 
 
-RUN_ONCE='test_poll_mode\.sh$'          ## test_poll_mode.sh already tests all poll modes, no need to iterate over them.
+# test_poll_mode.sh already tests all poll modes, no need to iterate over them.
+RUN_ONCE='test_poll_mode\.sh$'          
 SKIP_EPOLL_RE='test_poll_mode\.sh$'
 SKIP_POLL_RE='test_poll_mode\.sh$'
 SKIP_SELECT_RE='test_poll_mode\.sh$'
@@ -121,9 +122,10 @@ for test in "${TESTS[@]}"; do
     fi
 done
 
-## TODO: need warning to say that this needs <sudo apt install gcovr>
+# todo: need warning to say that this needs sudo apt install gcovr
+
 for d in gcov/*; do
-    cp ../src/*.gcno $d
+    cp ../src/*.gcno "$d"
 done
 
 gcovr --object-directory ../src --root ../ --gcov-ignore-parse-errors

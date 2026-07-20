@@ -1562,15 +1562,13 @@ void* conn_worker(void* args) {
                 int total_active_reqs = 0;
                 for (int i = 0; i < conn_threads; i++) {
                     total_active_conns += conn_worker_infos[i].active_conns;
-                    total_active_reqs += conn_worker_infos[i].active_reqs;
-                    printf("[%ld.%09ld][%s] STATS worker-id: %d, active-conns: %d, active-reqs: %d\n",
-                            ts.tv_sec, ts.tv_nsec,
-                            thread_name, conn_worker_infos[i].worker_id,
-                            conn_worker_infos[i].active_conns, conn_worker_infos[i].active_reqs);
+                    total_active_reqs  += conn_worker_infos[i].active_reqs;
+                    printf("[%ld.%09ld][%s] STATS worker-id: %d, active-conns: %d, active-reqs: %d\n", ts.tv_sec, ts.tv_nsec,
+                                                                                            thread_name, conn_worker_infos[i].worker_id,
+                                                                                            conn_worker_infos[i].active_conns, conn_worker_infos[i].active_reqs);
                 }
-                printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n",
-                        ts.tv_sec, ts.tv_nsec, thread_name,
-                        total_active_conns, total_active_reqs);
+                printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n", ts.tv_sec, ts.tv_nsec, thread_name,
+                                                                                            total_active_conns, total_active_reqs);
                 // make sure to flush the stats, for test-stats.sh
                 fflush(stdout);
 
