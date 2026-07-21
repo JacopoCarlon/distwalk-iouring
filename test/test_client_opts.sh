@@ -1,24 +1,29 @@
 #!/bin/bash
 
-. common.sh
+mydir=$(dirname "$0")
+source "$mydir/common.sh"
 
 node_bg
 
 client -C 500 -n 10 -p 1000
 client -C 500 -n 10 -r 1000
 
-t1=$(date +%s)
+# check period 100k ns, using -p
+t1=$(date +%s%N)
 client -C 500 -n 10 -p 100000
-t2=$(date +%s)
-echo $t2-$t1=$[$t2-$t1]
-[ $[ $t2 - $t1 ] -ge 1 -a $[ $t2 - $t1 ] -lt 2 ]
+t2=$(date +%s%N)
+elapsed_ns=$(( t2 - t1 ))
+echo "elapsed_ns=$elapsed_ns"
 
+[ $elapsed_ns -gt 1000000000 -a $elapsed_ns -lt 1350000000 ]
 
-t1=$(date +%s)
+# check frequency 10/second (i.e. period 100k ns), using -r
+t1=$(date +%s%N)
 client -C 500 -n 10 -r 10
-t2=$(date +%s)
-echo $t2-$t1=$[$t2-$t1]
-[ $[ $t2 - $t1 ] -ge 1 -a $[ $t2 - $t1 ] -lt 2 ]
+t2=$(date +%s%N)
+elapsed_ns=$(( t2 - t1 ))
+echo "elapsed_ns=$elapsed_ns"
+[ $elapsed_ns -gt 1000000000 -a $elapsed_ns -lt 1350000000 ]
 
 client --ps=1024
 client --rs=1024
