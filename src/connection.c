@@ -88,10 +88,12 @@ conn_status_t conn_get_status_by_id(int conn_id) {
 }
 
 conn_info_t* conn_get_by_id(int conn_id) {
+    if (conn_id < 0 || conn_id >= MAX_CONNS) return NULL;
     return &conns[conn_id];
 }
 
 int conn_get_id_by_ptr(conn_info_t * conn) {
+    assert(conn >= &conns[0] && conn <= &conns[MAX_CONNS - 1]);
     return conn - &conns[0];
 }
 
@@ -156,6 +158,9 @@ req_info_t* conn_req_remove(conn_info_t *conn, req_info_t *req) {
                temp->message_ptr - req_size,
                temp->message_ptr - req_size + req_get_message(temp)->req_size);
             temp->message_ptr -= req_size;
+
+            if (temp->curr_cmd != NULL)
+                temp->curr_cmd = (command_t *)((unsigned char *)temp->curr_cmd - req_size);
         }
     }
 
@@ -178,10 +183,15 @@ int conn_find_existing(struct sockaddr_in target, proto_t proto) {
         }
         if (conns[i].sock == -1)
             continue;
+        if (conns[i].is_listen)
+            continue;
         if (proto == UDP && conns[i].parent_thread == curr_thread) {
             rv = i;
             break;
-        } else if (proto == TCP && conns[i].target.sin_port == target.sin_port && conns[i].target.sin_addr.s_addr == target.sin_addr.s_addr && conns[i].proto == proto) {
+        } else if (proto == TCP &&
+                    conns[i].target.sin_port == target.sin_port &&
+                    conns[i].target.sin_addr.s_addr == target.sin_addr.s_addr &&
+                    conns[i].proto == proto) {
             rv = i;
             break;
         }
@@ -218,7 +228,7 @@ void conn_del_id(int id) {
     //if (nthread > 1) sys_check(pthread_mutex_lock(&socks_mtx));
 
     dw_log("marking conns[%d] invalid\n", id);
-    conn_reset(&conns[id]);
+    conn_free(id);
     conns[id].sock = -1;
 
     //if (nthread > 1) sys_check(pthread_mutex_unlock(&socks_mtx));
@@ -319,13 +329,10 @@ int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
     return -1;
 }
 
-unsigned char *get_send_buf(conn_info_t *pc, size_t size) {
-    assert(pc->curr_send_buf - pc->send_buf + pc->curr_send_size + size <= BUF_SIZE);
-    return pc->curr_send_buf + pc->curr_send_size;
-}
-
 message_t* conn_prepare_send_message(conn_info_t *conn) {
-    message_t* m = (message_t*) (conn->send_buf + conn->curr_send_size);
+    // When a send has drained part of the buffer but unsent data remains,
+    // send_buf + curr_send_size lands inside the pending region and the new message would dirty data the kernel is still reading
+    message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
     m->req_size = BUF_SIZE - (conn->curr_send_buf - conn->send_buf + conn->curr_send_size);
     return m;
 }
@@ -420,7 +427,7 @@ static int conn_ssl_send(conn_info_t *conn) {
         }
         if (err == SSL_ERROR_ZERO_RETURN) {
             dw_log("SSL connection closed by peer\n");
-            conn->status = CLOSE;
+            conn->status = CLOSING;
             pthread_mutex_unlock(&conn->ssl_mtx);
             return 0;
         }
@@ -484,32 +491,44 @@ int conn_send(conn_info_t *conn) {
     ssize_t sent = sendto(sock, conn->curr_send_buf, conn->curr_send_size, MSG_NOSIGNAL, (const struct sockaddr*)&conn->target, sizeof(conn->target));
     if (sent == 0) {
         // TODO: should not even be possible, ignoring
-        dw_log("SEND returned 0\n");
+        dw_log("conn_send: SEND returned 0 (unreachable hopefully)\n");
         return 0;
     }
+    dw_log("conn_send: dw_sendto returned something different from 0 : %ld.\n", sent);
 
     if (sent == -1) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            dw_log("SEND Got EAGAIN or EWOULDBLOCK, ignoring...\n");
-            return 0;
-        } 
+        dw_log("conn_send: dw_sendto returned -1.\n");
 
-        if (errno == EPIPE || errno == ECONNRESET) {
-            dw_log("SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
-            conn->status = CLOSE;
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // should be unreachable
+            dw_log("conn_send: SEND Got EAGAIN or EWOULDBLOCK, setting conn_status to SENDING\n");
+            conn_set_status(conn, SENDING);
             return 0;
         }
 
-        fprintf(stderr, "SEND Unexpected error: %s\n", strerror(errno));
+        if (errno == EPIPE || errno == ECONNRESET) {
+            dw_log("conn_send: SEND Connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
+            conn->status = CLOSING;
+            return 0;
+        }
+
+        fprintf(stderr, "conn_send: SEND Unexpected error: %s\n", strerror(errno));
         return -1;
     }
-    dw_log("SEND returned: %d\n", (int)sent);
+    dw_log("conn_send: SEND returned: %d\n", (int)sent);
 
     conn->curr_send_buf += sent;
     conn->curr_send_size -= sent;
-    if (conn->curr_send_size == 0)
+    if (conn->curr_send_size == 0) {
         conn->curr_send_buf = conn->send_buf;
 
+        // reset status as the buffer is now fully empty
+        if (conn->status == SENDING)
+            conn_set_status(conn, READY);
+        return (int) sent;
+    }
+
+    dw_log("conn_send: returning sent:%ld\n", sent);
     return (int)sent;
 }
 
@@ -526,7 +545,7 @@ int conn_send_v2(conn_info_t *conn) {
         
         if (sent <= 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) continue; // try again until we can send the header
-            if (errno == EPIPE || errno == ECONNRESET) { conn->status = CLOSE; return -1; }
+            if (errno == EPIPE || errno == ECONNRESET) { conn->status = CLOSING; return -1; }
         }
 
         conn->curr_send_buf += sent;
@@ -547,7 +566,7 @@ int conn_send_v2(conn_info_t *conn) {
             }
             if (errno == EPIPE || errno == ECONNRESET) {
                 dw_log("sendfile failed, connection closed by remote end conn_id=%d\n", conn_get_id_by_ptr(conn));
-                conn->status = CLOSE;
+                conn->status = CLOSING;
                 return -1;
             }
             fprintf(stderr, "SENDFILE error: %s\n", strerror(errno));

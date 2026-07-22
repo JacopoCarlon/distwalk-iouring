@@ -17,6 +17,60 @@ else
     TESTS=( $(find ../src/ -name 'test_*' -executable | grep -v '~$') $(ls test_*.sh) )
 fi
 
+echo "List of all available tests (before filtering):"
+printf '  - %s\n' "${TESTS[@]}"
+
+EXCLUDE_PATTERNS=(
+    #"*proxy*"
+    #"test_client_ramp.*"
+    #"test_skip.*"
+    #"test_forward.sh"
+    #"test_forward_self*"
+    #"test_forward_skip*"
+    #"test_forward_timeout*"
+    #"test_multi_forward*"
+    #"test_ssl*"
+    #"test_accept_mode.*"
+    #"test_accept_mode_parent.*"
+    #"test_conn_drop*"
+    #"test_poll_mode*"
+    #"test_retry*"
+    #"test_simple*"
+    #"test_client_opts*"
+    #"test_client_out*"
+    #"test_compute*"
+    #"test_connect*"
+    #"test_distrib*"
+    #"test_loadstor*"
+    #"test_node*"
+    #"test_sched*"
+    #"test_script*"
+    #"test_stats*"
+)
+
+is_excluded() {
+    local name="$1"
+    for pat in "${EXCLUDE_PATTERNS[@]}"; do
+        case "$name" in
+            $pat) return 0 ;;   # 0 = true --> excluded
+        esac
+    done
+    return 1
+}
+
+if [[ ${#EXCLUDE_PATTERNS[@]} -gt 0 ]]; then
+    filtered=()
+    for t in "${TESTS[@]}"; do
+        if is_excluded "$t"; then
+            echo "  [EXCLUDED] $t" >&2
+        else
+            filtered+=("$t")
+        fi
+    done
+    TESTS=("${filtered[@]}")
+fi
+
+
 run_test() {
     local test=$1
     local label=$2
@@ -27,26 +81,59 @@ run_test() {
     if [ $rc -eq 0 ]; then
         echo -e "${COL_RED}SUCCESS${COL_DEF}"
     elif [ $rc -eq 77 ]; then
-        echo -e "${COL_YLW}SKIPPED${COL_DEF} (non-root or missing USE_DPDK)"
+        echo -e "${COL_YLW}SKIPPED${COL_DEF} (non-root or missing USE_DPDK or vfio-pci module not loaded)"
     else
         echo -e "${COL_GRN}ERROR${COL_DEF}"
     fi
 }
+
+
+# test_poll_mode.sh already tests all poll modes, no need to iterate over them.
+RUN_ONCE='test_poll_mode\.sh$'          
+SKIP_EPOLL_RE='test_poll_mode\.sh$'
+SKIP_POLL_RE='test_poll_mode\.sh$'
+SKIP_SELECT_RE='test_poll_mode\.sh$'
 
 for test in "${TESTS[@]}"; do
     if [[ "$test" == *dpdk* ]]; then
         for mode in veth vf; do
             DPDK_MODE=$mode run_test "$test" "$test (dpdk=$mode)"
         done
-    else
-        run_test "$test" "$test"
+        continue
+    fi
+    
+    if [[ "$test" =~ $RUN_ONCE ]]; then
+        run_test "$test" "$test (covers all modes)"
+        continue 
+    fi
+
+    if ! [[ "$test" =~ $SKIP_EPOLL_RE ]]; then
+        POLL_MODE=epoll run_test "$test" "$test (poll-mode=epoll)"
+    fi
+
+    if ! [[ "$test" =~ $SKIP_POLL_RE ]]; then
+        POLL_MODE=poll run_test "$test" "$test (poll-mode=poll)"
+    fi
+
+    if ! [[ "$test" =~ $SKIP_SELECT_RE ]]; then
+        POLL_MODE=select run_test "$test" "$test (poll-mode=select)"
     fi
 done
 
-sleep 1
 
 for d in gcov/*; do
-    cp ../src/*.gcno $d
+    [ -d "$d" ] || continue
+    cp ../src/*.gcno "$d"
 done
 
-gcovr --object-directory ../src --root ../ --gcov-ignore-parse-errors
+# Set ownership on gcov folder and all subdirectories and files inside it
+if [ -n "$SUDO_USER" ]; then
+    [ -d gcov ] && chown -R "$SUDO_UID:$SUDO_GID" gcov
+fi
+
+if command -v gcovr &> /dev/null; then
+    gcovr --object-directory ../src --root ../ --gcov-ignore-parse-errors
+else
+    echo "gcovr is not installed"
+fi
+

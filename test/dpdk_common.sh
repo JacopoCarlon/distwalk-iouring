@@ -11,9 +11,16 @@ dpdk_check_root() {
 }
 
 dpdk_check_binary() {
-     if ! ldd ../src/dw_node_debug 2>/dev/null | grep -q "librte"; then
+    if ! ldd ../src/dw_node_debug 2>/dev/null | grep -q "librte"; then
         echo "DPDK tests require USE_DPDK=1 build"
         exit 77
+    fi
+}
+
+dpdk_check_mod(){
+    if ! lsmod | grep -q "^vfio_pci"; then
+        echo "DPDK tests require module vfio-pci to be loaded"
+        exit 77 
     fi
 }
 

@@ -18,7 +18,7 @@ if [ "$(whoami)" == "root" ]; then
     chrt -a -p $(pidof dw_node_debug) | grep -q "current scheduling priority: 7"
     kill_all SIGINT
 
-    node_bg --sched-policy=rr:7 --nt=2
+    node_bg --wait-bind-num 2 --sched-policy=rr:7 --nt=2
     [ $(chrt -a -p $(pidof dw_node_debug) | grep -c "current scheduling policy: SCHED_RR") -eq 2 ]
     [ $(chrt -a -p $(pidof dw_node_debug) | grep -c "current scheduling priority: 7") -eq 2 ]
     kill_all SIGINT
@@ -44,15 +44,20 @@ fi
 ! node_bg --sched-policy=dl:10000
 
 if [ "$(whoami)" == "root" ]; then
+    # asan and sched_deadline do not work together
+    export ASAN_OPTIONS=detect_leaks=0
+
     node_bg --sched-policy=dl:10000,20000
     chrt -a -p $(pidof dw_node_debug) | grep -q "current scheduling policy: SCHED_DEADLINE"
-    chrt -a -p $(pidof dw_node_debug) | grep -q "current scheduling runtime/deadline/period parameters: 10000000/20000000/20000000"
+    chrt -a -p $(pidof dw_node_debug) | grep -q "current runtime/deadline/period parameters: 10000000/20000000/20000000"
     kill_all SIGINT
 
-    node_bg --sched-policy=dl:10000,20000 --nt=2
+    node_bg --wait-bind-num 2 --sched-policy=dl:10000,20000 --nt=2
     [ $(chrt -a -p $(pidof dw_node_debug) | grep -c "current scheduling policy: SCHED_DEADLINE") -eq 2 ]
-    [ $(chrt -a -p $(pidof dw_node_debug) | grep -c "current scheduling runtime/deadline/period parameters: 10000000/20000000/20000000") -eq 2 ]
+    [ $(chrt -a -p $(pidof dw_node_debug) | grep -c "current runtime/deadline/period parameters: 10000000/20000000/20000000") -eq 2 ]
     kill_all SIGINT
+
+    unset ASAN_OPTIONS
 fi
 
 # This is needed when launched as non-root

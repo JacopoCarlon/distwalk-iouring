@@ -79,6 +79,8 @@ int seed = -1;
 #ifdef DPDK_ENABLED
 static int use_dpdk = 0;
 static uint8_t dpdk_dest_mac[6];
+// avoid hanging if something went really wrong
+#define DPDK_RECV_TIMEOUT_SEC 5
 #endif
 
 struct argp_client_arguments {
@@ -473,8 +475,20 @@ void *thread_receiver(void *data) {
             conn_info_t *dpdk_conn = conn_get_by_id(thr_data.conn_id);
             uint16_t nb_rx;
             int got_dw = 0;
+            struct timespec ts_now, ts_deadline;
+            clock_gettime(CLOCK_MONOTONIC, &ts_now);
+            ts_deadline = ts_add(ts_now, (struct timespec) { .tv_sec = DPDK_RECV_TIMEOUT_SEC, .tv_nsec = 0 });
             while (!got_dw) {
-                while ((nb_rx = rte_eth_rx_burst(dpdk_get_port(), 0, dpdk_conn->rx_mbufs, RX_BURST_SIZE)) == 0);
+                while ((nb_rx = rte_eth_rx_burst(dpdk_get_port(), 0, dpdk_conn->rx_mbufs, RX_BURST_SIZE)) == 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &ts_now);
+                    if (!ts_leq(ts_now, ts_deadline)) {
+                        i_incr = num_pkts - pkt_i;
+                        num_timedout += i_incr;
+                        fprintf(stderr, "No reply for %d secs, giving up on %d pending pkt(s), thr_id: %d\n",
+                                DPDK_RECV_TIMEOUT_SEC, i_incr, thread_id);
+                        goto skip;
+                    }
+                }
                 for (uint16_t i = 0; i < nb_rx; i++) {
                     if (!dpdk_is_dw_packet(dpdk_conn->rx_mbufs[i])) {
                         rte_pktmbuf_free(dpdk_conn->rx_mbufs[i]);
@@ -513,7 +527,9 @@ void *thread_receiver(void *data) {
                 command_t *p_cmd = message_first_cmd(m);
                 if (p_cmd->cmd == EOM && m->req_size > msg_size) {
                     /* long REPLY case */
-                    command_t *p_next = cmd_next(p_cmd);
+                    command_t *p_next = cmd_bounded_next(p_cmd, message_end(m));
+                    if (!p_next)
+                        goto skip;
                     size_t diff = conn->curr_recv_buf - (unsigned char*)p_next;
                     m->req_size -= diff;
                     conn->curr_recv_buf -= diff;
@@ -1212,6 +1228,9 @@ static error_t argp_client_parse_opt(int key, char *arg, struct argp_state *stat
     return 0;
 }
 
+static char** script_parse_argv = NULL;
+static int script_parse_argc = 0;
+
 int script_parse(char *fname, struct argp_state *state) {
     FILE *f = fopen(fname, "r");
     check(f != NULL, "Could not open script file: %s\n", fname);
@@ -1258,8 +1277,18 @@ int script_parse(char *fname, struct argp_state *state) {
         }
     }
 
-    free(argv);
+    script_parse_argv = argv;
+    script_parse_argc = argc;
     return 0;
+}
+
+void script_parse_cleanup() {
+    if (script_parse_argv != NULL) {
+        for (int i=0; i<script_parse_argc; i++) {
+            free(script_parse_argv[i]);
+        }
+        free(script_parse_argv);
+    }
 }
 
 // csv output, there is just the values separated with a separator 
@@ -1536,6 +1565,9 @@ int main(int argc, char *argv[]) {
         fclose(output_fp);
         output_fp = NULL;
     }
+
+    // if the argp_parse read from a file, cleanup the allocated strings
+    script_parse_cleanup();
 
     return 0;
 }
