@@ -6,6 +6,7 @@
 
 dpdk_check_root
 dpdk_check_binary
+dpdk_check_mod
 dpdk_auto_setup 4
 trap dpdk_auto_teardown EXIT
 
