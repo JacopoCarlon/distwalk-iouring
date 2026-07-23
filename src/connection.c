@@ -321,13 +321,10 @@ int conn_alloc(int conn_sock, struct sockaddr_in target, proto_t proto) {
     return -1;
 }
 
-unsigned char *get_send_buf(conn_info_t *pc, size_t size) {
-    assert(pc->curr_send_buf - pc->send_buf + pc->curr_send_size + size <= BUF_SIZE);
-    return pc->curr_send_buf + pc->curr_send_size;
-}
-
 message_t* conn_prepare_send_message(conn_info_t *conn) {
-    message_t* m = (message_t*) (conn->send_buf + conn->curr_send_size);
+    // When a send has drained part of the buffer but unsent data remains,
+    // send_buf + curr_send_size lands inside the pending region and the new message would dirty data the kernel is still reading
+    message_t *m = (message_t *) (conn->curr_send_buf + conn->curr_send_size);
     m->req_size = BUF_SIZE - (conn->curr_send_buf - conn->send_buf + conn->curr_send_size);
     return m;
 }
