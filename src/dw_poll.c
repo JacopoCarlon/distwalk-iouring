@@ -133,6 +133,11 @@ int dw_poll_mod(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux) {
             dw_select_del_rd_pos(p_poll, i);
         else if (i == p_poll->u.select_fds.n_rd_fd && (flags & DW_POLLIN))
             dw_select_add_rd(p_poll, fd, flags, aux);
+        else if (i < p_poll->u.select_fds.n_rd_fd && (flags & DW_POLLIN)) {
+            // match epoll's mod behavior
+            p_poll->u.select_fds.rd_aux[i] = aux;
+            p_poll->u.select_fds.rd_flags[i] = flags & ~DW_POLLONESHOT;
+        }
 
         for (i = 0; i < p_poll->u.select_fds.n_wr_fd; i++)
             if (p_poll->u.select_fds.wr_fd[i] == fd)
@@ -141,6 +146,10 @@ int dw_poll_mod(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux) {
             dw_select_del_wr_pos(p_poll, i);
         else if (i == p_poll->u.select_fds.n_wr_fd && (flags & DW_POLLOUT))
             dw_select_add_wr(p_poll, fd, flags, aux);
+        else if (i < p_poll->u.select_fds.n_wr_fd && (flags & DW_POLLOUT)) {
+            p_poll->u.select_fds.wr_aux[i] = aux;
+            p_poll->u.select_fds.wr_flags[i] = flags & ~DW_POLLONESHOT;
+        }
         break; }
     case DW_POLL: {
         int i;
@@ -149,8 +158,13 @@ int dw_poll_mod(dw_poll_t *p_poll, int fd, dw_poll_flags flags, uint64_t aux) {
             if (pev->fd == fd) {
                 pev->events = (flags & DW_POLLIN ? POLLIN : 0) | (flags & DW_POLLOUT ? POLLOUT : 0);
                 dw_log("dw_poll_mod(): pev->events=%04x\n", pev->events);
-                if (pev->events == 0)
+                if (pev->events == 0) {
                     dw_poll_del_pos(p_poll, i);
+                } else {
+                    // match epoll's mod behavior
+                    p_poll->u.poll_fds.aux[i] = aux;
+                    p_poll->u.poll_fds.flags[i] = flags & ~DW_POLLONESHOT;
+                }
                 break;
             }
         }
