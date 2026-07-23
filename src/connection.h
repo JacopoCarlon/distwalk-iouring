@@ -57,6 +57,8 @@ typedef struct {
     
     int enable_defrag;            // Defragment receive buffer to reduce memory usage
 
+    int is_listen;                // 1 if this conn wraps a listening socket: not usable as a forward conn
+
 #ifdef DPDK_ENABLED
     struct rte_mbuf *rx_mbufs[RX_BURST_SIZE];
     struct rte_mbuf *tx_mbufs[TX_BURST_SIZE];
