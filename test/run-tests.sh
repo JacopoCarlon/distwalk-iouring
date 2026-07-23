@@ -27,7 +27,7 @@ run_test() {
     if [ $rc -eq 0 ]; then
         echo -e "${COL_RED}SUCCESS${COL_DEF}"
     elif [ $rc -eq 77 ]; then
-        echo -e "${COL_YLW}SKIPPED${COL_DEF} (non-root or missing USE_DPDK)"
+        echo -e "${COL_YLW}SKIPPED${COL_DEF} (non-root or missing USE_DPDK or vfio-pci module not loaded)"
     else
         echo -e "${COL_GRN}ERROR${COL_DEF}"
     fi
