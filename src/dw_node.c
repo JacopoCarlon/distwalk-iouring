@@ -1540,6 +1540,8 @@ void* conn_worker(void* args) {
                 }
                 printf("[%ld.%09ld][%s] STATS total-active-conns: %d, total-active-reqs: %d\n", ts.tv_sec, ts.tv_nsec, thread_name, 
                                                                                             total_active_conns, total_active_reqs);
+                // make sure to flush the stats, for test-stats.sh
+                fflush(stdout);
 
                 break;
             } else {
