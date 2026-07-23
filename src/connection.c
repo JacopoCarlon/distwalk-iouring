@@ -180,6 +180,8 @@ int conn_find_existing(struct sockaddr_in target, proto_t proto) {
         }
         if (conns[i].sock == -1)
             continue;
+        if (conns[i].is_listen)
+            continue;
         if (proto == UDP && conns[i].parent_thread == curr_thread) {
             rv = i;
             break;
