@@ -124,6 +124,15 @@ proxy_bg() {
     check_executable dw_proxy_debug || { exit -1; }
     run dw_proxy_debug "$@" &
     id=$[$id+1]
+    for ((i=0; i<5; i++)); do
+        n=$(netstat -anp --inet 2> /dev/null | grep -c dw_proxy_debug || true)
+        if [ $n -eq $n_exp ]; then
+            break;
+        fi
+        echo "dw_proxy_debug showing up $n times, not $n_exp ones up on netstat on netstat, waiting..."
+        sleep 0.2
+    done
+    sleep 0.2
 }
 
 kill_all SIGKILL
