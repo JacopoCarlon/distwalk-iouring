@@ -1041,8 +1041,18 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     if ((type == SOCKET || type == CONNECT) && (conn->sock == -1 || conn->recv_buf == NULL))
         return;
 
-    if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
-        dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id);
+    if (type == CONNECT) {
+        dw_log("exec_request: calling establish_conn()\n");
+        if (!establish_conn(p_poll, conn_id)) {
+            dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id); // matched by test_forward.sh
+            dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
+            goto err;
+        }
+        infos->active_conns++;
+        // we need the send_messages() below to still be tried afterwards
+    } else if (pflags & DW_POLLERR || pflags & DW_POLLHUP) {
+        dw_log("Connection to remote peer refused, conn_id=%d\n", conn_id);    // matched by test_forward.sh
+        dw_log("exec_request: Connection to remote peer refused, conn_id=%d\n", conn_id);
         goto err;
     }
 
@@ -1051,14 +1061,7 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
         if (conn_recv(conn) == 0)
             goto err;
     }
-    if ((pflags & DW_POLLOUT) && (type == CONNECT)) {
-        dw_log("calling establish_conn()\n");
-        if (!establish_conn(p_poll, conn_id))
-            goto err;
-        infos->active_conns++;
-        // we need the send_messages() below to still be tried afterwards
-    }
-    
+
     if (pflags & DW_POLLOUT) {
         int r = conn_flush(conn);
 
