@@ -15,8 +15,17 @@
 #define NUM_MBUFS           8191        // 2^n - 1 (per queue)
 #define MBUF_CACHE_SIZE     250
 #define MBUF_PRIV_SIZE      0
-#define RX_RING_SIZE        1024
-#define TX_RING_SIZE        1024
+
+// framesz shall divide blocksz, and be multiple of 16
+// (framesz * framecnt) must be a multiple of blocksz
+// as per Linux v7.1.4 : /net/packet/af_packet.c -> packet_set_ring() 
+#define AF_PACKET_BLOCKSZ   4096
+#define AF_PACKET_FRAMESZ   2048    
+#define AF_PACKET_FRAMECNT  2048    // default framecnt 512 would be too small for test_dpdk_stress.sh
+// it is adivisable that RX/TX ring size matches framecnt, to avoid queue depth discrepancy
+#define RX_RING_SIZE        AF_PACKET_FRAMECNT  
+#define TX_RING_SIZE        AF_PACKET_FRAMECNT
+
 #define DW_ETHERTYPE        0x88B5      // IEEE Local Experimental Ethertype 1
 
 static int num_queues = 1;
@@ -155,8 +164,8 @@ int dpdk_init(const dpdk_config_t *config) {
         eal_args[eal_argc++] = "-m";
         eal_args[eal_argc++] = mem_arg;
         snprintf(dev_arg, sizeof(dev_arg),
-                 "--vdev=net_af_packet0,iface=%s,qpairs=%d,qdisc_bypass=1",
-                 config->iface, num_queues);
+                 "--vdev=net_af_packet0,iface=%s,qpairs=%d,qdisc_bypass=1,blocksz=%d,framesz=%d,framecnt=%d",
+                 config->iface, num_queues, AF_PACKET_BLOCKSZ, AF_PACKET_FRAMESZ, AF_PACKET_FRAMECNT);
         eal_args[eal_argc++] = dev_arg;
         printf("[DPDK] af_packet mode: %s\n", config->iface);
     }
