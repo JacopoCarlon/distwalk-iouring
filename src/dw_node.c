@@ -613,7 +613,9 @@ int reply(req_info_t *req, message_t *m, command_t *cmd, conn_worker_info_t* inf
 
         struct rte_mbuf *tx_mbuf = dpdk_alloc_tx_mbuf(req->reply_mac);
         if (tx_mbuf == NULL) {
-            fprintf(stderr, "dpdk_alloc_tx_mbuf() failed\n");
+            fprintf(stderr, "dpdk_alloc_tx_mbuf() failed, dropping req_id=%d (conn_id=%d)\n", m->req_id, req->conn_id);
+            conn_req_remove(conn, req);
+            infos->active_reqs--;
             return 0;
         }
 
@@ -850,6 +852,10 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
                     dw_log("process_single_message: Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
                     sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
                     return 1;
+                } else if (conns[conn_id].proto == DPDK) {
+                    // reply() already dropped and cleaned up the request on failure, just report the error
+                    dw_log("process_single_message: DPDK REPLY failed for req_id=%d, conn_id: %d\n", m->req_id, conn_id);
+                    return -1;
                 } else {
                     dw_log("process_single_message: Closing connection conn_id: %d after failed REPLY\n", conn_id);
                     close_and_forget(p_poll, conns[conn_id].sock);
