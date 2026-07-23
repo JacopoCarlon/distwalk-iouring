@@ -829,26 +829,28 @@ int process_single_message(req_info_t *req, dw_poll_t *p_poll, conn_worker_info_
             }
             return 0;
         case REPLY:
-            dw_log("Handling REPLY: req_id=%d\n", m->req_id);
-            if (conn_get_status_by_id(req->conn_id) != CLOSE && !reply(req, m, cmd, infos)) {
-                dw_log("reply() returned, conn_id: %d\n", conn_id);
-                
+            dw_log("process_single_message: Handling REPLY: req_id=%d\n", m->req_id);
+            int reply_result = reply(req, m, cmd, infos);
+            dw_log("process_single_message: Handling REPLY: req_id=%d, we got reply_result:%d\n", m->req_id, reply_result);
+            if (conn_get_status_by_id(req->conn_id) != CLOSED && !reply_result) {
+                dw_log("process_single_message: reply() returned, conn_id: %d\n", conn_id);
+
                 if (conn_get_status_by_id(req->conn_id) == SENDING) {
-                    dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                    dw_log("process_single_message: Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
                     sys_check(dw_poll_mod(p_poll, conns[req->conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
                     return 1;
                 } else {
-                    dw_log("Closing connection conn_id: %d after failed REPLY\n", conn_id);
+                    dw_log("process_single_message: Closing connection conn_id: %d after failed REPLY\n", conn_id);
                     close_and_forget(p_poll, conns[conn_id].sock);
                     return -1;
                 }
             }
             if (conn_get_status_by_id(req->conn_id) == SENDING) {
-
-                dw_log("Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
+                dw_log("process_single_message:Message req_id=%d is still sending after REPLY, conn_id: %d\n", m->req_id, conn_id);
                 sys_check(dw_poll_mod(p_poll, conns[conn_id].sock, DW_POLLOUT | DW_POLLONESHOT, i2l(SOCKET, conn_id)));
             }
             // any further cmds[] for replied-to hop, not me
+            dw_log("process_single_message: case REPLY completed, with reply result: %d, will now return 1\n", reply_result);
             return 1;
         case STORE:
         case LOAD: {
@@ -1088,7 +1090,8 @@ void exec_request(dw_poll_t *p_poll, dw_poll_flags pflags, int conn_id, event_t 
     return;
 
  err:
-    if (conns->proto == TCP && conn_get_status(conn) == READY) {
+     dw_log("exec_request: entering goto err from conn_id=%d\n", conn_id);
+    if (conn->proto == TCP && conn_get_status(conn) == READY) {
         infos->active_conns--;
     }
     close_and_forget(p_poll, conn->sock);
