@@ -21,7 +21,8 @@ typedef enum {
     SENDING,
     CONNECTING,    // used with TCP only
     SSL_HANDSHAKE, // used with SSL only
-    CLOSE,
+    CLOSING,
+    CLOSED,
     STATUS_NUMBER  // keep this as last
 } conn_status_t;
 
