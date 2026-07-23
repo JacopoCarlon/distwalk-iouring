@@ -79,6 +79,8 @@ int seed = -1;
 #ifdef DPDK_ENABLED
 static int use_dpdk = 0;
 static uint8_t dpdk_dest_mac[6];
+// avoid hanging if something went really wrong
+#define DPDK_RECV_TIMEOUT_SEC 5
 #endif
 
 struct argp_client_arguments {
@@ -473,8 +475,20 @@ void *thread_receiver(void *data) {
             conn_info_t *dpdk_conn = conn_get_by_id(thr_data.conn_id);
             uint16_t nb_rx;
             int got_dw = 0;
+            struct timespec ts_now, ts_deadline;
+            clock_gettime(CLOCK_MONOTONIC, &ts_now);
+            ts_deadline = ts_add(ts_now, (struct timespec) { .tv_sec = DPDK_RECV_TIMEOUT_SEC, .tv_nsec = 0 });
             while (!got_dw) {
-                while ((nb_rx = rte_eth_rx_burst(dpdk_get_port(), 0, dpdk_conn->rx_mbufs, RX_BURST_SIZE)) == 0);
+                while ((nb_rx = rte_eth_rx_burst(dpdk_get_port(), 0, dpdk_conn->rx_mbufs, RX_BURST_SIZE)) == 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &ts_now);
+                    if (!ts_leq(ts_now, ts_deadline)) {
+                        i_incr = num_pkts - pkt_i;
+                        num_timedout += i_incr;
+                        fprintf(stderr, "No reply for %d secs, giving up on %d pending pkt(s), thr_id: %d\n",
+                                DPDK_RECV_TIMEOUT_SEC, i_incr, thread_id);
+                        goto skip;
+                    }
+                }
                 for (uint16_t i = 0; i < nb_rx; i++) {
                     if (!dpdk_is_dw_packet(dpdk_conn->rx_mbufs[i])) {
                         rte_pktmbuf_free(dpdk_conn->rx_mbufs[i]);
