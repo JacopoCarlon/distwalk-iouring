@@ -218,7 +218,7 @@ void conn_del_id(int id) {
     //if (nthread > 1) sys_check(pthread_mutex_lock(&socks_mtx));
 
     dw_log("marking conns[%d] invalid\n", id);
-    conn_reset(&conns[id]);
+    conn_free(id);
     conns[id].sock = -1;
 
     //if (nthread > 1) sys_check(pthread_mutex_unlock(&socks_mtx));
