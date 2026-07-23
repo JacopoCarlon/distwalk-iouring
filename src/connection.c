@@ -88,10 +88,12 @@ conn_status_t conn_get_status_by_id(int conn_id) {
 }
 
 conn_info_t* conn_get_by_id(int conn_id) {
+    if (conn_id < 0 || conn_id >= MAX_CONNS) return NULL;
     return &conns[conn_id];
 }
 
 int conn_get_id_by_ptr(conn_info_t * conn) {
+    assert(conn >= &conns[0] && conn <= &conns[MAX_CONNS - 1]);
     return conn - &conns[0];
 }
 
